@@ -297,20 +297,21 @@
             generateTIN();
         };
 
-        function formatDateLong(dateStr) {
-            if (!dateStr) return '';
+        function getDateParts(dateStr) {
+            if (!dateStr) return null;
             const d = new Date(dateStr + 'T00:00:00');
-            const day = d.getDate();
+            const day = String(d.getDate());
             const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-            const suffix = [1,21,31].includes(day) ? 'st' : [2,22].includes(day) ? 'nd' : [3,23].includes(day) ? 'rd' : 'th';
-            return day + suffix + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+            const n = d.getDate();
+            const suffix = [1,21,31].includes(n) ? 'st' : [2,22].includes(n) ? 'nd' : [3,23].includes(n) ? 'rd' : 'th';
+            return { day, suffix, rest: months[d.getMonth()] + ' ' + d.getFullYear() };
         }
 
         function generateTIN() {
             if (!tinReady) return;
             const name = document.getElementById('tin_name').value.trim().toUpperCase();
             const tin = document.getElementById('tin_number').value.trim();
-            const effect = formatDateLong(document.getElementById('tin_date').value);
+            const dateParts = getDateParts(document.getElementById('tin_date').value);
             const tra = document.getElementById('tin_tra').value.trim().toUpperCase();
             const office = document.getElementById('tin_office').value.trim().toUpperCase();
             const phys = document.getElementById('tin_phys').value.trim().toUpperCase();
@@ -319,36 +320,72 @@
             tinCtx.clearRect(0, 0, 1146, 1595);
             tinCtx.drawImage(tinImg, 0, 0);
 
-            tinCtx.fillStyle = '#000000';
+            const fontFamily = 'Arial, "Liberation Sans", "DejaVu Sans", Helvetica, sans-serif';
+            tinCtx.fillStyle = '#111111';
             tinCtx.textAlign = 'center';
 
-            // NAME
-            let fs = 27;
-            tinCtx.font = `bold ${fs}px "Times New Roman", Times, serif`;
-            while (tinCtx.measureText(name).width > 760 && fs > 15) {
+            // JINA LA MLIPAKODI
+            let fs = 22;
+            tinCtx.font = `bold ${fs}px ${fontFamily}`;
+            while (tinCtx.measureText(name).width > 760 && fs > 14) {
                 fs--;
-                tinCtx.font = `bold ${fs}px "Times New Roman", Times, serif`;
+                tinCtx.font = `bold ${fs}px ${fontFamily}`;
             }
-            tinCtx.fillText(name, 573, 742);
+            tinCtx.fillText(name, 573, 738);
 
-            // TIN NUMBER
-            fs = 25;
-            tinCtx.font = `bold ${fs}px "Times New Roman", Times, serif`;
-            while (tinCtx.measureText(tin).width > 420 && fs > 15) {
+            // NAMBA YA TIN
+            fs = 22;
+            tinCtx.font = `bold ${fs}px ${fontFamily}`;
+            while (tinCtx.measureText(tin).width > 420 && fs > 14) {
                 fs--;
-                tinCtx.font = `bold ${fs}px "Times New Roman", Times, serif`;
+                tinCtx.font = `bold ${fs}px ${fontFamily}`;
             }
-            tinCtx.fillText(tin, 573, 942);
+            tinCtx.fillText(tin, 573, 938);
 
-            // Fields
+            // ========== SEHEMU ZA CHINI (KAMA OFFICIAL) ==========
             tinCtx.textAlign = 'left';
-            tinCtx.font = '19px "Times New Roman", Times, serif';
 
-            if (effect) tinCtx.fillText(effect, 430, 1018);
-            if (tra)    tinCtx.fillText(tra, 365, 1078);
-            if (office) tinCtx.fillText(office, 750, 1078);
-            if (phys)   tinCtx.fillText(phys, 430, 1128);
-            if (street) tinCtx.fillText(street, 430, 1178);
+            // WITH EFFECT FROM – Date
+            if (dateParts) {
+                tinCtx.font = `21px ${fontFamily}`;
+                tinCtx.fillText(':', 405, 1024);
+
+                let curX = 420;
+
+                // siku (20)
+                tinCtx.font = `bold 21px ${fontFamily}`;
+                tinCtx.fillText(dateParts.day, curX, 1024);
+                curX += tinCtx.measureText(dateParts.day).width + 1;
+
+                // th / st / nd / rd (superscript)
+                tinCtx.font = `bold 14px ${fontFamily}`;
+                tinCtx.fillText(dateParts.suffix, curX, 1013);
+                curX += tinCtx.measureText(dateParts.suffix).width + 7;
+
+                // October 2026
+                tinCtx.font = `bold 21px ${fontFamily}`;
+                tinCtx.fillText(dateParts.rest, curX, 1024);
+            }
+
+            // TRA LOCATION
+            tinCtx.font = `bold 20px ${fontFamily}`;
+            if (tra) tinCtx.fillText(tra, 368, 1083);
+
+            // TAX OFFICE
+            if (office) {
+                tinCtx.font = `20px ${fontFamily}`;
+                tinCtx.fillText(':', 746, 1083);
+                tinCtx.font = `bold 20px ${fontFamily}`;
+                tinCtx.fillText(office, 762, 1083);
+            }
+
+            // PHYSICAL LOCATION
+            tinCtx.font = `bold 20px ${fontFamily}`;
+            if (phys) tinCtx.fillText(phys, 448, 1130);
+
+            // STREET / AREA
+            tinCtx.font = `bold 20px ${fontFamily}`;
+            if (street) tinCtx.fillText(street, 379.5, 1177);
 
             document.getElementById('tin_dl_png').disabled = false;
             document.getElementById('tin_dl_pdf').disabled = false;
@@ -356,30 +393,16 @@
 
         function downloadTIN(type) {
             const name = (document.getElementById('tin_name').value.trim() || 'TIN').replace(/\s+/g, '_');
-            try {
-                if (type === 'png') {
-                    tinCanvas.toBlob(function(blob) {
-                        if (!blob) {
-                            alert('Download imeshindikana. Fungua faili hii kwa kutumia Live Server au local server (sio file://).');
-                            return;
-                        }
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.download = `TRA_TIN_${name}.png`;
-                        a.href = url;
-                        a.click();
-                        setTimeout(() => URL.revokeObjectURL(url), 1000);
-                    }, 'image/png');
-                } else {
-                    const { jsPDF } = window.jspdf;
-                    const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [1146, 1595] });
-                    const dataUrl = tinCanvas.toDataURL('image/png');
-                    pdf.addImage(dataUrl, 'PNG', 0, 0, 1146, 1595);
-                    pdf.save(`TRA_TIN_${name}.pdf`);
-                }
-            } catch (e) {
-                alert('Download imeshindikana.\n\nSababu: Browser inazuia download wakati HTML inafunguliwa moja kwa moja (file://).\n\nSuluhisho:\n1. Fungua folder hii kwa VS Code → right click HTML → Open with Live Server\n2. Au run: python -m http.server 8000 kisha fungua http://localhost:8000');
-                console.error(e);
+            if (type === 'png') {
+                const a = document.createElement('a');
+                a.download = `TRA_TIN_${name}.png`;
+                a.href = tinCanvas.toDataURL('image/png');
+                a.click();
+            } else {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [1146, 1595] });
+                pdf.addImage(tinCanvas.toDataURL('image/png'), 'PNG', 0, 0, 1146, 1595);
+                pdf.save(`TRA_TIN_${name}.pdf`);
             }
         }
 
@@ -400,8 +423,8 @@
             blCtx.clearRect(0, 0, 794, 1123);
             blCtx.drawImage(blImg, 0, 0);
 
-            // Rangi ya B.L. NO iliyolingana na screenshot (cyan-blue)
-            const blueCol = '#8CBECD';
+            // Rangi ya B.L. NO iliyolingana na screenshot
+            const blueCol = '#77B4C7';
             const blackCol = '#111111';
             blCtx.textAlign = 'left';
             blCtx.font = '14.5px Arial, Helvetica, sans-serif';
@@ -412,10 +435,7 @@
                 blCtx.fillText(text, x, y);
             }
 
-            // B.L. NO – rangi ya cyan kama screenshot
             put(document.getElementById('bl_no').value.trim(), 322, 247, blueCol);
-
-            // Fields zingine – nyeusi
             put(document.getElementById('bl_office').value.trim().toUpperCase(), 288, 348);
             put(document.getElementById('bl_tin').value.trim(), 288, 380);
             put(document.getElementById('bl_name').value.trim().toUpperCase(), 288, 420);
@@ -425,12 +445,18 @@
             const issue = document.getElementById('bl_issue').value;
             if (issue) {
                 const d = new Date(issue + 'T00:00:00');
-                put(`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`, 288, 525);
+                put(
+                    `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`,
+                    288, 525
+                );
             }
             const exp = document.getElementById('bl_expire').value;
             if (exp) {
                 const d = new Date(exp + 'T00:00:00');
-                put(`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`, 288, 560);
+                put(
+                    `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`,
+                    288, 560
+                );
             }
 
             put(document.getElementById('bl_principal').value.trim().toUpperCase(), 288, 595);
@@ -445,30 +471,16 @@
 
         function downloadBL(type) {
             const name = (document.getElementById('bl_name').value.trim() || 'BusinessLicense').replace(/\s+/g, '_');
-            try {
-                if (type === 'png') {
-                    blCanvas.toBlob(function(blob) {
-                        if (!blob) {
-                            alert('Download imeshindikana. Fungua faili hii kwa kutumia Live Server au local server (sio file://).');
-                            return;
-                        }
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.download = `Business_License_${name}.png`;
-                        a.href = url;
-                        a.click();
-                        setTimeout(() => URL.revokeObjectURL(url), 1000);
-                    }, 'image/png');
-                } else {
-                    const { jsPDF } = window.jspdf;
-                    const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [794, 1123] });
-                    const dataUrl = blCanvas.toDataURL('image/png');
-                    pdf.addImage(dataUrl, 'PNG', 0, 0, 794, 1123);
-                    pdf.save(`Business_License_${name}.pdf`);
-                }
-            } catch (e) {
-                alert('Download imeshindikana.\n\nSababu: Browser inazuia download wakati HTML inafunguliwa moja kwa moja (file://).\n\nSuluhisho:\n1. Fungua folder hii kwa VS Code → right click HTML → Open with Live Server\n2. Au run: python -m http.server 8000 kisha fungua http://localhost:8000');
-                console.error(e);
+            if (type === 'png') {
+                const a = document.createElement('a');
+                a.download = `Business_License_${name}.png`;
+                a.href = blCanvas.toDataURL('image/png');
+                a.click();
+            } else {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [794, 1123] });
+                pdf.addImage(blCanvas.toDataURL('image/png'), 'PNG', 0, 0, 794, 1123);
+                pdf.save(`Business_License_${name}.pdf`);
             }
         }
 
