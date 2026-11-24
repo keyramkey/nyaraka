@@ -169,6 +169,10 @@ begin
 end;
 $$;
 
+grant usage on schema public to service_role;
+grant select, insert, update, delete on table public.users, public.device_claims, public.payments, public.generations to service_role;
+grant usage, select on all sequences in schema public to service_role;
+
 revoke all on function public.deduct_generation_coins(bigint, text, text, integer, bigint) from public, anon, authenticated;
 revoke all on function public.settle_dalipay_payment(text, text, bigint) from public, anon, authenticated;
 grant execute on function public.deduct_generation_coins(bigint, text, text, integer, bigint) to service_role;

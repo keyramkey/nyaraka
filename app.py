@@ -13,6 +13,28 @@ from flask import Flask, g, jsonify, request, send_from_directory
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 
+
+def _load_local_env():
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+    if not os.path.isfile(env_path):
+        return
+    try:
+        with open(env_path, 'r', encoding='utf-8') as f:
+            for raw_line in f:
+                line = raw_line.strip()
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                k, v = line.split('=', 1)
+                k = k.strip()
+                v = v.strip().strip('"').strip("'")
+                if k and k not in os.environ:
+                    os.environ[k] = v
+    except Exception:
+        pass
+
+
+_load_local_env()
+
 SESSION_SECRET = os.environ.get('SESSION_SECRET') or secrets.token_hex(32)
 DEVICE_COOKIE_NAME = 'tra_device_token'
 GENERATION_COIN_COST = 5
@@ -45,6 +67,10 @@ PACKAGES = {
 
 def get_supabase_config():
     url = os.environ.get('SUPABASE_URL', '').strip().rstrip('/')
+    if url and not url.startswith(('http://', 'https://')):
+        url = f'https://{url}'
+    if url.endswith('/rest/v1'):
+        url = url[:-8]
     key = (
         os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '').strip()
         or os.environ.get('SUPABASE_SECRET_KEY', '').strip()
@@ -55,25 +81,42 @@ def get_supabase_config():
 
 
 def sb_headers(service_key: str, prefer: str = 'return=representation'):
-    return {
+    headers = {
         'apikey': service_key,
-        'Authorization': f'Bearer {service_key}',
         'Content-Type': 'application/json',
         'Prefer': prefer,
     }
+    # Legacy JWT service_role keys require Bearer; new sb_secret_ keys are opaque and fail if sent as Bearer JWT
+    if service_key.startswith('eyJ'):
+        headers['Authorization'] = f'Bearer {service_key}'
+    return headers
+
+
+def _extract_sb_error(resp: requests.Response) -> str:
+    try:
+        body = resp.json()
+        if isinstance(body, dict):
+            msg = body.get('message') or body.get('error_description') or body.get('error') or ''
+            hint = body.get('hint') or ''
+            return f'{msg} ({hint})'.strip() if hint else str(msg)
+    except Exception:
+        pass
+    return resp.text[:200] if resp.text else f'HTTP {resp.status_code}'
 
 
 def sb_select(table: str, params: dict):
     url, key = get_supabase_config()
     resp = requests.get(f'{url}/rest/v1/{table}', headers=sb_headers(key), params=params, timeout=15)
-    resp.raise_for_status()
+    if not resp.ok:
+        raise requests.HTTPError(f'Supabase select {table} failed ({resp.status_code}): {_extract_sb_error(resp)}', response=resp)
     return resp.json()
 
 
 def sb_insert(table: str, payload: dict):
     url, key = get_supabase_config()
     resp = requests.post(f'{url}/rest/v1/{table}', headers=sb_headers(key), json=payload, timeout=15)
-    resp.raise_for_status()
+    if not resp.ok:
+        raise requests.HTTPError(f'Supabase insert {table} failed ({resp.status_code}): {_extract_sb_error(resp)}', response=resp)
     rows = resp.json()
     return rows[0] if isinstance(rows, list) and rows else rows
 
@@ -81,14 +124,16 @@ def sb_insert(table: str, payload: dict):
 def sb_update(table: str, params: dict, payload: dict):
     url, key = get_supabase_config()
     resp = requests.patch(f'{url}/rest/v1/{table}', headers=sb_headers(key), params=params, json=payload, timeout=15)
-    resp.raise_for_status()
+    if not resp.ok:
+        raise requests.HTTPError(f'Supabase update {table} failed ({resp.status_code}): {_extract_sb_error(resp)}', response=resp)
     return resp.json()
 
 
 def sb_rpc(fn_name: str, payload: dict):
     url, key = get_supabase_config()
     resp = requests.post(f'{url}/rest/v1/rpc/{fn_name}', headers=sb_headers(key), json=payload, timeout=15)
-    resp.raise_for_status()
+    if not resp.ok:
+        raise requests.HTTPError(f'Supabase RPC {fn_name} failed ({resp.status_code}): {_extract_sb_error(resp)}', response=resp)
     return resp.json()
 
 
@@ -311,7 +356,18 @@ def api_register():
         )
     except RuntimeError as e:
         return jsonify({'error': str(e)}), 503
-    except Exception:
+    except requests.HTTPError as e:
+        print(f'[Supabase Register Error] {e}', flush=True)
+        detail = str(e)
+        if '42501' in detail or 'permission denied' in detail:
+            return jsonify({'error': 'Ruhusa ya Supabase (42501) imekataliwa kwa service_role. Endesha supabase_schema.sql mpya (yenye GRANT ... TO service_role) kwenye SQL Editor.'}), 500
+        if '42P01' in detail or 'Could not find the table' in detail:
+            return jsonify({'error': 'Majedwali ya Supabase hayajaundwa. Endesha supabase_schema.sql kwenye Supabase SQL Editor.'}), 500
+        if '401' in detail or 'Invalid API key' in detail:
+            return jsonify({'error': 'SUPABASE_SERVICE_ROLE_KEY si sahihi. Tumia Secret key (sb_secret_...).'}), 500
+        return jsonify({'error': f'Tatizo la Supabase: {detail}'}), 500
+    except Exception as e:
+        print(f'[Register Error] {e}', flush=True)
         return jsonify({'error': 'Imeshindwa kusajili akaunti kwenye Supabase.'}), 500
 
     resp = jsonify(
