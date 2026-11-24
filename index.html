@@ -204,6 +204,39 @@
             font-size: 0.8rem; font-weight: 700; color: #0f766e;
             display: flex; justify-content: space-between; align-items: center;
         }
+        .contact-card {
+            margin-top: 18px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 18px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+        .contact-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+        .contact-btn {
+            min-height: 42px; padding: 8px 15px; border-radius: 12px;
+            font-size: 0.78rem; font-weight: 700; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
+        }
+        .contact-btn.wa { background: #047857; color: #ffffff; }
+        .contact-btn.wa:hover { background: #065f46; }
+        .contact-btn.call { background: #f1f5f9; color: #0f172a; border: 1px solid #e2e8f0; }
+        .contact-btn.call:hover { background: #e2e8f0; }
+        .office-suffix-box {
+            display: flex; align-items: stretch; border: 1px solid #cbd5e1;
+            border-radius: 10px; overflow: hidden; background: #ffffff;
+        }
+        .office-suffix-box:focus-within { border-color: #0f766e; box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12); }
+        .office-suffix-box input { border: none !important; box-shadow: none !important; border-radius: 0 !important; flex: 1; min-width: 0; }
+        .office-suffix-tag {
+            display: inline-flex; align-items: center; padding: 0 12px;
+            background: #f1f5f9; color: #475569; font-size: 0.74rem; font-weight: 700;
+            border-left: 1px solid #e2e8f0; white-space: nowrap; user-select: none;
+        }
 
         /* Back bar + Entry Table */
         .sub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
@@ -307,7 +340,6 @@
         }
         .coin-card:hover { border-color: #0f766e; }
         .coin-card.active { background: #f0fdfa; border: 2px solid #0f766e; }
-        .coin-card.custom-dashed { border-style: dashed; }
         .coin-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
         .coin-card-num { font-size: 1.15rem; font-weight: 700; color: #0f172a; line-height: 1.2; }
         .coin-card-check {
@@ -420,6 +452,7 @@
                 <button class="drawer-item" data-view="bl" onclick="switchView('bl');toggleDrawer(false)">Business License</button>
                 <button class="drawer-item" data-view="wallet" onclick="switchView('wallet');toggleDrawer(false)">Buy Coins</button>
                 <button class="drawer-item" data-view="profile" onclick="switchView('profile');toggleDrawer(false)">Profile</button>
+                <button class="drawer-item" onclick="toggleDrawer(false);openContactModal()">Contact</button>
                 <button id="drawerFoot" class="drawer-item" style="display:none;color:#b91c1c;" onclick="logoutUser();toggleDrawer(false)">Toka (Sign Out)</button>
             </div>
         </aside>
@@ -486,6 +519,14 @@
                     <div class="launcher-foot" style="color:#b45309;"><span>Nunua Coin</span><span>&rarr;</span></div>
                 </button>
             </div>
+
+            <section class="contact-card">
+                <div>
+                    <h2 style="font-size:0.95rem;font-weight:700;color:#0f172a;">Mawasiliano / Msaada</h2>
+                    <p style="font-size:0.78rem;color:#64748b;margin-top:2px;">Wasiliana nasi moja kwa moja kupitia WhatsApp au simu ya kawaida.</p>
+                </div>
+                <div id="contactActions" class="contact-actions"></div>
+            </section>
         </div>
 
         <!-- 2. TIN PANEL (FORM FIRST -> GENERATE -> REVEAL) -->
@@ -502,13 +543,21 @@
                 </div>
                 <table class="entry-table">
                     <tbody>
-                        <tr><th><label for="tin_name">Jina la Mlipakodi</label></th><td><input type="text" id="tin_name" value="" placeholder="Mfano: ANTHONY KIDIMA SENI"></td></tr>
-                        <tr><th><label for="tin_number">Namba ya TIN</label></th><td><input type="text" id="tin_number" class="mono" value="" placeholder="Mfano: 211-724-390"></td></tr>
+                        <tr><th><label for="tin_name">Jina la Mlipakodi</label></th><td><input type="text" id="tin_name" value="" placeholder="Mfano: NEEMA BARAKA MWAKIPESILE"></td></tr>
+                        <tr><th><label for="tin_number">Namba ya TIN</label></th><td><input type="text" id="tin_number" class="mono" inputmode="numeric" maxlength="11" value="" placeholder="Mfano: 145-832-609" oninput="handleTinAutoDash(this)"></td></tr>
                         <tr><th><label for="tin_date">With Effect From</label></th><td><input type="date" id="tin_date" class="mono" value=""></td></tr>
-                        <tr><th><label for="tin_tra">TRA Location</label></th><td><input type="text" id="tin_tra" value="" placeholder="Mfano: SIMIYU"></td></tr>
-                        <tr><th><label for="tin_office">Tax Office</label></th><td><input type="text" id="tin_office" value="" placeholder="Mfano: SIMIYU TAX CENTRE"></td></tr>
-                        <tr><th><label for="tin_phys">Physical Location</label></th><td><input type="text" id="tin_phys" value="" placeholder="Mfano: MALAMBO"></td></tr>
-                        <tr><th><label for="tin_street">Street / Area</label></th><td><input type="text" id="tin_street" value="" placeholder="Mfano: MALAMBO"></td></tr>
+                        <tr><th><label for="tin_tra">TRA Location</label></th><td><input type="text" id="tin_tra" value="" placeholder="Mfano: SHINYANGA"></td></tr>
+                        <tr>
+                            <th><label for="tin_office">Tax Office</label></th>
+                            <td>
+                                <div class="office-suffix-box">
+                                    <input type="text" id="tin_office" value="" placeholder="Mfano: KAHAMA">
+                                    <span class="office-suffix-tag">TAX CENTER</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr><th><label for="tin_phys">Physical Location</label></th><td><input type="text" id="tin_phys" value="" placeholder="Mfano: MAJIMOTO"></td></tr>
+                        <tr><th><label for="tin_street">Street / Area</label></th><td><input type="text" id="tin_street" value="" placeholder="Mfano: NYIHOGO"></td></tr>
                     </tbody>
                 </table>
                 <div class="form-shell-foot">
@@ -520,7 +569,7 @@
                 <div class="result-bar">
                     <h2 style="font-size:1rem;font-weight:700;">TIN Certificate</h2>
                     <div class="action-pills">
-                        <button class="btn-sm slate" onclick="editDocument('tin')">Hariri</button>
+                        <button class="btn-sm slate" onclick="startFreshDocument('tin')">Hati Mpya</button>
                         <button class="btn-sm teal" onclick="downloadTIN('png')">Download PNG</button>
                         <button class="btn-sm dark" onclick="downloadTIN('pdf')">Download PDF</button>
                     </div>
@@ -546,18 +595,18 @@
                 <table class="entry-table">
                     <tbody>
                         <tr><th><label for="bl_no">B.L. Number</label></th><td><input type="text" id="bl_no" class="mono" value="" readonly style="background:#f1f5f9;color:#334155;font-weight:700;cursor:not-allowed;"></td></tr>
-                        <tr><th><label for="bl_office">Issuing Office</label></th><td><input type="text" id="bl_office" value="" placeholder="Mfano: KIGOMA"></td></tr>
-                        <tr><th><label for="bl_tin">Tax Identification No</label></th><td><input type="text" id="bl_tin" class="mono" value="" placeholder="Mfano: 128-624-855"></td></tr>
-                        <tr><th><label for="bl_name">License Issued To</label></th><td><input type="text" id="bl_name" value="" placeholder="Mfano: HAMIS JUMA JOHNSTONE"></td></tr>
-                        <tr><th><label for="bl_business">For the Business of</label></th><td><input type="text" id="bl_business" value="" placeholder="Mfano: BOOKSTORE AND STATIONERY - DISTRICT"></td></tr>
+                        <tr><th><label for="bl_office">Issuing Office</label></th><td><input type="text" id="bl_office" value="" placeholder="Mfano: MWANZA"></td></tr>
+                        <tr><th><label for="bl_tin">Tax Identification No</label></th><td><input type="text" id="bl_tin" class="mono" inputmode="numeric" maxlength="11" value="" placeholder="Mfano: 164-905-318" oninput="handleTinAutoDash(this)"></td></tr>
+                        <tr><th><label for="bl_name">License Issued To</label></th><td><input type="text" id="bl_name" value="" placeholder="Mfano: JOSEPHAT SAMWEL NGONYANI"></td></tr>
+                        <tr><th><label for="bl_business">For the Business of</label></th><td><input type="text" id="bl_business" value="" placeholder="Mfano: HARDWARE AND BUILDING MATERIALS - RETAIL"></td></tr>
                         <tr><th><label for="bl_type">Business Licensing</label></th><td><input type="text" id="bl_type" value="" placeholder="Mfano: NEW LICENSE"></td></tr>
                         <tr><th><label for="bl_principal">Principal / Branch</label></th><td><input type="text" id="bl_principal" value="" placeholder="Mfano: PRINCIPAL"></td></tr>
                         <tr><th><label for="bl_issue">Date of Issue</label></th><td><input type="date" id="bl_issue" class="mono" value=""></td></tr>
                         <tr><th><label for="bl_expire">Expiring Date</label></th><td><input type="date" id="bl_expire" class="mono" value=""></td></tr>
-                        <tr><th><label for="bl_region">Region</label></th><td><input type="text" id="bl_region" value="" placeholder="Mfano: Kigoma"></td></tr>
-                        <tr><th><label for="bl_ward">Ward</label></th><td><input type="text" id="bl_ward" value="" placeholder="Mfano: Kakonko"></td></tr>
-                        <tr><th><label for="bl_street">Street</label></th><td><input type="text" id="bl_street" value="" placeholder="Mfano: Kasanda"></td></tr>
-                        <tr><th><label for="bl_fee">Amount of Fee Paid</label></th><td><input type="text" id="bl_fee" class="mono" value="" placeholder="Mfano: 70000"></td></tr>
+                        <tr><th><label for="bl_region">Region</label></th><td><input type="text" id="bl_region" value="" placeholder="Mfano: Mwanza"></td></tr>
+                        <tr><th><label for="bl_ward">Ward</label></th><td><input type="text" id="bl_ward" value="" placeholder="Mfano: Nyamagana"></td></tr>
+                        <tr><th><label for="bl_street">Street</label></th><td><input type="text" id="bl_street" value="" placeholder="Mfano: Pamba Road"></td></tr>
+                        <tr><th><label for="bl_fee">Amount of Fee Paid</label></th><td><input type="text" id="bl_fee" class="mono" value="" placeholder="Mfano: 85000"></td></tr>
                     </tbody>
                 </table>
                 <div class="form-shell-foot">
@@ -569,7 +618,7 @@
                 <div class="result-bar">
                     <h2 style="font-size:1rem;font-weight:700;">Business License</h2>
                     <div class="action-pills">
-                        <button class="btn-sm slate" onclick="editDocument('bl')">Hariri</button>
+                        <button class="btn-sm slate" onclick="startFreshDocument('bl')">Hati Mpya</button>
                         <button class="btn-sm teal" onclick="downloadBL('png')">Download PNG</button>
                         <button class="btn-sm dark" onclick="downloadBL('pdf')">Download PDF</button>
                     </div>
@@ -628,14 +677,6 @@
                             <div class="pay-summary-row"><span style="color:#64748b;">Kifurushi</span><strong id="chkPkgTitle">55 Coins</strong></div>
                             <div class="pay-summary-row"><span style="color:#64748b;">Maelezo</span><span id="chkPkgDetail" class="mono" style="font-size:0.76rem;color:#334155;">~Hati 11 · Coin 5/hati</span></div>
                             <div class="pay-summary-row"><strong style="color:#0f172a;">Jumla</strong><strong id="chkPkgTotal" class="mono" style="font-size:1.15rem;color:#0f766e;">TZS 5,000</strong></div>
-                        </div>
-
-                        <div class="form-group" id="customAmountGroup" style="display:none;">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-                                <label style="margin-bottom:0;">Kiasi (TZS 1,000+)</label>
-                                <span id="customCoinsHint" class="mono" style="font-size:0.75rem;font-weight:700;color:#0f766e;">= 166 Coins</span>
-                            </div>
-                            <input type="number" id="customAmountInput" class="mono" min="1000" step="500" value="15000" oninput="updateSelectedPackageUI()">
                         </div>
 
                         <div class="form-group">
@@ -756,11 +797,27 @@
         </div>
     </div>
 
+    <!-- CONTACT MODAL -->
+    <div id="contactModal" class="modal-backdrop">
+        <div class="modal-box" style="max-width:380px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                <div>
+                    <h3 style="font-size:1.02rem;font-weight:700;">Mawasiliano / Contact</h3>
+                    <p style="font-size:0.76rem;color:#64748b;margin-top:2px;">Chagua njia ya kuwasiliana nasi</p>
+                </div>
+                <button class="mini-btn" onclick="closeContactModal()">Funga</button>
+            </div>
+            <div id="contactModalActions" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
     <script>
         const RENDER_SCALE = 3;
+        const SESSION_STORAGE_KEY = 'malimi_auth_token';
         let authToken = null;
+        try { authToken = localStorage.getItem(SESSION_STORAGE_KEY); } catch (e) {}
         let currentUser = null;
         let authMode = 'register';
         let selectedPkgId = 'coins_55';
@@ -769,6 +826,20 @@
         let deviceIdCache = '';
         let pollTimer = null;
         let noticeTimer = null;
+
+        function saveSessionToken(tok) {
+            authToken = tok;
+            try {
+                if (tok) localStorage.setItem(SESSION_STORAGE_KEY, tok);
+                else localStorage.removeItem(SESSION_STORAGE_KEY);
+            } catch (e) {}
+        }
+
+        function authHeaders(extra) {
+            const h = Object.assign({}, extra || {});
+            if (authToken) h['Authorization'] = 'Bearer ' + authToken;
+            return h;
+        }
 
         function toggleDrawer(open) {
             document.getElementById('drawerBackdrop').classList.toggle('open', Boolean(open));
@@ -783,25 +854,60 @@
             });
         }
 
-        function editDocument(docType) {
+        function startFreshDocument(docType) {
             if (docType === 'tin') {
+                resetTinForm();
                 document.getElementById('tinResultSection').style.display = 'none';
                 document.getElementById('tinFormSection').style.display = 'block';
             } else {
+                resetBlForm();
+                document.getElementById('bl_no').value = generateBlNumber();
                 document.getElementById('blResultSection').style.display = 'none';
                 document.getElementById('blFormSection').style.display = 'block';
             }
         }
 
+        function handleTinAutoDash(input) {
+            const prev = input.dataset.prevVal || '';
+            const nextRaw = input.value || '';
+            const digits = nextRaw.replace(/\D/g, '').slice(0, 9);
+            const isDeleting = nextRaw.length < prev.length;
+            let formatted = '';
+            if (digits) {
+                if (!isDeleting && digits.length === 3) {
+                    formatted = digits + '-';
+                } else if (!isDeleting && digits.length === 6) {
+                    formatted = digits.slice(0, 3) + '-' + digits.slice(3) + '-';
+                } else if (digits.length <= 3) {
+                    formatted = digits;
+                } else if (digits.length <= 6) {
+                    formatted = digits.slice(0, 3) + '-' + digits.slice(3);
+                } else {
+                    formatted = digits.slice(0, 3) + '-' + digits.slice(3, 6) + '-' + digits.slice(6);
+                }
+            }
+            input.value = formatted;
+            input.dataset.prevVal = formatted;
+        }
+
+        function formatTaxOfficeValue(rawPlace) {
+            const cleaned = String(rawPlace || '').trim().toUpperCase().replace(/\s+TAX\s+CENT(?:ER|RE)$/i, '').trim();
+            return cleaned ? `${cleaned} TAX CENTER` : '';
+        }
+
         function resetTinForm() {
             ['tin_name', 'tin_number', 'tin_date', 'tin_tra', 'tin_office', 'tin_phys', 'tin_street'].forEach(id => {
-                document.getElementById(id).value = '';
+                const el = document.getElementById(id);
+                el.value = '';
+                el.dataset.prevVal = '';
             });
         }
 
         function resetBlForm() {
             ['bl_office', 'bl_tin', 'bl_name', 'bl_business', 'bl_type', 'bl_principal', 'bl_issue', 'bl_expire', 'bl_region', 'bl_ward', 'bl_street', 'bl_fee'].forEach(id => {
-                document.getElementById(id).value = '';
+                const el = document.getElementById(id);
+                el.value = '';
+                el.dataset.prevVal = '';
             });
         }
 
@@ -946,11 +1052,14 @@
             }
         }
 
-        function logoutUser() {
-            authToken = null;
+        async function logoutUser() {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST', credentials: 'include', headers: authHeaders() });
+            } catch (e) {}
+            saveSessionToken(null);
             currentUser = null;
-            editDocument('tin');
-            editDocument('bl');
+            startFreshDocument('tin');
+            startFreshDocument('bl');
             updateUserUI();
             showNotice('Umetoka kwenye akaunti.');
         }
@@ -986,7 +1095,7 @@
                 errEl.style.display = 'block';
                 return;
             }
-            authToken = data.token;
+            saveSessionToken(data.token);
             currentUser = data.user;
             if (currentUser.phone) document.getElementById('dalipayPhone').value = currentUser.phone;
             closeAuthModal();
@@ -996,14 +1105,23 @@
         }
 
         async function refreshProfile() {
-            if (!authToken) return;
             const res = await fetch('/api/auth/me', {
-                headers: { Authorization: 'Bearer ' + authToken },
+                headers: authHeaders(),
                 credentials: 'include'
             });
-            if (!res.ok) return;
+            if (!res.ok) {
+                if (res.status === 401) {
+                    saveSessionToken(null);
+                    currentUser = null;
+                    updateUserUI();
+                }
+                return;
+            }
             const data = await res.json();
             currentUser = data.user;
+            if (currentUser.phone && !document.getElementById('dalipayPhone').value) {
+                document.getElementById('dalipayPhone').value = currentUser.phone;
+            }
             updateUserUI();
 
             const pt = document.getElementById('paymentsTbody');
@@ -1060,10 +1178,60 @@
             }
         }
 
+        function openContactModal() {
+            document.getElementById('contactModal').classList.add('open');
+        }
+        function closeContactModal() {
+            document.getElementById('contactModal').classList.remove('open');
+        }
+
+        function _fillContactInto(wrap, contact, fullWidth) {
+            if (!wrap) return;
+            wrap.textContent = '';
+            if (contact && contact.whatsappDigits) {
+                const wa = document.createElement('a');
+                wa.className = 'contact-btn wa mono';
+                if (fullWidth) wa.style.justifyContent = 'center';
+                wa.href = `https://wa.me/${contact.whatsappDigits}`;
+                wa.target = '_blank';
+                wa.rel = 'noopener noreferrer';
+                wa.textContent = `WhatsApp · ${contact.whatsapp}`;
+                wrap.appendChild(wa);
+            } else {
+                const span = document.createElement('span');
+                span.className = 'mono';
+                span.style.fontSize = '0.75rem';
+                span.style.color = '#94a3b8';
+                span.textContent = 'WhatsApp: Haijawekwa';
+                wrap.appendChild(span);
+            }
+            if (contact && contact.phoneHref) {
+                const ph = document.createElement('a');
+                ph.className = 'contact-btn call mono';
+                if (fullWidth) ph.style.justifyContent = 'center';
+                ph.href = contact.phoneHref;
+                ph.textContent = `Piga Simu · ${contact.phone}`;
+                wrap.appendChild(ph);
+            } else {
+                const span = document.createElement('span');
+                span.className = 'mono';
+                span.style.fontSize = '0.75rem';
+                span.style.color = '#94a3b8';
+                span.textContent = 'Simu: Haijawekwa';
+                wrap.appendChild(span);
+            }
+        }
+
+        function renderContactActions(contact) {
+            _fillContactInto(document.getElementById('contactActions'), contact, false);
+            _fillContactInto(document.getElementById('contactModalActions'), contact, true);
+        }
+
         async function loadPackages() {
             const res = await fetch('/api/packages');
             const data = await res.json();
             packagesList = data.packages || [];
+            renderContactActions(data.contact || {});
             updateSelectedPackageUI();
         }
 
@@ -1136,44 +1304,6 @@
                 coinGrid.appendChild(btn);
             });
 
-            const amt = Math.max(0, Number(document.getElementById('customAmountInput').value) || 0);
-            const customCoins = Math.floor((amt / 9000) * 100);
-            const cSel = selectedPkgId === 'custom';
-            const cBtn = document.createElement('button');
-            cBtn.type = 'button';
-            cBtn.className = 'coin-card custom-dashed' + (cSel ? ' active' : '');
-            cBtn.onclick = () => selectPackage('custom');
-
-            const cTop = document.createElement('div');
-            cTop.className = 'coin-card-top';
-            const cWrap = document.createElement('div');
-            const cTitle = document.createElement('div');
-            cTitle.style.fontWeight = '700';
-            cTitle.style.fontSize = '0.9rem';
-            cTitle.textContent = 'Custom';
-            const cSub = document.createElement('div');
-            cSub.className = 'mono';
-            cSub.style.fontSize = '0.75rem';
-            cSub.style.color = '#64748b';
-            cSub.textContent = `${customCoins} Coins`;
-            cWrap.append(cTitle, cSub);
-            const cChk = document.createElement('span');
-            cChk.className = 'coin-card-check';
-            cChk.textContent = cSel ? '✓' : '';
-            cTop.append(cWrap, cChk);
-
-            const cFoot = document.createElement('div');
-            cFoot.className = 'coin-card-foot';
-            const cDocs = document.createElement('div');
-            cDocs.className = 'coin-card-docs';
-            cDocs.textContent = 'Andika kiasi chako';
-            const cPrice = document.createElement('div');
-            cPrice.className = 'coin-card-price mono';
-            cPrice.textContent = `TZS ${amt.toLocaleString()}`;
-            cFoot.append(cDocs, cPrice);
-            cBtn.append(cTop, cFoot);
-            coinGrid.appendChild(cBtn);
-
             packagesList.filter(p => p.category === 'unlimited').forEach(p => {
                 const sel = selectedPkgId === p.id;
                 const uBtn = document.createElement('button');
@@ -1210,7 +1340,6 @@
 
         function selectPackage(id) {
             selectedPkgId = id;
-            document.getElementById('customAmountGroup').style.display = id === 'custom' ? 'block' : 'none';
             updateSelectedPackageUI();
         }
 
@@ -1220,20 +1349,12 @@
             let detail = '-';
             let amount = 0;
 
-            if (selectedPkgId === 'custom') {
-                amount = Math.max(0, Number(document.getElementById('customAmountInput').value) || 0);
-                const coins = Math.floor((amount / 9000) * 100);
-                title = `${coins} Coins (Custom)`;
-                detail = `~Hati ${Math.floor(coins / 5)} · Coin 5/hati`;
-                document.getElementById('customCoinsHint').textContent = `= ${coins} Coins`;
-            } else {
-                const p = packagesList.find(x => x.id === selectedPkgId);
-                if (p) {
-                    const info = formatPackageInfo(p);
-                    title = info.title;
-                    detail = info.detail;
-                    amount = Number(p.amountTzs || 0);
-                }
+            const p = packagesList.find(x => x.id === selectedPkgId);
+            if (p) {
+                const info = formatPackageInfo(p);
+                title = info.title;
+                detail = info.detail;
+                amount = Number(p.amountTzs || 0);
             }
             document.getElementById('chkPkgTitle').textContent = title;
             document.getElementById('chkPkgDetail').textContent = detail;
@@ -1242,16 +1363,14 @@
         }
 
         async function startDalipayPayment() {
-            if (!authToken) { openAuthModal('register'); return; }
+            if (!currentUser) { openAuthModal('register'); return; }
             const phone = document.getElementById('dalipayPhone').value;
-            const customAmt = Number(document.getElementById('customAmountInput').value);
             const res = await fetch('/api/payments/dalipay/initiate', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
                 credentials: 'include',
                 body: JSON.stringify({
                     packageId: selectedPkgId,
-                    customAmountTzs: selectedPkgId === 'custom' ? customAmt : undefined,
                     phoneNumber: phone
                 })
             });
@@ -1262,7 +1381,7 @@
             if (pollTimer) clearInterval(pollTimer);
             pollTimer = setInterval(async () => {
                 const sr = await fetch('/api/payments/status/' + encodeURIComponent(data.reference), {
-                    headers: { Authorization: 'Bearer ' + authToken },
+                    headers: authHeaders(),
                     credentials: 'include'
                 });
                 if (!sr.ok) return;
@@ -1281,7 +1400,7 @@
         }
 
         async function unlockAndGenerate(docType) {
-            if (!authToken) { openAuthModal('register'); return; }
+            if (!currentUser) { openAuthModal('register'); return; }
             if (docType === 'tin' && (!document.getElementById('tin_name').value.trim() || !document.getElementById('tin_number').value.trim())) {
                 showNotice('Tafadhali jaza angalau Jina la Mlipakodi na Namba ya TIN.', 'error');
                 return;
@@ -1296,7 +1415,7 @@
 
             const res = await fetch('/api/documents/generate', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
                 credentials: 'include',
                 body: JSON.stringify({ docType, docLabel })
             });
@@ -1360,7 +1479,7 @@
             const tin = document.getElementById('tin_number').value.trim();
             const dateParts = getDateParts(document.getElementById('tin_date').value);
             const tra = document.getElementById('tin_tra').value.trim().toUpperCase();
-            const office = document.getElementById('tin_office').value.trim().toUpperCase();
+            const office = formatTaxOfficeValue(document.getElementById('tin_office').value);
             const phys = document.getElementById('tin_phys').value.trim().toUpperCase();
             const street = document.getElementById('tin_street').value.trim().toUpperCase();
 
@@ -1570,6 +1689,7 @@
 
         loadPackages();
         updateUserUI();
+        refreshProfile();
     </script>
 </body>
 </html>

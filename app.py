@@ -35,8 +35,17 @@ def _load_local_env():
 
 _load_local_env()
 
-SESSION_SECRET = os.environ.get('SESSION_SECRET') or secrets.token_hex(32)
+_fallback_seed = (
+    os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '').strip()
+    or os.environ.get('DALIPAY_SECRET_KEY', '').strip()
+    or os.path.abspath(__file__)
+)
+SESSION_SECRET = os.environ.get('SESSION_SECRET', '').strip() or hashlib.sha256(
+    f'malimi:{_fallback_seed}'.encode('utf-8')
+).hexdigest()
 DEVICE_COOKIE_NAME = 'tra_device_token'
+SESSION_COOKIE_NAME = 'malimi_session'
+SESSION_MAX_AGE_SEC = 60 * 60 * 24 * 365
 GENERATION_COIN_COST = 5
 FREE_SIGNUP_COINS = 10
 
@@ -46,6 +55,7 @@ PACKAGES = {
     'coins_100': {'id': 'coins_100', 'label': '100 Coins', 'amountTzs': 9000, 'coins': 100, 'unlimitedDays': 0, 'category': 'coins'},
     'coins_230': {'id': 'coins_230', 'label': '230 Coins', 'amountTzs': 20000, 'coins': 230, 'unlimitedDays': 0, 'category': 'coins'},
     'coins_600': {'id': 'coins_600', 'label': '600 Coins', 'amountTzs': 50000, 'coins': 600, 'unlimitedDays': 0, 'category': 'coins'},
+    'coins_1200': {'id': 'coins_1200', 'label': '1,200 Coins', 'amountTzs': 100000, 'coins': 1200, 'unlimitedDays': 0, 'category': 'coins'},
     'unlimited_30d': {
         'id': 'unlimited_30d',
         'label': 'Unlimited (1 Month / 30 Days)',
@@ -161,7 +171,7 @@ def verify_password(password: str, stored: str) -> bool:
 
 
 def sign_token(user_id: int) -> str:
-    payload_bytes = json.dumps({'uid': user_id, 'exp': now_ms() + 7 * 24 * 60 * 60 * 1000}).encode('utf-8')
+    payload_bytes = json.dumps({'uid': user_id, 'exp': now_ms() + SESSION_MAX_AGE_SEC * 1000}).encode('utf-8')
     payload = base64.urlsafe_b64encode(payload_bytes).decode('ascii').rstrip('=')
     sig = base64.urlsafe_b64encode(
         hmac.new(SESSION_SECRET.encode('utf-8'), payload.encode('utf-8'), hashlib.sha256).digest()
@@ -195,17 +205,34 @@ def sanitize_identifier(raw) -> str:
     return ''.join(ch for ch in raw.strip() if ch.isalnum() or ch in ('_', '-'))[:128]
 
 
-def set_device_cookie(response, token: str):
-    max_age = 60 * 60 * 24 * 365 * 2
+def _cookie_attrs() -> str:
     is_https = (
         request.is_secure
         or request.headers.get('X-Forwarded-Proto', '') == 'https'
         or os.environ.get('VERCEL') == '1'
     )
-    attrs = 'HttpOnly; Secure; SameSite=None; Partitioned' if is_https else 'HttpOnly; SameSite=Lax'
+    return 'HttpOnly; Secure; SameSite=None; Partitioned' if is_https else 'HttpOnly; SameSite=Lax'
+
+
+def set_device_cookie(response, token: str):
+    max_age = 60 * 60 * 24 * 365 * 2
     response.headers.add(
         'Set-Cookie',
-        f'{DEVICE_COOKIE_NAME}={token}; Path=/; Max-Age={max_age}; {attrs}',
+        f'{DEVICE_COOKIE_NAME}={token}; Path=/; Max-Age={max_age}; {_cookie_attrs()}',
+    )
+
+
+def set_session_cookie(response, token: str):
+    response.headers.add(
+        'Set-Cookie',
+        f'{SESSION_COOKIE_NAME}={token}; Path=/; Max-Age={SESSION_MAX_AGE_SEC}; {_cookie_attrs()}',
+    )
+
+
+def clear_session_cookie(response):
+    response.headers.add(
+        'Set-Cookie',
+        f'{SESSION_COOKIE_NAME}=; Path=/; Max-Age=0; {_cookie_attrs()}',
     )
 
 
@@ -225,9 +252,10 @@ def require_auth(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         auth = request.headers.get('Authorization', '')
-        if not auth.startswith('Bearer '):
+        token = auth[7:].strip() if auth.startswith('Bearer ') else (request.cookies.get(SESSION_COOKIE_NAME, '') or '')
+        if not token:
             return jsonify({'error': 'Tafadhali ingia kwenye akaunti yako kwanza.'}), 401
-        uid = verify_token(auth[7:].strip())
+        uid = verify_token(token)
         if uid is None:
             return jsonify({'error': 'Session imeisha. Tafadhali ingia tena.'}), 401
         g.user_id = uid
@@ -261,10 +289,19 @@ def normalize_phone_tz(raw: str):
     return None
 
 
-def compute_custom_coins(amount_tzs: int) -> int:
-    if amount_tzs < 1000:
-        return 0
-    return int((amount_tzs / 9000) * 100)
+def get_contact_config():
+    raw_wa = os.environ.get('CONTACT_WHATSAPP', '').strip()
+    raw_phone = os.environ.get('CONTACT_PHONE', '').strip()
+    wa_digits_raw = ''.join(ch for ch in raw_wa if ch.isdigit())
+    wa_digits = normalize_phone_tz(raw_wa) or (wa_digits_raw if len(wa_digits_raw) >= 9 else '')
+    phone_clean = ''.join(ch for ch in raw_phone if ch.isdigit() or ch == '+')
+    phone_href = f'tel:{phone_clean}' if phone_clean else ''
+    return {
+        'whatsapp': raw_wa,
+        'whatsappDigits': wa_digits,
+        'phone': raw_phone,
+        'phoneHref': phone_href,
+    }
 
 
 @app.route('/')
@@ -286,6 +323,7 @@ def api_packages():
             'generationCost': GENERATION_COIN_COST,
             'freeSignupCoins': FREE_SIGNUP_COINS,
             'packages': list(PACKAGES.values()),
+            'contact': get_contact_config(),
             'dalipayConfigured': bool(
                 os.environ.get('DALIPAY_SECRET_KEY', '').strip()
                 and os.environ.get('DALIPAY_PUBLIC_KEY', '').strip()
@@ -370,9 +408,10 @@ def api_register():
         print(f'[Register Error] {e}', flush=True)
         return jsonify({'error': 'Imeshindwa kusajili akaunti kwenye Supabase.'}), 500
 
+    session_token = sign_token(user_id)
     resp = jsonify(
         {
-            'token': sign_token(user_id),
+            'token': session_token,
             'user': sanitize_user(user_row),
             'bonusAwarded': not already_claimed,
             'message': (
@@ -384,6 +423,7 @@ def api_register():
     )
     resp.status_code = 201
     set_device_cookie(resp, cookie_token)
+    set_session_cookie(resp, session_token)
     return resp
 
 
@@ -420,8 +460,19 @@ def api_login():
                 },
             )
 
-    resp = jsonify({'token': sign_token(int(user_row['id'])), 'user': sanitize_user(user_row)})
+    session_token = sign_token(int(user_row['id']))
+    resp = jsonify({'token': session_token, 'user': sanitize_user(user_row)})
     set_device_cookie(resp, cookie_token)
+    set_session_cookie(resp, session_token)
+    return resp
+
+
+@app.route('/api/auth/logout', methods=['POST'])
+def api_logout():
+    if not verify_same_origin():
+        return jsonify({'error': 'Invalid request origin.'}), 403
+    resp = jsonify({'ok': True})
+    clear_session_cookie(resp)
     return resp
 
 
@@ -505,24 +556,13 @@ def api_dalipay_initiate():
     if not phone_clean:
         return jsonify({'error': 'Weka namba sahihi ya simu ya Tanzania (mfano 0754123456).'}), 400
 
-    if package_id == 'custom':
-        try:
-            amount_tzs = int(data.get('customAmountTzs', 0))
-        except (TypeError, ValueError):
-            amount_tzs = 0
-        if amount_tzs < 1000 or amount_tzs > 5000000:
-            return jsonify({'error': 'Kiasi cha kawaida lazima kiwe kuanzia TZS 1,000 hadi 5,000,000.'}), 400
-        coins_awarded = compute_custom_coins(amount_tzs)
-        unlimited_days = 0
-        package_label = f'{coins_awarded} Coins (Custom)'
-    else:
-        pkg = PACKAGES.get(package_id)
-        if not pkg:
-            return jsonify({'error': 'Kifurushi kilichochaguliwa hakipo.'}), 400
-        amount_tzs = pkg['amountTzs']
-        coins_awarded = pkg['coins']
-        unlimited_days = pkg['unlimitedDays']
-        package_label = pkg['label']
+    pkg = PACKAGES.get(package_id)
+    if not pkg:
+        return jsonify({'error': 'Kifurushi kilichochaguliwa hakipo.'}), 400
+    amount_tzs = pkg['amountTzs']
+    coins_awarded = pkg['coins']
+    unlimited_days = pkg['unlimitedDays']
+    package_label = pkg['label']
 
     public_key = os.environ.get('DALIPAY_PUBLIC_KEY', '').strip()
     secret_key = os.environ.get('DALIPAY_SECRET_KEY', '').strip()

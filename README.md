@@ -20,6 +20,8 @@ DALIPAY_SECRET_KEY=your_dalipay_secret_key
 DALIPAY_CALLBACK_SECRET=your_dalipay_callback_secret
 DALIPAY_API_URL=https://api.dalipay.co.tz/v1/payments/mobile
 SESSION_SECRET=your_random_64_char_secret
+CONTACT_WHATSAPP=255754000000
+CONTACT_PHONE=0754000000
 ```
 
 Configure your Dalipay Merchant Dashboard Webhook URL to:
@@ -29,7 +31,7 @@ Configure your Dalipay Merchant Dashboard Webhook URL to:
 
 - **Welcome Bonus:** 10 Free Coins on first registration per device/browser (`device_id` + `HttpOnly` cookie check; duplicate accounts on the same device receive 0 coins)
 - **Generation Cost:** 5 Coins per TIN Certificate or Business License (0 Coins while Unlimited is active)
-- **Packages:** 22 Coins (2,000 TZS) · 55 Coins (5,000 TZS) · 100 Coins (9,000 TZS) · 230 Coins (20,000 TZS) · 600 Coins (50,000 TZS) · Custom amount
+- **Packages:** 22 Coins (2,000 TZS) · 55 Coins (5,000 TZS) · 100 Coins (9,000 TZS) · 230 Coins (20,000 TZS) · 600 Coins (50,000 TZS) · 1,200 Coins (100,000 TZS)
 - **Unlimited Plans:** 1 Month / 30 Days (30,000 TZS) · 55 Days (50,000 TZS)
 
 ## 4. Files
