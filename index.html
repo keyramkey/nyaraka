@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRA Documents Exact Filler</title>
+    <title>MALIMI COPY — TRA Document Filler</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Open+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -11,287 +11,467 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
-            background: #f8fafc;
+            background: #f2f6f8;
             color: #0f172a;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
         }
         .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
         .topbar {
-            background: #ffffff;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(10px);
             border-bottom: 1px solid #e2e8f0;
-            padding: 14px 24px;
+            height: 56px;
+            padding: 0 18px;
             position: sticky;
             top: 0;
             z-index: 30;
+            display: flex;
+            align-items: center;
         }
         .topbar-inner {
-            max-width: 1260px;
+            max-width: 1152px;
+            width: 100%;
             margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 24px;
-            flex-wrap: wrap;
+            gap: 16px;
         }
-        .brand { font-size: 1.08rem; font-weight: 700; color: #0f172a; white-space: nowrap; }
-        .nav { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+        .brand-wrap { display: flex; align-items: center; gap: 8px; }
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            margin-left: -8px;
+            border: none;
+            background: transparent;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #334155;
+        }
+        .icon-btn:hover { background: #f1f5f9; color: #0f766e; }
+        .brand { font-size: 1.05rem; font-weight: 700; color: #0f172a; white-space: nowrap; cursor: pointer; background: none; border: none; }
+        .nav { display: flex; gap: 22px; align-items: center; }
         .tab-btn {
             background: transparent;
             border: none;
             border-bottom: 2px solid transparent;
             padding: 6px 2px;
-            font-size: 0.88rem;
+            font-size: 0.875rem;
             font-weight: 500;
             color: #475569;
             cursor: pointer;
             white-space: nowrap;
         }
         .tab-btn:hover { color: #0f172a; }
-        .tab-btn.active { color: #075985; border-bottom-color: #075985; font-weight: 600; }
-        .wallet-bar { display: flex; align-items: center; gap: 10px; }
+        .tab-btn.active { color: #0f766e; border-bottom-color: #0f766e; font-weight: 600; }
+        @media (max-width: 768px) { .nav { display: none; } }
+
         .coin-chip {
-            padding: 7px 12px;
-            border-radius: 8px;
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
-            color: #0c4a6e;
-            font-size: 0.8rem;
-            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            font-size: 0.78rem;
+            font-weight: 700;
             cursor: pointer;
+            white-space: nowrap;
         }
         .btn-primary-sm {
             padding: 8px 14px;
-            border-radius: 8px;
+            border-radius: 12px;
             border: none;
-            background: #075985;
+            background: #0f766e;
             color: #fff;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 600;
             cursor: pointer;
             white-space: nowrap;
         }
-        .btn-primary-sm:hover { background: #0c4a6e; }
-        .btn-ghost-sm {
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            background: #f8fafc;
-            color: #334155;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
+        .btn-primary-sm:hover { background: #115e59; }
+
+        /* Hamburger Drawer */
+        .drawer-backdrop {
+            position: fixed; inset: 0; z-index: 60; display: none;
         }
-        .container { max-width: 1260px; margin: 0 auto; padding: 24px; }
+        .drawer-backdrop.open { display: flex; }
+        .drawer-dim { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(2px); }
+        .drawer-panel {
+            position: relative; z-index: 10; width: 280px; max-width: 85vw; height: 100%;
+            background: #ffffff; border-right: 1px solid #e2e8f0;
+            display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(15,23,42,0.18);
+        }
+        .drawer-head {
+            height: 56px; padding: 0 18px; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; justify-content: space-between; font-weight: 700;
+        }
+        .drawer-user { padding: 16px; background: #f8fafc; border-bottom: 1px solid #f1f5f9; }
+        .drawer-nav { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
+        .drawer-item {
+            min-height: 44px; padding: 0 14px; border: none; border-radius: 12px;
+            background: transparent; text-align: left; font-size: 0.88rem; font-weight: 500;
+            color: #334155; cursor: pointer; display: flex; align-items: center; gap: 10px;
+        }
+        .drawer-item:hover { background: #f1f5f9; }
+        .drawer-item.active { background: #f0fdfa; color: #115e59; font-weight: 600; }
+        .drawer-foot { padding: 12px; border-top: 1px solid #e2e8f0; }
+
+        .container { max-width: 1152px; margin: 0 auto; padding: 20px 18px 92px; }
         .notice {
+            position: fixed;
+            top: 66px;
+            right: 16px;
+            left: 16px;
+            max-width: 380px;
+            margin-left: auto;
+            z-index: 80;
             padding: 12px 16px;
-            border-radius: 10px;
-            font-size: 0.86rem;
-            margin-bottom: 18px;
-            border: 1px solid #bae6fd;
-            background: #f0f9ff;
-            color: #0c4a6e;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #ffffff;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.25);
             display: none;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
         }
-        .notice.error { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
-        .notice.success { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+        .notice.error { background: #7f1d1d; border-color: #b91c1c; color: #ffffff; }
+        .notice.success { background: #064e3b; border-color: #047857; color: #ffffff; }
+        .notice .mini-btn { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.22); color: #ffffff; }
+
         .panel { display: none; }
-        .panel.active { display: grid; grid-template-columns: 390px 1fr; gap: 24px; align-items: start; }
-        .panel.wallet-active { display: block; }
-        .card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 22px;
-        }
-        .card-header { margin-bottom: 16px; }
-        .card-header h2 { font-size: 1.05rem; font-weight: 700; color: #0f172a; }
-        .card-header p { font-size: 0.78rem; color: #64748b; margin-top: 3px; }
-        .form-group { margin-bottom: 12px; }
-        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-        .form-group label { display: block; font-size: 0.76rem; font-weight: 600; color: #334155; margin-bottom: 4px; }
-        .label-row label { margin-bottom: 0; }
-        .mini-btn {
-            border: none;
-            background: #e0f2fe;
-            color: #075985;
-            font-size: 0.72rem;
-            font-weight: 600;
-            padding: 3px 8px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 9px 11px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 0.88rem;
-            color: #0f172a;
-            background: #fff;
-        }
-        .form-group input:focus {
-            outline: none;
-            border-color: #075985;
-            box-shadow: 0 0 0 3px rgba(7, 89, 133, 0.12);
-        }
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn {
-            width: 100%;
-            padding: 10px 14px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.88rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.15s;
-        }
-        .btn-gen { background: #075985; color: #fff; margin-top: 6px; }
-        .btn-gen:hover { background: #0c4a6e; }
-        .btn-dl { background: #f1f5f9; color: #1e293b; border: 1px solid #e2e8f0; }
-        .btn-dl:hover { background: #e2e8f0; }
-        .btn-dl:disabled, .btn-gen:disabled { opacity: 0.45; cursor: not-allowed; }
-        .dl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .preview-box {
-            background: #f1f5f9;
-            border-radius: 10px;
-            padding: 16px;
+        .panel.active { display: block; }
+
+        /* Home Hero & 3 Cards */
+        .hero-banner {
+            background: linear-gradient(120deg, #0f172a 0%, #134e4a 60%, #0f766e 100%);
+            color: #fff;
+            border-radius: 18px;
+            padding: 26px;
+            margin-bottom: 20px;
             display: flex;
-            justify-content: center;
-            overflow: auto;
-            position: relative;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
         }
-        canvas { display: block; width: 100%; max-width: 720px; height: auto; background: #fff; border-radius: 6px; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08); }
-        .table-card {
+        .hero-banner h1 { font-size: 1.4rem; font-weight: 700; }
+        .hero-banner p { font-size: 0.85rem; color: rgba(204, 251, 241, 0.85); margin-top: 4px; }
+        .btn-gold {
+            padding: 10px 16px; border: none; border-radius: 12px;
+            background: #fbbf24; color: #0f172a; font-size: 0.84rem; font-weight: 700; cursor: pointer;
+        }
+        .btn-gold:hover { background: #fcd34d; }
+        .home-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+        @media (max-width: 820px) { .home-cards { grid-template-columns: 1fr; } }
+        .launcher-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        .table-card-head {
-            padding: 16px 20px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .table-card-head h3 { font-size: 0.96rem; font-weight: 700; color: #0f172a; }
-        .table-card-head p { font-size: 0.78rem; color: #64748b; margin-top: 2px; }
-        .table-wrap { overflow-x: auto; }
-        table.data-table {
-            width: 100%;
-            border-collapse: collapse;
+            border-radius: 18px;
+            padding: 24px;
             text-align: left;
-            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 22px;
+            transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
         }
+        .launcher-card:hover {
+            transform: translateY(-2px);
+            border-color: #0f766e;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+        }
+        .launcher-top { display: flex; justify-content: space-between; align-items: flex-start; }
+        .launcher-icon {
+            width: 48px; height: 48px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .launcher-icon.teal { background: #f0fdfa; color: #0f766e; }
+        .launcher-icon.slate { background: #f1f5f9; color: #0f172a; }
+        .launcher-icon.amber { background: #fffbeb; color: #d97706; }
+        .launcher-cost { font-size: 0.76rem; font-weight: 700; color: #0f766e; }
+        .launcher-card h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+        .launcher-card p { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+        .launcher-foot {
+            padding-top: 12px; border-top: 1px solid #f1f5f9;
+            font-size: 0.8rem; font-weight: 700; color: #0f766e;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* Back bar + Entry Table */
+        .sub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .back-btn {
+            background: none; border: none; font-size: 0.88rem; font-weight: 700;
+            color: #334155; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; min-height: 40px;
+        }
+        .back-btn:hover { color: #0f766e; }
+        .form-shell {
+            max-width: 780px; margin: 0 auto; background: #fff;
+            border: 1px solid #e2e8f0; border-radius: 18px; overflow: hidden;
+        }
+        .form-shell-head {
+            padding: 16px 20px; border-bottom: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .form-shell-head h2 { font-size: 1rem; font-weight: 700; }
+        table.entry-table { width: 100%; border-collapse: collapse; }
+        table.entry-table tr { border-bottom: 1px solid #f1f5f9; }
+        table.entry-table tr:last-child { border-bottom: none; }
+        table.entry-table th {
+            width: 35%; text-align: left; padding: 12px 18px;
+            font-size: 0.8rem; font-weight: 600; color: #334155; background: #f8fafc;
+        }
+        table.entry-table td { padding: 10px 18px; background: #fff; }
+        table.entry-table input {
+            width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1;
+            border-radius: 10px; font-size: 0.88rem; color: #0f172a;
+        }
+        table.entry-table input:focus { outline: none; border-color: #0f766e; box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12); }
+        @media (max-width: 640px) {
+            table.entry-table, table.entry-table tbody, table.entry-table tr, table.entry-table th, table.entry-table td {
+                display: block; width: 100%;
+            }
+            table.entry-table th { background: #fff; padding: 10px 16px 4px; }
+            table.entry-table td { padding: 4px 16px 12px; }
+        }
+        .form-shell-foot { padding: 16px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
+
+        .btn {
+            width: 100%; min-height: 46px; padding: 11px 16px; border: none;
+            border-radius: 12px; font-size: 0.9rem; font-weight: 700; cursor: pointer;
+        }
+        .btn-gen { background: #0f766e; color: #fff; }
+        .btn-gen:hover { background: #115e59; }
+        .btn-gen:disabled { opacity: 0.45; cursor: not-allowed; }
+        .mini-btn {
+            border: none; background: #f0fdfa; color: #0f766e; font-size: 0.75rem;
+            font-weight: 700; padding: 7px 12px; border-radius: 9px; cursor: pointer;
+        }
+        .mini-btn:hover { background: #ccfbf1; }
+
+        /* Result Certificate Card */
+        .result-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; padding: 20px; }
+        .result-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 16px; }
+        .action-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+        .btn-sm { padding: 8px 14px; border: none; border-radius: 10px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+        .btn-sm.slate { background: #f1f5f9; color: #1e293b; }
+        .btn-sm.teal { background: #0f766e; color: #fff; }
+        .btn-sm.dark { background: #0f172a; color: #fff; }
+        .preview-box { background: #f1f5f9; border-radius: 12px; padding: 14px; display: flex; justify-content: center; overflow: auto; }
+        canvas { display: block; width: 100%; max-width: 720px; height: auto; background: #fff; border-radius: 6px; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08); }
+
+        /* Wallet & Profile Tables */
+        .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; padding: 20px; }
+        .table-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; overflow: hidden; }
+        .table-card-head { padding: 16px 20px; border-bottom: 1px solid #e2e8f0; }
+        .table-card-head h3 { font-size: 0.96rem; font-weight: 700; }
+        .table-wrap { overflow-x: auto; }
+        table.data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
         table.data-table th {
-            background: #f8fafc;
-            color: #475569;
-            font-size: 0.74rem;
-            font-weight: 600;
-            padding: 11px 16px;
-            border-bottom: 1px solid #e2e8f0;
-            white-space: nowrap;
+            background: #f8fafc; color: #475569; font-size: 0.74rem; font-weight: 600;
+            padding: 11px 16px; border-bottom: 1px solid #e2e8f0; white-space: nowrap;
         }
-        table.data-table td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #f1f5f9;
-            color: #1e293b;
-        }
+        table.data-table td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
         table.data-table tbody tr:last-child td { border-bottom: none; }
-        table.data-table tbody tr:hover { background: #f8fafc; }
-        table.data-table tbody tr.selected-row { background: #f0f9ff; }
+        table.data-table tbody tr:hover { background: #f0fdfa; }
+        table.data-table tbody tr.selected-row { background: #ccfbf1; }
         .text-right { text-align: right; }
-        .wallet-grid { display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start; }
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
-        .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; }
-        .stat-card .k { font-size: 0.75rem; font-weight: 600; color: #64748b; }
-        .stat-card .v { font-size: 1.4rem; font-weight: 700; color: #0f172a; margin-top: 4px; }
-        .stat-card .s { font-size: 0.74rem; color: #64748b; margin-top: 4px; }
-        .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+        .wallet-grid { display: grid; grid-template-columns: 1fr 360px; gap: 20px; align-items: start; }
+        .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 18px; }
+        @media (max-width: 900px) { .wallet-grid, .history-grid { grid-template-columns: 1fr; } }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 0.76rem; font-weight: 600; color: #334155; margin-bottom: 4px; }
+        .form-group input {
+            width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1;
+            border-radius: 10px; font-size: 0.88rem; color: #0f172a; background: #fff;
+        }
+
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 58px; z-index: 40;
+            background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(10px);
+            border-top: 1px solid #e2e8f0;
+        }
+        .bottom-nav-inner {
+            max-width: 680px; margin: 0 auto; height: 100%;
+            display: grid; grid-template-columns: repeat(5, 1fr); align-items: center;
+        }
+        .bnav-btn {
+            height: 100%; border: none; background: transparent; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 2px; color: #64748b; font-size: 0.68rem; font-weight: 500;
+        }
+        .bnav-btn.active { color: #0f766e; font-weight: 700; }
+
+        /* Modal */
         .modal-backdrop {
             position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55);
-            display: none; align-items: center; justify-content: center; padding: 16px; z-index: 60;
+            display: none; align-items: center; justify-content: center; padding: 16px; z-index: 70;
         }
         .modal-backdrop.open { display: flex; }
-        .modal-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; max-width: 420px; width: 100%; padding: 24px; }
-        .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: #f1f5f9; padding: 4px; border-radius: 8px; margin: 14px 0; }
-        .auth-tab { border: none; background: transparent; padding: 7px; font-size: 0.8rem; font-weight: 600; color: #475569; border-radius: 6px; cursor: pointer; }
+        .modal-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; max-width: 420px; width: 100%; padding: 24px; }
+        .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: #f1f5f9; padding: 4px; border-radius: 10px; margin: 14px 0; }
+        .auth-tab { border: none; background: transparent; padding: 7px; font-size: 0.8rem; font-weight: 600; color: #475569; border-radius: 7px; cursor: pointer; }
         .auth-tab.active { background: #fff; color: #0f172a; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
-        @media (max-width: 960px) {
-            .panel.active, .wallet-grid, .history-grid, .stats-grid { grid-template-columns: 1fr; }
-        }
     </style>
 <script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
 <body>
     <header class="topbar">
         <div class="topbar-inner">
-            <div class="brand">TRA Document Filler</div>
+            <div class="brand-wrap">
+                <button class="icon-btn" aria-label="Menyu" onclick="toggleDrawer(true)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+                <button class="brand" onclick="switchView('home')">MALIMI COPY</button>
+            </div>
             <nav class="nav">
-                <button class="tab-btn active" onclick="switchTab('tin', this)">TIN Certificate</button>
-                <button class="tab-btn" onclick="switchTab('bl', this)">Business License</button>
-                <button class="tab-btn" onclick="switchTab('wallet', this)">Buy Coins &amp; Plans</button>
+                <button class="tab-btn active" data-view="home" onclick="switchView('home')">Home</button>
+                <button class="tab-btn" data-view="tin" onclick="switchView('tin')">TIN Certificate</button>
+                <button class="tab-btn" data-view="bl" onclick="switchView('bl')">Business License</button>
+                <button class="tab-btn" data-view="wallet" onclick="switchView('wallet')">Buy Coins</button>
+                <button class="tab-btn" data-view="profile" onclick="switchView('profile')">Profile</button>
             </nav>
-            <div class="wallet-bar">
-                <button id="walletChip" class="coin-chip mono" onclick="switchTab('wallet', document.querySelectorAll('.tab-btn')[2])">0 Coins</button>
-                <button id="authActionBtn" class="btn-primary-sm" onclick="openAuthModal('register')">Sign In / 10 Free Coins</button>
-                <button id="logoutBtn" class="btn-ghost-sm" style="display:none;" onclick="logoutUser()">Sign Out</button>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <button id="walletChip" class="coin-chip mono" style="display:none;" onclick="switchView('wallet')">0 Coins</button>
+                <button id="authActionBtn" class="btn-primary-sm" onclick="openAuthModal('register')">Ingia / Jisajili</button>
             </div>
         </div>
     </header>
 
+    <!-- HAMBURGER DRAWER -->
+    <div id="drawerBackdrop" class="drawer-backdrop">
+        <div class="drawer-dim" onclick="toggleDrawer(false)"></div>
+        <aside class="drawer-panel">
+            <div class="drawer-head">
+                <span>MALIMI COPY</span>
+                <button class="icon-btn" aria-label="Funga" onclick="toggleDrawer(false)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div id="drawerUserBox" class="drawer-user">
+                <button class="btn btn-gen" style="min-height:40px;font-size:0.8rem;" onclick="toggleDrawer(false);openAuthModal('register')">Fungua Akaunti (Coin 10 Bure)</button>
+            </div>
+            <div class="drawer-nav">
+                <button class="drawer-item active" data-view="home" onclick="switchView('home');toggleDrawer(false)">Nyumbani</button>
+                <button class="drawer-item" data-view="tin" onclick="switchView('tin');toggleDrawer(false)">TIN Certificate</button>
+                <button class="drawer-item" data-view="bl" onclick="switchView('bl');toggleDrawer(false)">Business License</button>
+                <button class="drawer-item" data-view="wallet" onclick="switchView('wallet');toggleDrawer(false)">Buy Coins</button>
+                <button class="drawer-item" data-view="profile" onclick="switchView('profile');toggleDrawer(false)">Profile</button>
+            </div>
+            <div class="drawer-foot" id="drawerFoot" style="display:none;">
+                <button class="drawer-item" style="color:#b91c1c;" onclick="logoutUser();toggleDrawer(false)">Toka (Sign Out)</button>
+            </div>
+        </aside>
+    </div>
+
     <main class="container">
         <div id="globalNotice" class="notice">
             <span id="globalNoticeText"></span>
-            <button class="mini-btn" onclick="hideNotice()">Close</button>
+            <button class="mini-btn" onclick="hideNotice()">Funga</button>
         </div>
 
-        <!-- TIN PANEL -->
-        <div id="tin-panel" class="panel active">
-            <section class="card">
-                <div class="card-header">
-                    <h2>TRA TIN Certificate</h2>
-                    <p>Gharama: Coin 5 kwa kila hati (au 0 kwa Unlimited)</p>
+        <!-- 1. HOME 3 CARDS -->
+        <div id="home-panel" class="panel active">
+            <div class="hero-banner">
+                <div>
+                    <h1>Huduma za Hati</h1>
+                    <p>Chagua huduma hapa chini kuendelea.</p>
                 </div>
-                <div class="form-group">
-                    <label>Jina la Mlipakodi *</label>
-                    <input type="text" id="tin_name" value="ANTHONY KIDIMA SENI">
+                <div id="heroRight">
+                    <button class="btn-gold" onclick="openAuthModal('register')">Jisajili Upate Coin 10 Bure</button>
                 </div>
-                <div class="form-group">
-                    <label>Namba ya TIN *</label>
-                    <input type="text" id="tin_number" class="mono" value="211-724-390">
-                </div>
-                <div class="form-group">
-                    <label>With Effect From</label>
-                    <input type="date" id="tin_date" class="mono" value="2026-10-20">
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <label>TRA Location</label>
-                        <input type="text" id="tin_tra" value="SIMIYU">
+            </div>
+
+            <div class="home-cards">
+                <button class="launcher-card" onclick="switchView('tin')">
+                    <div class="launcher-top">
+                        <div class="launcher-icon teal">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>
+                        </div>
+                        <span class="launcher-cost mono">5 Coins</span>
                     </div>
-                    <div class="form-group">
-                        <label>Tax Office</label>
-                        <input type="text" id="tin_office" value="SIMIYU TAX CENTRE">
+                    <div>
+                        <h2>TIN Certificate</h2>
+                        <p>Jaza taarifa kisha Generate</p>
                     </div>
+                    <div class="launcher-foot"><span>Fungua Fomu</span><span>&rarr;</span></div>
+                </button>
+
+                <button class="launcher-card" onclick="switchView('bl')">
+                    <div class="launcher-top">
+                        <div class="launcher-icon slate">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01"/></svg>
+                        </div>
+                        <span class="launcher-cost mono" style="color:#334155;">5 Coins</span>
+                    </div>
+                    <div>
+                        <h2>Business License</h2>
+                        <p>Auto B.L. NO &amp; QR Code</p>
+                    </div>
+                    <div class="launcher-foot" style="color:#1e293b;"><span>Fungua Fomu</span><span>&rarr;</span></div>
+                </button>
+
+                <button class="launcher-card" onclick="switchView('wallet')">
+                    <div class="launcher-top">
+                        <div class="launcher-icon amber">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/></svg>
+                        </div>
+                        <span class="launcher-cost" style="color:#b45309;">Dalipay</span>
+                    </div>
+                    <div>
+                        <h2>Buy Coins</h2>
+                        <p>Vifurushi na Unlimited</p>
+                    </div>
+                    <div class="launcher-foot" style="color:#b45309;"><span>Nunua Coin</span><span>&rarr;</span></div>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. TIN PANEL (FORM FIRST -> GENERATE -> REVEAL) -->
+        <div id="tin-panel" class="panel">
+            <div class="sub-header">
+                <button class="back-btn" onclick="switchView('home')">&larr; Rudi</button>
+                <span class="mono" style="font-size:0.78rem;color:#64748b;font-weight:600;">TIN Certificate · 5 Coins</span>
+            </div>
+
+            <section id="tinFormSection" class="form-shell">
+                <div class="form-shell-head">
+                    <h2>Jaza Taarifa za TIN</h2>
+                    <button class="mini-btn" onclick="resetTinForm()">Reset</button>
                 </div>
-                <div class="form-group">
-                    <label>Physical Location</label>
-                    <input type="text" id="tin_phys" value="MALAMBO">
-                </div>
-                <div class="form-group">
-                    <label>Street / Area</label>
-                    <input type="text" id="tin_street" value="MALAMBO">
-                </div>
-                <button class="btn btn-gen" id="tin_gen_btn" onclick="unlockAndGenerate('tin')">Generate TIN (-5 Coins)</button>
-                <div class="dl-row">
-                    <button class="btn btn-dl" id="tin_dl_png" onclick="downloadTIN('png')" disabled>Download PNG</button>
-                    <button class="btn btn-dl" id="tin_dl_pdf" onclick="downloadTIN('pdf')" disabled>Download PDF (A4)</button>
+                <table class="entry-table">
+                    <tbody>
+                        <tr><th><label for="tin_name">Jina la Mlipakodi</label></th><td><input type="text" id="tin_name" value="ANTHONY KIDIMA SENI"></td></tr>
+                        <tr><th><label for="tin_number">Namba ya TIN</label></th><td><input type="text" id="tin_number" class="mono" value="211-724-390"></td></tr>
+                        <tr><th><label for="tin_date">With Effect From</label></th><td><input type="date" id="tin_date" class="mono" value="2026-10-20"></td></tr>
+                        <tr><th><label for="tin_tra">TRA Location</label></th><td><input type="text" id="tin_tra" value="SIMIYU"></td></tr>
+                        <tr><th><label for="tin_office">Tax Office</label></th><td><input type="text" id="tin_office" value="SIMIYU TAX CENTRE"></td></tr>
+                        <tr><th><label for="tin_phys">Physical Location</label></th><td><input type="text" id="tin_phys" value="MALAMBO"></td></tr>
+                        <tr><th><label for="tin_street">Street / Area</label></th><td><input type="text" id="tin_street" value="MALAMBO"></td></tr>
+                    </tbody>
+                </table>
+                <div class="form-shell-foot">
+                    <button class="btn btn-gen" id="tin_gen_btn" onclick="unlockAndGenerate('tin')">Generate TIN (-5 Coins)</button>
                 </div>
             </section>
-            <section class="card">
-                <div class="card-header">
-                    <h2>Preview – TIN Certificate</h2>
-                    <p>3× HiDPI A4 · Michael T. Muhoja signature</p>
+
+            <section id="tinResultSection" class="result-card" style="display:none;">
+                <div class="result-bar">
+                    <h2 style="font-size:1rem;font-weight:700;">TIN Certificate</h2>
+                    <div class="action-pills">
+                        <button class="btn-sm slate" onclick="editDocument('tin')">Hariri</button>
+                        <button class="btn-sm teal" onclick="downloadTIN('png')">Download PNG</button>
+                        <button class="btn-sm dark" onclick="downloadTIN('pdf')">Download PDF</button>
+                    </div>
                 </div>
                 <div class="preview-box">
                     <canvas id="tinCanvas" width="2160" height="3009"></canvas>
@@ -299,82 +479,48 @@
             </section>
         </div>
 
-        <!-- BUSINESS LICENSE PANEL -->
+        <!-- 3. BUSINESS LICENSE PANEL (FORM FIRST -> GENERATE -> REVEAL) -->
         <div id="bl-panel" class="panel">
-            <section class="card">
-                <div class="card-header">
-                    <h2>Business License</h2>
-                    <p>Gharama: Coin 5 kwa kila hati · Auto B.L. NO &amp; Dynamic QR</p>
+            <div class="sub-header">
+                <button class="back-btn" onclick="switchView('home')">&larr; Rudi</button>
+                <span class="mono" style="font-size:0.78rem;color:#64748b;font-weight:600;">Business License · 5 Coins</span>
+            </div>
+
+            <section id="blFormSection" class="form-shell">
+                <div class="form-shell-head">
+                    <h2>Jaza Taarifa za Leseni</h2>
+                    <button class="mini-btn" onclick="refreshBlNo()">B.L. No Mpya</button>
                 </div>
-                <div class="form-group">
-                    <div class="label-row">
-                        <label for="bl_no">B.L. Number (Auto)</label>
-                        <button type="button" class="mini-btn" onclick="refreshBlNo()">New B.L. No</button>
-                    </div>
-                    <input type="text" id="bl_no" class="mono" value="">
-                </div>
-                <div class="form-group">
-                    <label>Issuing Office</label>
-                    <input type="text" id="bl_office" value="KIGOMA">
-                </div>
-                <div class="form-group">
-                    <label>Tax Identification No</label>
-                    <input type="text" id="bl_tin" class="mono" value="128-624-855">
-                </div>
-                <div class="form-group">
-                    <label>License Issued To</label>
-                    <input type="text" id="bl_name" value="HAMIS JUMA JOHNSTONE">
-                </div>
-                <div class="form-group">
-                    <label>For the Business of</label>
-                    <input type="text" id="bl_business" value="BOOKSTORE AND STATIONERY - DISTRICT">
-                </div>
-                <div class="form-group">
-                    <label>Business Licensing</label>
-                    <input type="text" id="bl_type" value="NEW LICENSE">
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <label>Date of Issue</label>
-                        <input type="date" id="bl_issue" class="mono" value="2026-10-25">
-                    </div>
-                    <div class="form-group">
-                        <label>Expiring Date</label>
-                        <input type="date" id="bl_expire" class="mono" value="2027-10-24">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Principal / Branch</label>
-                    <input type="text" id="bl_principal" value="PRINCIPAL">
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <label>Region</label>
-                        <input type="text" id="bl_region" value="Kigoma">
-                    </div>
-                    <div class="form-group">
-                        <label>Ward</label>
-                        <input type="text" id="bl_ward" value="Kakonko">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Street</label>
-                    <input type="text" id="bl_street" value="Kasanda">
-                </div>
-                <div class="form-group">
-                    <label>Amount of Fee Paid</label>
-                    <input type="text" id="bl_fee" class="mono" value="70000">
-                </div>
-                <button class="btn btn-gen" id="bl_gen_btn" onclick="unlockAndGenerate('bl')">Generate License (-5 Coins)</button>
-                <div class="dl-row">
-                    <button class="btn btn-dl" id="bl_dl_png" onclick="downloadBL('png')" disabled>Download PNG</button>
-                    <button class="btn btn-dl" id="bl_dl_pdf" onclick="downloadBL('pdf')" disabled>Download PDF (A4)</button>
+                <table class="entry-table">
+                    <tbody>
+                        <tr><th><label for="bl_no">B.L. Number</label></th><td><input type="text" id="bl_no" class="mono" value=""></td></tr>
+                        <tr><th><label for="bl_office">Issuing Office</label></th><td><input type="text" id="bl_office" value="KIGOMA"></td></tr>
+                        <tr><th><label for="bl_tin">Tax Identification No</label></th><td><input type="text" id="bl_tin" class="mono" value="128-624-855"></td></tr>
+                        <tr><th><label for="bl_name">License Issued To</label></th><td><input type="text" id="bl_name" value="HAMIS JUMA JOHNSTONE"></td></tr>
+                        <tr><th><label for="bl_business">For the Business of</label></th><td><input type="text" id="bl_business" value="BOOKSTORE AND STATIONERY - DISTRICT"></td></tr>
+                        <tr><th><label for="bl_type">Business Licensing</label></th><td><input type="text" id="bl_type" value="NEW LICENSE"></td></tr>
+                        <tr><th><label for="bl_principal">Principal / Branch</label></th><td><input type="text" id="bl_principal" value="PRINCIPAL"></td></tr>
+                        <tr><th><label for="bl_issue">Date of Issue</label></th><td><input type="date" id="bl_issue" class="mono" value="2026-10-25"></td></tr>
+                        <tr><th><label for="bl_expire">Expiring Date</label></th><td><input type="date" id="bl_expire" class="mono" value="2027-10-24"></td></tr>
+                        <tr><th><label for="bl_region">Region</label></th><td><input type="text" id="bl_region" value="Kigoma"></td></tr>
+                        <tr><th><label for="bl_ward">Ward</label></th><td><input type="text" id="bl_ward" value="Kakonko"></td></tr>
+                        <tr><th><label for="bl_street">Street</label></th><td><input type="text" id="bl_street" value="Kasanda"></td></tr>
+                        <tr><th><label for="bl_fee">Amount of Fee Paid</label></th><td><input type="text" id="bl_fee" class="mono" value="70000"></td></tr>
+                    </tbody>
+                </table>
+                <div class="form-shell-foot">
+                    <button class="btn btn-gen" id="bl_gen_btn" onclick="unlockAndGenerate('bl')">Generate License (-5 Coins)</button>
                 </div>
             </section>
-            <section class="card">
-                <div class="card-header">
-                    <h2>Preview – Business License</h2>
-                    <p>3× HiDPI A4 · Open Sans 12.5px SemiBold</p>
+
+            <section id="blResultSection" class="result-card" style="display:none;">
+                <div class="result-bar">
+                    <h2 style="font-size:1rem;font-weight:700;">Business License</h2>
+                    <div class="action-pills">
+                        <button class="btn-sm slate" onclick="editDocument('bl')">Hariri</button>
+                        <button class="btn-sm teal" onclick="downloadBL('png')">Download PNG</button>
+                        <button class="btn-sm dark" onclick="downloadBL('pdf')">Download PDF</button>
+                    </div>
                 </div>
                 <div class="preview-box">
                     <canvas id="blCanvas" width="2160" height="3030"></canvas>
@@ -382,39 +528,23 @@
             </section>
         </div>
 
-        <!-- WALLET & DALIPAY PANEL -->
+        <!-- 4. BUY COINS PANEL -->
         <div id="wallet-panel" class="panel">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="k">Salio la Coin</div>
-                    <div class="v mono" id="statCoins">0 Coins</div>
-                    <div class="s">Kila generation ni coin 5</div>
-                </div>
-                <div class="stat-card">
-                    <div class="k">Mpango wa Unlimited</div>
-                    <div class="v" id="statUnlimited">Standard</div>
-                    <div class="s" id="statUnlimitedSub">TZS 30,000 (30d) / TZS 50,000 (55d)</div>
-                </div>
-                <div class="stat-card">
-                    <div class="k">Ofa ya Kuanza</div>
-                    <div class="v mono">10 Free Coins</div>
-                    <div class="s">Mara moja kwa kifaa (device_id + Cookie)</div>
-                </div>
+            <div class="sub-header">
+                <button class="back-btn" onclick="switchView('home')">&larr; Rudi</button>
+                <span class="mono" id="walletTopBalance" style="font-size:0.78rem;color:#64748b;font-weight:600;">Dalipay Checkout</span>
             </div>
 
             <div class="wallet-grid">
                 <div class="table-card">
-                    <div class="table-card-head">
-                        <h3>Vifurushi vya Coin &amp; Unlimited (Dalipay)</h3>
-                        <p>Bonyeza kifurushi kisha thibitisha malipo kwa simu.</p>
-                    </div>
+                    <div class="table-card-head"><h3>Vifurushi vya Coin &amp; Unlimited</h3></div>
                     <div class="table-wrap">
                         <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>Kifurushi</th>
                                     <th>Maelezo</th>
-                                    <th class="text-right">Bei (TZS)</th>
+                                    <th class="text-right">TZS</th>
                                     <th class="text-right">Chagua</th>
                                 </tr>
                             </thead>
@@ -424,59 +554,108 @@
                 </div>
 
                 <div class="card">
-                    <div class="card-header">
-                        <h2>Lipa kwa Dalipay</h2>
-                        <p>M-Pesa · Tigo Pesa/Yas · Airtel Money · HaloPesa</p>
-                    </div>
+                    <h2 style="font-size:1rem;font-weight:700;margin-bottom:12px;">Lipa kwa Dalipay</h2>
                     <div class="form-group">
                         <label>Kifurushi</label>
                         <input type="text" id="selectedPkgLabel" readonly value="22 Coins — TZS 2,000">
                     </div>
                     <div class="form-group" id="customAmountGroup" style="display:none;">
-                        <label>Kiasi cha TZS (Kuanzia 1,000)</label>
+                        <label>Kiasi (TZS 1,000+)</label>
                         <input type="number" id="customAmountInput" class="mono" min="1000" step="500" value="15000" oninput="updateSelectedPackageUI()">
                     </div>
                     <div class="form-group">
-                        <label>Namba ya Simu ya Malipo</label>
+                        <label>Namba ya Simu</label>
                         <input type="tel" id="dalipayPhone" class="mono" placeholder="0754123456">
                     </div>
-                    <button class="btn btn-gen" id="dalipayBtn" onclick="startDalipayPayment()">Lipa sasa na Dalipay</button>
+                    <button class="btn btn-gen" id="dalipayBtn" onclick="startDalipayPayment()">Lipa Sasa</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. PROFILE PANEL -->
+        <div id="profile-panel" class="panel">
+            <div id="profileGuest" class="card" style="max-width:420px;margin:20px auto;text-align:center;">
+                <h2 style="font-size:1.1rem;font-weight:700;">Akaunti Yako</h2>
+                <p style="font-size:0.82rem;color:#64748b;margin:6px 0 18px;">Ingia au fungua akaunti upate coin 10 za bure.</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <button class="btn btn-gen" style="min-height:42px;" onclick="openAuthModal('register')">Jisajili</button>
+                    <button class="btn" style="min-height:42px;background:#f1f5f9;color:#0f172a;" onclick="openAuthModal('login')">Ingia</button>
                 </div>
             </div>
 
-            <div class="history-grid">
-                <div class="table-card">
-                    <div class="table-card-head"><h3>Historia ya Malipo</h3></div>
-                    <div class="table-wrap">
-                        <table class="data-table">
-                            <thead><tr><th>Reference</th><th>Kifurushi</th><th class="text-right">TZS</th><th>Hali</th></tr></thead>
-                            <tbody id="paymentsTbody"><tr><td colspan="4" style="text-align:center;color:#64748b;">Ingia kuona historia yako.</td></tr></tbody>
-                        </table>
+            <div id="profileAuthed" style="display:none;">
+                <div class="card" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;">
+                    <div>
+                        <h2 id="profName" style="font-size:1.1rem;font-weight:700;"></h2>
+                        <p id="profEmail" style="font-size:0.8rem;color:#64748b;margin-top:2px;"></p>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                        <span id="profBalance" class="mono" style="font-weight:700;color:#0f766e;margin-right:6px;"></span>
+                        <button class="btn-sm teal" onclick="switchView('wallet')">Ongeza Coin</button>
+                        <button class="btn-sm" style="background:#fef2f2;color:#b91c1c;" onclick="logoutUser()">Toka</button>
                     </div>
                 </div>
-                <div class="table-card">
-                    <div class="table-card-head"><h3>Historia ya Hati</h3></div>
-                    <div class="table-wrap">
-                        <table class="data-table">
-                            <thead><tr><th>Hati</th><th class="text-right">Coin</th></tr></thead>
-                            <tbody id="generationsTbody"><tr><td colspan="2" style="text-align:center;color:#64748b;">Ingia kuona historia yako.</td></tr></tbody>
-                        </table>
+
+                <div class="history-grid">
+                    <div class="table-card">
+                        <div class="table-card-head"><h3>Historia ya Malipo</h3></div>
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead><tr><th>Reference</th><th>Kifurushi</th><th class="text-right">TZS</th><th>Hali</th></tr></thead>
+                                <tbody id="paymentsTbody"><tr><td colspan="4" style="text-align:center;color:#64748b;">Hakuna malipo bado.</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-card">
+                        <div class="table-card-head"><h3>Historia ya Hati</h3></div>
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead><tr><th>Hati</th><th class="text-right">Coins</th></tr></thead>
+                                <tbody id="generationsTbody"><tr><td colspan="2" style="text-align:center;color:#64748b;">Bado hujatengeneza hati.</td></tr></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- BOTTOM NAVIGATION BAR -->
+    <nav class="bottom-nav" aria-label="Urambazaji wa chini">
+        <div class="bottom-nav-inner">
+            <button class="bnav-btn active" data-view="home" onclick="switchView('home')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span>Home</span>
+            </button>
+            <button class="bnav-btn" data-view="tin" onclick="switchView('tin')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="m9 15 2 2 4-4"/></svg>
+                <span>TIN</span>
+            </button>
+            <button class="bnav-btn" data-view="bl" onclick="switchView('bl')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/></svg>
+                <span>Leseni</span>
+            </button>
+            <button class="bnav-btn" data-view="wallet" onclick="switchView('wallet')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/></svg>
+                <span>Coins</span>
+            </button>
+            <button class="bnav-btn" data-view="profile" onclick="switchView('profile')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Profile</span>
+            </button>
+        </div>
+    </nav>
+
     <!-- AUTH MODAL -->
     <div id="authModal" class="modal-backdrop">
         <div class="modal-box">
             <div style="display:flex;justify-content:space-between;align-items:center;">
                 <h3 id="authTitle" style="font-size:1.05rem;font-weight:700;">Fungua Akaunti (10 Free Coins)</h3>
-                <button class="mini-btn" onclick="closeAuthModal()">Close</button>
+                <button class="mini-btn" onclick="closeAuthModal()">Funga</button>
             </div>
             <div class="auth-tabs">
-                <button class="auth-tab active" id="tabReg" onclick="setAuthMode('register')">Register</button>
-                <button class="auth-tab" id="tabLogin" onclick="setAuthMode('login')">Sign In</button>
+                <button class="auth-tab active" id="tabReg" onclick="setAuthMode('register')">Jisajili</button>
+                <button class="auth-tab" id="tabLogin" onclick="setAuthMode('login')">Ingia</button>
             </div>
             <div id="regExtraFields">
                 <div class="form-group">
@@ -512,6 +691,40 @@
         let packagesList = [];
         let deviceIdCache = '';
         let pollTimer = null;
+        let noticeTimer = null;
+
+        function toggleDrawer(open) {
+            document.getElementById('drawerBackdrop').classList.toggle('open', Boolean(open));
+        }
+
+        function switchView(view) {
+            ['home', 'tin', 'bl', 'wallet', 'profile'].forEach(v => {
+                document.getElementById(v + '-panel').classList.toggle('active', v === view);
+            });
+            document.querySelectorAll('[data-view]').forEach(el => {
+                el.classList.toggle('active', el.getAttribute('data-view') === view);
+            });
+        }
+
+        function editDocument(docType) {
+            if (docType === 'tin') {
+                document.getElementById('tinResultSection').style.display = 'none';
+                document.getElementById('tinFormSection').style.display = 'block';
+            } else {
+                document.getElementById('blResultSection').style.display = 'none';
+                document.getElementById('blFormSection').style.display = 'block';
+            }
+        }
+
+        function resetTinForm() {
+            document.getElementById('tin_name').value = 'ANTHONY KIDIMA SENI';
+            document.getElementById('tin_number').value = '211-724-390';
+            document.getElementById('tin_date').value = '2026-10-20';
+            document.getElementById('tin_tra').value = 'SIMIYU';
+            document.getElementById('tin_office').value = 'SIMIYU TAX CENTRE';
+            document.getElementById('tin_phys').value = 'MALAMBO';
+            document.getElementById('tin_street').value = 'MALAMBO';
+        }
 
         async function getDeviceId() {
             if (deviceIdCache) return deviceIdCache;
@@ -536,21 +749,22 @@
         }
 
         function showNotice(text, type = 'info') {
+            if (noticeTimer) {
+                clearTimeout(noticeTimer);
+                noticeTimer = null;
+            }
             const box = document.getElementById('globalNotice');
             box.className = 'notice ' + (type === 'error' ? 'error' : type === 'success' ? 'success' : '');
             document.getElementById('globalNoticeText').textContent = text;
             box.style.display = 'flex';
+            noticeTimer = setTimeout(hideNotice, 2000);
         }
         function hideNotice() {
+            if (noticeTimer) {
+                clearTimeout(noticeTimer);
+                noticeTimer = null;
+            }
             document.getElementById('globalNotice').style.display = 'none';
-        }
-
-        function switchTab(tab, btn) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
-            document.getElementById('tin-panel').className = 'panel' + (tab === 'tin' ? ' active' : '');
-            document.getElementById('bl-panel').className = 'panel' + (tab === 'bl' ? ' active' : '');
-            document.getElementById('wallet-panel').className = 'panel' + (tab === 'wallet' ? ' wallet-active' : '');
         }
 
         function openAuthModal(mode) {
@@ -572,24 +786,82 @@
         function updateUserUI() {
             const chip = document.getElementById('walletChip');
             const authBtn = document.getElementById('authActionBtn');
-            const logoutBtn = document.getElementById('logoutBtn');
+            const drawerUserBox = document.getElementById('drawerUserBox');
+            const drawerFoot = document.getElementById('drawerFoot');
+            const heroRight = document.getElementById('heroRight');
+            const profileGuest = document.getElementById('profileGuest');
+            const profileAuthed = document.getElementById('profileAuthed');
+
+            drawerUserBox.textContent = '';
+            heroRight.textContent = '';
+
             if (currentUser) {
-                chip.textContent = currentUser.isUnlimited ? `Unlimited (${currentUser.coins} Coins)` : `${currentUser.coins} Coins`;
+                const balLabel = currentUser.isUnlimited ? 'Unlimited' : `${currentUser.coins} Coins`;
+                chip.textContent = balLabel;
+                chip.style.display = 'inline-block';
                 authBtn.style.display = 'none';
-                logoutBtn.style.display = 'inline-block';
-                document.getElementById('statCoins').textContent = `${currentUser.coins} Coins`;
-                document.getElementById('statUnlimited').textContent = currentUser.isUnlimited ? 'Active' : 'Standard';
-                document.getElementById('statUnlimitedSub').textContent = currentUser.isUnlimited
-                    ? 'Mpaka ' + new Date(currentUser.unlimitedUntil).toLocaleDateString()
-                    : 'TZS 30,000 (30d) / TZS 50,000 (55d)';
-                document.getElementById('tin_gen_btn').textContent = currentUser.isUnlimited ? 'Generate TIN (Unlimited · 0 Coins)' : 'Generate TIN (-5 Coins)';
-                document.getElementById('bl_gen_btn').textContent = currentUser.isUnlimited ? 'Generate License (Unlimited · 0 Coins)' : 'Generate License (-5 Coins)';
+                drawerFoot.style.display = 'block';
+                document.getElementById('walletTopBalance').textContent = `Salio: ${balLabel}`;
+
+                const pName = document.createElement('div');
+                pName.style.fontWeight = '700';
+                pName.style.fontSize = '0.9rem';
+                pName.textContent = currentUser.fullName;
+                const pMail = document.createElement('div');
+                pMail.style.fontSize = '0.76rem';
+                pMail.style.color = '#64748b';
+                pMail.textContent = currentUser.email;
+                const pBal = document.createElement('div');
+                pBal.className = 'mono';
+                pBal.style.fontSize = '0.78rem';
+                pBal.style.fontWeight = '700';
+                pBal.style.color = '#0f766e';
+                pBal.style.marginTop = '4px';
+                pBal.textContent = `Salio: ${balLabel}`;
+                drawerUserBox.append(pName, pMail, pBal);
+
+                const hLabel = document.createElement('div');
+                hLabel.style.fontSize = '0.75rem';
+                hLabel.style.color = '#99f6e4';
+                hLabel.textContent = 'Salio Lako';
+                const hVal = document.createElement('div');
+                hVal.className = 'mono';
+                hVal.style.fontSize = '1.15rem';
+                hVal.style.fontWeight = '700';
+                hVal.style.color = '#fcd34d';
+                hVal.textContent = balLabel;
+                heroRight.append(hLabel, hVal);
+
+                profileGuest.style.display = 'none';
+                profileAuthed.style.display = 'block';
+                document.getElementById('profName').textContent = currentUser.fullName;
+                document.getElementById('profEmail').textContent = currentUser.phone ? `${currentUser.email} · ${currentUser.phone}` : currentUser.email;
+                document.getElementById('profBalance').textContent = balLabel;
+
+                document.getElementById('tin_gen_btn').textContent = currentUser.isUnlimited ? 'Generate TIN (Unlimited)' : 'Generate TIN (-5 Coins)';
+                document.getElementById('bl_gen_btn').textContent = currentUser.isUnlimited ? 'Generate License (Unlimited)' : 'Generate License (-5 Coins)';
             } else {
-                chip.textContent = '0 Coins';
+                chip.style.display = 'none';
                 authBtn.style.display = 'inline-block';
-                logoutBtn.style.display = 'none';
-                document.getElementById('statCoins').textContent = 'Sign In';
-                document.getElementById('statUnlimited').textContent = 'Standard';
+                drawerFoot.style.display = 'none';
+                document.getElementById('walletTopBalance').textContent = 'Dalipay Checkout';
+
+                const dBtn = document.createElement('button');
+                dBtn.className = 'btn btn-gen';
+                dBtn.style.minHeight = '40px';
+                dBtn.style.fontSize = '0.8rem';
+                dBtn.textContent = 'Fungua Akaunti (Coin 10 Bure)';
+                dBtn.onclick = () => { toggleDrawer(false); openAuthModal('register'); };
+                drawerUserBox.appendChild(dBtn);
+
+                const hBtn = document.createElement('button');
+                hBtn.className = 'btn-gold';
+                hBtn.textContent = 'Jisajili Upate Coin 10 Bure';
+                hBtn.onclick = () => openAuthModal('register');
+                heroRight.appendChild(hBtn);
+
+                profileGuest.style.display = 'block';
+                profileAuthed.style.display = 'none';
                 document.getElementById('tin_gen_btn').textContent = 'Generate TIN (-5 Coins)';
                 document.getElementById('bl_gen_btn').textContent = 'Generate License (-5 Coins)';
             }
@@ -598,10 +870,8 @@
         function logoutUser() {
             authToken = null;
             currentUser = null;
-            document.getElementById('tin_dl_png').disabled = true;
-            document.getElementById('tin_dl_pdf').disabled = true;
-            document.getElementById('bl_dl_png').disabled = true;
-            document.getElementById('bl_dl_pdf').disabled = true;
+            editDocument('tin');
+            editDocument('bl');
             updateUserUI();
             showNotice('Umetoka kwenye akaunti.');
         }
@@ -681,7 +951,7 @@
                 td.colSpan = 4;
                 td.style.textAlign = 'center';
                 td.style.color = '#64748b';
-                td.textContent = 'Hakuna miamala bado.';
+                td.textContent = 'Hakuna malipo bado.';
                 tr.appendChild(td);
                 pt.appendChild(tr);
             }
@@ -720,25 +990,65 @@
 
         function renderPackagesTable() {
             const tbody = document.getElementById('packagesTbody');
-            const rows = packagesList.map(p => {
-                const desc = p.category === 'unlimited' ? `Siku ${p.unlimitedDays} · Unlimited` : `~Hati ${Math.floor(p.coins / 5)} (Coin ${p.coins})`;
+            tbody.textContent = '';
+            packagesList.forEach(p => {
+                const desc = p.category === 'unlimited' ? `Siku ${p.unlimitedDays} · Unlimited` : `~Hati ${Math.floor(p.coins / 5)}`;
                 const sel = selectedPkgId === p.id;
-                return `<tr class="${sel ? 'selected-row' : ''}" onclick="selectPackage('${p.id}')">
-                    <td><strong>${p.label}</strong></td>
-                    <td>${desc}</td>
-                    <td class="text-right mono"><strong>${p.amountTzs.toLocaleString()}</strong></td>
-                    <td class="text-right"><button class="mini-btn" onclick="event.stopPropagation();selectPackage('${p.id}')">${sel ? 'Selected' : 'Select'}</button></td>
-                </tr>`;
-            }).join('');
+                const tr = document.createElement('tr');
+                if (sel) tr.className = 'selected-row';
+                tr.style.cursor = 'pointer';
+                tr.onclick = () => selectPackage(p.id);
+
+                const tdName = document.createElement('td');
+                tdName.style.fontWeight = '700';
+                tdName.textContent = String(p.label || '');
+                const tdDesc = document.createElement('td');
+                tdDesc.className = 'mono';
+                tdDesc.style.fontSize = '0.76rem';
+                tdDesc.textContent = desc;
+                const tdAmt = document.createElement('td');
+                tdAmt.className = 'text-right mono';
+                tdAmt.style.fontWeight = '700';
+                tdAmt.textContent = Number(p.amountTzs || 0).toLocaleString();
+                const tdAct = document.createElement('td');
+                tdAct.className = 'text-right';
+                const btn = document.createElement('button');
+                btn.className = 'mini-btn';
+                btn.textContent = sel ? 'Umechagua' : 'Chagua';
+                btn.onclick = (e) => { e.stopPropagation(); selectPackage(p.id); };
+                tdAct.appendChild(btn);
+                tr.append(tdName, tdDesc, tdAmt, tdAct);
+                tbody.appendChild(tr);
+            });
+
             const customSel = selectedPkgId === 'custom';
             const amt = Math.max(0, Number(document.getElementById('customAmountInput').value) || 0);
             const customCoins = Math.floor((amt / 9000) * 100);
-            tbody.innerHTML = rows + `<tr class="${customSel ? 'selected-row' : ''}" onclick="selectPackage('custom')">
-                <td><strong>Custom Coins</strong></td>
-                <td class="mono">Coin ${customCoins}</td>
-                <td class="text-right mono"><strong>${amt.toLocaleString()}</strong></td>
-                <td class="text-right"><button class="mini-btn" onclick="event.stopPropagation();selectPackage('custom')">${customSel ? 'Selected' : 'Select'}</button></td>
-            </tr>`;
+            const trC = document.createElement('tr');
+            if (customSel) trC.className = 'selected-row';
+            trC.style.cursor = 'pointer';
+            trC.onclick = () => selectPackage('custom');
+
+            const tdCN = document.createElement('td');
+            tdCN.style.fontWeight = '700';
+            tdCN.textContent = 'Custom Coins';
+            const tdCD = document.createElement('td');
+            tdCD.className = 'mono';
+            tdCD.style.fontSize = '0.76rem';
+            tdCD.textContent = `Coin ${customCoins}`;
+            const tdCA = document.createElement('td');
+            tdCA.className = 'text-right mono';
+            tdCA.style.fontWeight = '700';
+            tdCA.textContent = amt.toLocaleString();
+            const tdCAct = document.createElement('td');
+            tdCAct.className = 'text-right';
+            const btnC = document.createElement('button');
+            btnC.className = 'mini-btn';
+            btnC.textContent = customSel ? 'Umechagua' : 'Chagua';
+            btnC.onclick = (e) => { e.stopPropagation(); selectPackage('custom'); };
+            tdCAct.appendChild(btnC);
+            trC.append(tdCN, tdCD, tdCA, tdCAct);
+            tbody.appendChild(trC);
         }
 
         function selectPackage(id) {
@@ -760,10 +1070,7 @@
         }
 
         async function startDalipayPayment() {
-            if (!authToken) {
-                openAuthModal('register');
-                return;
-            }
+            if (!authToken) { openAuthModal('register'); return; }
             const phone = document.getElementById('dalipayPhone').value;
             const customAmt = Number(document.getElementById('customAmountInput').value);
             const res = await fetch('/api/payments/dalipay/initiate', {
@@ -777,10 +1084,7 @@
                 })
             });
             const data = await res.json();
-            if (!res.ok) {
-                showNotice(data.error || 'Malipo yameshindwa.', 'error');
-                return;
-            }
+            if (!res.ok) { showNotice(data.error || 'Malipo yameshindwa.', 'error'); return; }
             showNotice(data.message + ' (' + data.reference + ')', 'info');
             refreshProfile();
             if (pollTimer) clearInterval(pollTimer);
@@ -805,10 +1109,7 @@
         }
 
         async function unlockAndGenerate(docType) {
-            if (!authToken) {
-                openAuthModal('register');
-                return;
-            }
+            if (!authToken) { openAuthModal('register'); return; }
             const docLabel = docType === 'tin'
                 ? 'TIN · ' + document.getElementById('tin_name').value.trim()
                 : 'BL · ' + document.getElementById('bl_name').value.trim();
@@ -822,7 +1123,7 @@
             const data = await res.json();
             if (!res.ok) {
                 showNotice(data.error || 'Salio halitoshi.', 'error');
-                if (res.status === 402) switchTab('wallet', document.querySelectorAll('.tab-btn')[2]);
+                if (res.status === 402) switchView('wallet');
                 return;
             }
             currentUser = data.user;
@@ -830,13 +1131,13 @@
             refreshProfile();
             showNotice(data.message, 'success');
             if (docType === 'tin') {
+                document.getElementById('tinFormSection').style.display = 'none';
+                document.getElementById('tinResultSection').style.display = 'block';
                 generateTIN();
-                document.getElementById('tin_dl_png').disabled = false;
-                document.getElementById('tin_dl_pdf').disabled = false;
             } else {
+                document.getElementById('blFormSection').style.display = 'none';
+                document.getElementById('blResultSection').style.display = 'block';
                 await generateBL();
-                document.getElementById('bl_dl_png').disabled = false;
-                document.getElementById('bl_dl_pdf').disabled = false;
             }
         }
 
@@ -855,16 +1156,16 @@
 
         function refreshBlNo() {
             document.getElementById('bl_no').value = generateBlNumber(document.getElementById('bl_issue').value);
-            generateBL();
         }
         document.getElementById('bl_no').value = generateBlNumber(document.getElementById('bl_issue').value);
+        document.getElementById('bl_issue').addEventListener('input', refreshBlNo);
 
         const tinCanvas = document.getElementById('tinCanvas');
         const tinCtx = tinCanvas.getContext('2d');
         const tinImg = new Image();
         let tinReady = false;
         tinImg.src = 'tin_template.png';
-        tinImg.onload = () => { tinReady = true; generateTIN(); };
+        tinImg.onload = () => { tinReady = true; };
 
         function getDateParts(dateStr) {
             if (!dateStr) return null;
@@ -970,7 +1271,7 @@
         const blImg = new Image();
         let blReady = false;
         blImg.src = 'bl_template.png';
-        blImg.onload = () => { blReady = true; generateBL(); };
+        blImg.onload = () => { blReady = true; };
 
         function formatFee(raw) {
             const trimmed = raw.trim();
@@ -1090,26 +1391,6 @@
                 pdf.save(`Business_License_${name}.pdf`);
             }
         }
-
-        document.querySelectorAll('#tin-panel input').forEach(el => {
-            el.addEventListener('input', () => {
-                document.getElementById('tin_dl_png').disabled = true;
-                document.getElementById('tin_dl_pdf').disabled = true;
-                clearTimeout(window._t);
-                window._t = setTimeout(generateTIN, 200);
-            });
-        });
-        document.getElementById('bl_issue').addEventListener('input', () => {
-            document.getElementById('bl_no').value = generateBlNumber(document.getElementById('bl_issue').value);
-        });
-        document.querySelectorAll('#bl-panel input').forEach(el => {
-            el.addEventListener('input', () => {
-                document.getElementById('bl_dl_png').disabled = true;
-                document.getElementById('bl_dl_pdf').disabled = true;
-                clearTimeout(window._b);
-                window._b = setTimeout(generateBL, 200);
-            });
-        });
 
         loadPackages();
         updateUserUI();

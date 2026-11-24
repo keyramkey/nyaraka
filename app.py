@@ -572,7 +572,7 @@ def api_dalipay_initiate():
                 'currency': 'TZS',
                 'phone_number': phone_clean,
                 'reference': reference,
-                'description': f'TRA Document Filler - {package_label}',
+                'description': f'MALIMI COPY - {package_label}',
             },
             timeout=20,
         )
