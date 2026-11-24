@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRA Documents Exact Filler</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            background: linear-gradient(165deg, #0b2e4a, #1a5276 50%, #123a5a);
+            min-height: 100vh;
+            color: #1a1a1a;
+            padding: 14px;
+        }
+        .header {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 18px;
+        }
+        .header h1 { font-size: 1.55rem; font-weight: 700; letter-spacing: -0.3px; }
+        .header p { opacity: 0.88; font-size: 0.92rem; margin-top: 3px; }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+        .tab-btn {
+            padding: 11px 26px;
+            border: none;
+            border-radius: 28px;
+            background: rgba(255,255,255,0.14);
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .tab-btn.active {
+            background: #fff;
+            color: #1a5276;
+            box-shadow: 0 5px 18px rgba(0,0,0,0.22);
+        }
+        .panel { display: none; width: 100%; }
+        .panel.active { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        .form-panel {
+            background: #fff;
+            border-radius: 14px;
+            padding: 22px;
+            width: 100%;
+            max-width: 390px;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.28);
+        }
+        .form-panel h2 {
+            font-size: 1.12rem;
+            color: #1a5276;
+            margin-bottom: 14px;
+            text-align: center;
+            font-weight: 700;
+        }
+        .form-group { margin-bottom: 11px; }
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 3px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 9px 11px;
+            border: 1.5px solid #d0d7de;
+            border-radius: 7px;
+            font-size: 0.93rem;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #1a5276;
+            box-shadow: 0 0 0 3px rgba(26,82,118,0.12);
+        }
+        .row { display: flex; gap: 9px; }
+        .row .form-group { flex: 1; }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 9px;
+            font-size: 0.98rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 7px;
+            transition: 0.18s;
+        }
+        .btn-gen {
+            background: linear-gradient(135deg, #1a5276, #2980b9);
+            color: #fff;
+        }
+        .btn-gen:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .btn-dl {
+            background: #eef1f4;
+            color: #2c3e50;
+        }
+        .btn-dl:hover { background: #dce1e6; }
+        .btn-dl:disabled { opacity: 0.45; cursor: not-allowed; }
+        .preview-panel {
+            background: #fff;
+            border-radius: 14px;
+            padding: 14px;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.28);
+            text-align: center;
+            flex: 1;
+            min-width: 280px;
+            max-width: 780px;
+        }
+        .preview-panel h2 {
+            font-size: 1.05rem;
+            color: #1a5276;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        #canvasWrap, #blCanvasWrap {
+            display: inline-block;
+            max-width: 100%;
+            border: 1px solid #e5e7eb;
+            border-radius: 7px;
+            overflow: hidden;
+            box-shadow: 0 3px 14px rgba(0,0,0,0.07);
+        }
+        canvas { display: block; max-width: 100%; height: auto; }
+        .note {
+            font-size: 0.76rem;
+            color: #6b7280;
+            text-align: center;
+            margin-top: 10px;
+            line-height: 1.35;
+        }
+        @media (max-width: 900px) {
+            .form-panel, .preview-panel { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>TRA Documents Exact Filler</h1>
+        <p>TIN Certificate + Business License • Font &amp; position exact • Download PNG / PDF</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tin')">TIN Certificate</button>
+        <button class="tab-btn" onclick="switchTab('bl')">Business License</button>
+    </div>
+
+    <!-- TIN -->
+    <div id="tin-panel" class="panel active">
+        <div class="form-panel">
+            <h2>TRA TIN Certificate</h2>
+            <div class="form-group">
+                <label>Jina la Mlipakodi *</label>
+                <input type="text" id="tin_name" value="ANTHONY KIDIMA SENI">
+            </div>
+            <div class="form-group">
+                <label>Namba ya TIN *</label>
+                <input type="text" id="tin_number" value="211-724-390">
+            </div>
+            <div class="form-group">
+                <label>With Effect From</label>
+                <input type="date" id="tin_date" value="2026-10-20">
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label>TRA Location</label>
+                    <input type="text" id="tin_tra" value="SIMIYU">
+                </div>
+                <div class="form-group">
+                    <label>Tax Office</label>
+                    <input type="text" id="tin_office" value="SIMIYU TAX CENTRE">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Physical Location</label>
+                <input type="text" id="tin_phys" value="MALAMBO">
+            </div>
+            <div class="form-group">
+                <label>Street / Area</label>
+                <input type="text" id="tin_street" value="MALAMBO">
+            </div>
+            <button class="btn btn-gen" onclick="generateTIN()">Generate Certificate</button>
+            <button class="btn btn-dl" id="tin_dl_png" onclick="downloadTIN('png')" disabled>Download PNG</button>
+            <button class="btn btn-dl" id="tin_dl_pdf" onclick="downloadTIN('pdf')" disabled>Download PDF</button>
+            <p class="note">Template kutoka document halisi • Signature Michael T. Muhoja • Position exact</p>
+        </div>
+        <div class="preview-panel">
+            <h2>Preview – TIN Certificate</h2>
+            <div id="canvasWrap">
+                <canvas id="tinCanvas" width="1146" height="1595"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- BUSINESS LICENSE -->
+    <div id="bl-panel" class="panel">
+        <div class="form-panel">
+            <h2>Business License</h2>
+            <div class="form-group">
+                <label>B.L. Number</label>
+                <input type="text" id="bl_no" value="BL10841372026-2700038306">
+            </div>
+            <div class="form-group">
+                <label>Issuing Office</label>
+                <input type="text" id="bl_office" value="MBEYA CITY COUNCIL">
+            </div>
+            <div class="form-group">
+                <label>Tax Identification No</label>
+                <input type="text" id="bl_tin" value="182-491-24">
+            </div>
+            <div class="form-group">
+                <label>License Issued To</label>
+                <input type="text" id="bl_name" value="MATONDO MIZWAZWA MADUHU">
+            </div>
+            <div class="form-group">
+                <label>For the Business of</label>
+                <input type="text" id="bl_business" value="APP DEVELOPMENT">
+            </div>
+            <div class="form-group">
+                <label>Business Licensing</label>
+                <input type="text" id="bl_type" value="NEW LICENSE">
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label>Date of Issue</label>
+                    <input type="date" id="bl_issue">
+                </div>
+                <div class="form-group">
+                    <label>Expiring Date</label>
+                    <input type="date" id="bl_expire">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Principal / Branch</label>
+                <input type="text" id="bl_principal" value="PRINCIPAL">
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label>Region</label>
+                    <input type="text" id="bl_region" value="Mbeya">
+                </div>
+                <div class="form-group">
+                    <label>Ward</label>
+                    <input type="text" id="bl_ward" value="Mbeya">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Street</label>
+                <input type="text" id="bl_street" value="mbeya">
+            </div>
+            <div class="form-group">
+                <label>Amount of Fee Paid</label>
+                <input type="text" id="bl_fee" value="25000">
+            </div>
+            <button class="btn btn-gen" onclick="generateBL()">Generate License</button>
+            <button class="btn btn-dl" id="bl_dl_png" onclick="downloadBL('png')" disabled>Download PNG</button>
+            <button class="btn btn-dl" id="bl_dl_pdf" onclick="downloadBL('pdf')" disabled>Download PDF</button>
+            <p class="note">Template clean • Text placed exactly on value areas • No double text</p>
+        </div>
+        <div class="preview-panel">
+            <h2>Preview – Business License</h2>
+            <div id="blCanvasWrap">
+                <canvas id="blCanvas" width="794" height="1123"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            if (tab === 'tin') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tin-panel').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('bl-panel').classList.add('active');
+            }
+        }
+
+        // ========== TIN ==========
+        const tinCanvas = document.getElementById('tinCanvas');
+        const tinCtx = tinCanvas.getContext('2d');
+        let tinImg = new Image();
+        let tinReady = false;
+        tinImg.src = 'tin_template.png';
+        tinImg.onload = () => {
+            tinCtx.drawImage(tinImg, 0, 0);
+            tinReady = true;
+            generateTIN();
+        };
+
+        function formatDateLong(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr + 'T00:00:00');
+            const day = d.getDate();
+            const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            const suffix = [1,21,31].includes(day) ? 'st' : [2,22].includes(day) ? 'nd' : [3,23].includes(day) ? 'rd' : 'th';
+            return day + suffix + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+        }
+
+        function generateTIN() {
+            if (!tinReady) return;
+            const name = document.getElementById('tin_name').value.trim().toUpperCase();
+            const tin = document.getElementById('tin_number').value.trim();
+            const effect = formatDateLong(document.getElementById('tin_date').value);
+            const tra = document.getElementById('tin_tra').value.trim().toUpperCase();
+            const office = document.getElementById('tin_office').value.trim().toUpperCase();
+            const phys = document.getElementById('tin_phys').value.trim().toUpperCase();
+            const street = document.getElementById('tin_street').value.trim().toUpperCase();
+
+            tinCtx.clearRect(0, 0, 1146, 1595);
+            tinCtx.drawImage(tinImg, 0, 0);
+
+            tinCtx.fillStyle = '#000000';
+            tinCtx.textAlign = 'center';
+
+            // NAME
+            let fs = 27;
+            tinCtx.font = `bold ${fs}px "Times New Roman", Times, serif`;
+            while (tinCtx.measureText(name).width > 760 && fs > 15) {
+                fs--;
+                tinCtx.font = `bold ${fs}px "Times New Roman", Times, serif`;
+            }
+            tinCtx.fillText(name, 573, 742);
+
+            // TIN NUMBER
+            fs = 25;
+            tinCtx.font = `bold ${fs}px "Times New Roman", Times, serif`;
+            while (tinCtx.measureText(tin).width > 420 && fs > 15) {
+                fs--;
+                tinCtx.font = `bold ${fs}px "Times New Roman", Times, serif`;
+            }
+            tinCtx.fillText(tin, 573, 942);
+
+            // Fields
+            tinCtx.textAlign = 'left';
+            tinCtx.font = '19px "Times New Roman", Times, serif';
+
+            if (effect) tinCtx.fillText(effect, 430, 1018);
+            if (tra)    tinCtx.fillText(tra, 365, 1078);
+            if (office) tinCtx.fillText(office, 750, 1078);
+            if (phys)   tinCtx.fillText(phys, 430, 1128);
+            if (street) tinCtx.fillText(street, 430, 1178);
+
+            document.getElementById('tin_dl_png').disabled = false;
+            document.getElementById('tin_dl_pdf').disabled = false;
+        }
+
+        function downloadTIN(type) {
+            const name = (document.getElementById('tin_name').value.trim() || 'TIN').replace(/\s+/g, '_');
+            try {
+                if (type === 'png') {
+                    tinCanvas.toBlob(function(blob) {
+                        if (!blob) {
+                            alert('Download imeshindikana. Fungua faili hii kwa kutumia Live Server au local server (sio file://).');
+                            return;
+                        }
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.download = `TRA_TIN_${name}.png`;
+                        a.href = url;
+                        a.click();
+                        setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    }, 'image/png');
+                } else {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [1146, 1595] });
+                    const dataUrl = tinCanvas.toDataURL('image/png');
+                    pdf.addImage(dataUrl, 'PNG', 0, 0, 1146, 1595);
+                    pdf.save(`TRA_TIN_${name}.pdf`);
+                }
+            } catch (e) {
+                alert('Download imeshindikana.\n\nSababu: Browser inazuia download wakati HTML inafunguliwa moja kwa moja (file://).\n\nSuluhisho:\n1. Fungua folder hii kwa VS Code → right click HTML → Open with Live Server\n2. Au run: python -m http.server 8000 kisha fungua http://localhost:8000');
+                console.error(e);
+            }
+        }
+
+        // ========== BUSINESS LICENSE ==========
+        const blCanvas = document.getElementById('blCanvas');
+        const blCtx = blCanvas.getContext('2d');
+        let blImg = new Image();
+        let blReady = false;
+        blImg.src = 'bl_template.png';
+        blImg.onload = () => {
+            blCtx.drawImage(blImg, 0, 0);
+            blReady = true;
+            generateBL();
+        };
+
+        function generateBL() {
+            if (!blReady) return;
+            blCtx.clearRect(0, 0, 794, 1123);
+            blCtx.drawImage(blImg, 0, 0);
+
+            // Rangi ya B.L. NO iliyolingana na screenshot (cyan-blue)
+            const blueCol = '#8CBECD';
+            const blackCol = '#111111';
+            blCtx.textAlign = 'left';
+            blCtx.font = '14.5px Arial, Helvetica, sans-serif';
+
+            function put(text, x, y, color = blackCol) {
+                if (!text) return;
+                blCtx.fillStyle = color;
+                blCtx.fillText(text, x, y);
+            }
+
+            // B.L. NO – rangi ya cyan kama screenshot
+            put(document.getElementById('bl_no').value.trim(), 322, 247, blueCol);
+
+            // Fields zingine – nyeusi
+            put(document.getElementById('bl_office').value.trim().toUpperCase(), 288, 348);
+            put(document.getElementById('bl_tin').value.trim(), 288, 380);
+            put(document.getElementById('bl_name').value.trim().toUpperCase(), 288, 420);
+            put(document.getElementById('bl_business').value.trim().toUpperCase(), 288, 455);
+            put(document.getElementById('bl_type').value.trim().toUpperCase(), 288, 490);
+
+            const issue = document.getElementById('bl_issue').value;
+            if (issue) {
+                const d = new Date(issue + 'T00:00:00');
+                put(`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`, 288, 525);
+            }
+            const exp = document.getElementById('bl_expire').value;
+            if (exp) {
+                const d = new Date(exp + 'T00:00:00');
+                put(`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`, 288, 560);
+            }
+
+            put(document.getElementById('bl_principal').value.trim().toUpperCase(), 288, 595);
+            put(document.getElementById('bl_region').value.trim(), 288, 675);
+            put(document.getElementById('bl_ward').value.trim(), 288, 710);
+            put(document.getElementById('bl_street').value.trim(), 288, 745);
+            put(document.getElementById('bl_fee').value.trim(), 288, 810);
+
+            document.getElementById('bl_dl_png').disabled = false;
+            document.getElementById('bl_dl_pdf').disabled = false;
+        }
+
+        function downloadBL(type) {
+            const name = (document.getElementById('bl_name').value.trim() || 'BusinessLicense').replace(/\s+/g, '_');
+            try {
+                if (type === 'png') {
+                    blCanvas.toBlob(function(blob) {
+                        if (!blob) {
+                            alert('Download imeshindikana. Fungua faili hii kwa kutumia Live Server au local server (sio file://).');
+                            return;
+                        }
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.download = `Business_License_${name}.png`;
+                        a.href = url;
+                        a.click();
+                        setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    }, 'image/png');
+                } else {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [794, 1123] });
+                    const dataUrl = blCanvas.toDataURL('image/png');
+                    pdf.addImage(dataUrl, 'PNG', 0, 0, 794, 1123);
+                    pdf.save(`Business_License_${name}.pdf`);
+                }
+            } catch (e) {
+                alert('Download imeshindikana.\n\nSababu: Browser inazuia download wakati HTML inafunguliwa moja kwa moja (file://).\n\nSuluhisho:\n1. Fungua folder hii kwa VS Code → right click HTML → Open with Live Server\n2. Au run: python -m http.server 8000 kisha fungua http://localhost:8000');
+                console.error(e);
+            }
+        }
+
+        document.querySelectorAll('#tin-panel input').forEach(el => {
+            el.addEventListener('input', () => {
+                clearTimeout(window._t);
+                window._t = setTimeout(generateTIN, 350);
+            });
+        });
+        document.querySelectorAll('#bl-panel input').forEach(el => {
+            el.addEventListener('input', () => {
+                clearTimeout(window._b);
+                window._b = setTimeout(generateBL, 350);
+            });
+        });
+    </script>
+</body>
+</html>
