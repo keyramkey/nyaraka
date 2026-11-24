@@ -4,302 +4,872 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TRA Documents Exact Filler</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Open+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-            background: linear-gradient(165deg, #0b2e4a, #1a5276 50%, #123a5a);
+            font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
             min-height: 100vh;
-            color: #1a1a1a;
-            padding: 14px;
+            -webkit-font-smoothing: antialiased;
         }
-        .header {
-            text-align: center;
-            color: #fff;
-            margin-bottom: 18px;
+        .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+        .topbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 14px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 30;
         }
-        .header h1 { font-size: 1.55rem; font-weight: 700; letter-spacing: -0.3px; }
-        .header p { opacity: 0.88; font-size: 0.92rem; margin-top: 3px; }
-        .tabs {
+        .topbar-inner {
+            max-width: 1260px;
+            margin: 0 auto;
             display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 18px;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: wrap;
         }
+        .brand { font-size: 1.08rem; font-weight: 700; color: #0f172a; white-space: nowrap; }
+        .nav { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
         .tab-btn {
-            padding: 11px 26px;
+            background: transparent;
             border: none;
-            border-radius: 28px;
-            background: rgba(255,255,255,0.14);
-            color: #fff;
-            font-weight: 600;
-            font-size: 0.95rem;
+            border-bottom: 2px solid transparent;
+            padding: 6px 2px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: #475569;
             cursor: pointer;
-            transition: 0.2s;
+            white-space: nowrap;
         }
-        .tab-btn.active {
-            background: #fff;
-            color: #1a5276;
-            box-shadow: 0 5px 18px rgba(0,0,0,0.22);
-        }
-        .panel { display: none; width: 100%; }
-        .panel.active { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
-        .form-panel {
-            background: #fff;
-            border-radius: 14px;
-            padding: 22px;
-            width: 100%;
-            max-width: 390px;
-            box-shadow: 0 12px 36px rgba(0,0,0,0.28);
-        }
-        .form-panel h2 {
-            font-size: 1.12rem;
-            color: #1a5276;
-            margin-bottom: 14px;
-            text-align: center;
-            font-weight: 700;
-        }
-        .form-group { margin-bottom: 11px; }
-        .form-group label {
-            display: block;
+        .tab-btn:hover { color: #0f172a; }
+        .tab-btn.active { color: #075985; border-bottom-color: #075985; font-weight: 600; }
+        .wallet-bar { display: flex; align-items: center; gap: 10px; }
+        .coin-chip {
+            padding: 7px 12px;
+            border-radius: 8px;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            color: #0c4a6e;
             font-size: 0.8rem;
             font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 3px;
+            cursor: pointer;
+        }
+        .btn-primary-sm {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: none;
+            background: #075985;
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .btn-primary-sm:hover { background: #0c4a6e; }
+        .btn-ghost-sm {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #334155;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .container { max-width: 1260px; margin: 0 auto; padding: 24px; }
+        .notice {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 0.86rem;
+            margin-bottom: 18px;
+            border: 1px solid #bae6fd;
+            background: #f0f9ff;
+            color: #0c4a6e;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .notice.error { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+        .notice.success { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+        .panel { display: none; }
+        .panel.active { display: grid; grid-template-columns: 390px 1fr; gap: 24px; align-items: start; }
+        .panel.wallet-active { display: block; }
+        .card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 22px;
+        }
+        .card-header { margin-bottom: 16px; }
+        .card-header h2 { font-size: 1.05rem; font-weight: 700; color: #0f172a; }
+        .card-header p { font-size: 0.78rem; color: #64748b; margin-top: 3px; }
+        .form-group { margin-bottom: 12px; }
+        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .form-group label { display: block; font-size: 0.76rem; font-weight: 600; color: #334155; margin-bottom: 4px; }
+        .label-row label { margin-bottom: 0; }
+        .mini-btn {
+            border: none;
+            background: #e0f2fe;
+            color: #075985;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 5px;
+            cursor: pointer;
         }
         .form-group input {
             width: 100%;
             padding: 9px 11px;
-            border: 1.5px solid #d0d7de;
-            border-radius: 7px;
-            font-size: 0.93rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            color: #0f172a;
+            background: #fff;
         }
         .form-group input:focus {
             outline: none;
-            border-color: #1a5276;
-            box-shadow: 0 0 0 3px rgba(26,82,118,0.12);
+            border-color: #075985;
+            box-shadow: 0 0 0 3px rgba(7, 89, 133, 0.12);
         }
-        .row { display: flex; gap: 9px; }
-        .row .form-group { flex: 1; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .btn {
             width: 100%;
-            padding: 12px;
+            padding: 10px 14px;
             border: none;
-            border-radius: 9px;
-            font-size: 0.98rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 7px;
-            transition: 0.18s;
+            transition: 0.15s;
         }
-        .btn-gen {
-            background: linear-gradient(135deg, #1a5276, #2980b9);
-            color: #fff;
+        .btn-gen { background: #075985; color: #fff; margin-top: 6px; }
+        .btn-gen:hover { background: #0c4a6e; }
+        .btn-dl { background: #f1f5f9; color: #1e293b; border: 1px solid #e2e8f0; }
+        .btn-dl:hover { background: #e2e8f0; }
+        .btn-dl:disabled, .btn-gen:disabled { opacity: 0.45; cursor: not-allowed; }
+        .dl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .preview-box {
+            background: #f1f5f9;
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            overflow: auto;
+            position: relative;
         }
-        .btn-gen:hover { filter: brightness(1.08); transform: translateY(-1px); }
-        .btn-dl {
-            background: #eef1f4;
-            color: #2c3e50;
-        }
-        .btn-dl:hover { background: #dce1e6; }
-        .btn-dl:disabled { opacity: 0.45; cursor: not-allowed; }
-        .preview-panel {
-            background: #fff;
-            border-radius: 14px;
-            padding: 14px;
-            box-shadow: 0 12px 36px rgba(0,0,0,0.28);
-            text-align: center;
-            flex: 1;
-            min-width: 280px;
-            max-width: 780px;
-        }
-        .preview-panel h2 {
-            font-size: 1.05rem;
-            color: #1a5276;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-        #canvasWrap, #blCanvasWrap {
-            display: inline-block;
-            max-width: 100%;
-            border: 1px solid #e5e7eb;
-            border-radius: 7px;
+        canvas { display: block; width: 100%; max-width: 720px; height: auto; background: #fff; border-radius: 6px; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08); }
+        .table-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 3px 14px rgba(0,0,0,0.07);
         }
-        canvas { display: block; max-width: 100%; height: auto; }
-        .note {
-            font-size: 0.76rem;
-            color: #6b7280;
-            text-align: center;
-            margin-top: 10px;
-            line-height: 1.35;
+        .table-card-head {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
         }
-        @media (max-width: 900px) {
-            .form-panel, .preview-panel { max-width: 100%; }
+        .table-card-head h3 { font-size: 0.96rem; font-weight: 700; color: #0f172a; }
+        .table-card-head p { font-size: 0.78rem; color: #64748b; margin-top: 2px; }
+        .table-wrap { overflow-x: auto; }
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+        table.data-table th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 0.74rem;
+            font-weight: 600;
+            padding: 11px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+        table.data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+        }
+        table.data-table tbody tr:last-child td { border-bottom: none; }
+        table.data-table tbody tr:hover { background: #f8fafc; }
+        table.data-table tbody tr.selected-row { background: #f0f9ff; }
+        .text-right { text-align: right; }
+        .wallet-grid { display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+        .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; }
+        .stat-card .k { font-size: 0.75rem; font-weight: 600; color: #64748b; }
+        .stat-card .v { font-size: 1.4rem; font-weight: 700; color: #0f172a; margin-top: 4px; }
+        .stat-card .s { font-size: 0.74rem; color: #64748b; margin-top: 4px; }
+        .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+        .modal-backdrop {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55);
+            display: none; align-items: center; justify-content: center; padding: 16px; z-index: 60;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; max-width: 420px; width: 100%; padding: 24px; }
+        .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: #f1f5f9; padding: 4px; border-radius: 8px; margin: 14px 0; }
+        .auth-tab { border: none; background: transparent; padding: 7px; font-size: 0.8rem; font-weight: 600; color: #475569; border-radius: 6px; cursor: pointer; }
+        .auth-tab.active { background: #fff; color: #0f172a; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+        @media (max-width: 960px) {
+            .panel.active, .wallet-grid, .history-grid, .stats-grid { grid-template-columns: 1fr; }
         }
     </style>
-</head>
+<script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
 <body>
-    <div class="header">
-        <h1>TRA Documents Exact Filler</h1>
-        <p>TIN Certificate + Business License • Font &amp; position exact • Download PNG / PDF</p>
-    </div>
-
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('tin')">TIN Certificate</button>
-        <button class="tab-btn" onclick="switchTab('bl')">Business License</button>
-    </div>
-
-    <!-- TIN -->
-    <div id="tin-panel" class="panel active">
-        <div class="form-panel">
-            <h2>TRA TIN Certificate</h2>
-            <div class="form-group">
-                <label>Jina la Mlipakodi *</label>
-                <input type="text" id="tin_name" value="ANTHONY KIDIMA SENI">
-            </div>
-            <div class="form-group">
-                <label>Namba ya TIN *</label>
-                <input type="text" id="tin_number" value="211-724-390">
-            </div>
-            <div class="form-group">
-                <label>With Effect From</label>
-                <input type="date" id="tin_date" value="2026-10-20">
-            </div>
-            <div class="row">
-                <div class="form-group">
-                    <label>TRA Location</label>
-                    <input type="text" id="tin_tra" value="SIMIYU">
-                </div>
-                <div class="form-group">
-                    <label>Tax Office</label>
-                    <input type="text" id="tin_office" value="SIMIYU TAX CENTRE">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Physical Location</label>
-                <input type="text" id="tin_phys" value="MALAMBO">
-            </div>
-            <div class="form-group">
-                <label>Street / Area</label>
-                <input type="text" id="tin_street" value="MALAMBO">
-            </div>
-            <button class="btn btn-gen" onclick="generateTIN()">Generate Certificate</button>
-            <button class="btn btn-dl" id="tin_dl_png" onclick="downloadTIN('png')" disabled>Download PNG</button>
-            <button class="btn btn-dl" id="tin_dl_pdf" onclick="downloadTIN('pdf')" disabled>Download PDF</button>
-            <p class="note">Template kutoka document halisi • Signature Michael T. Muhoja • Position exact</p>
-        </div>
-        <div class="preview-panel">
-            <h2>Preview – TIN Certificate</h2>
-            <div id="canvasWrap">
-                <canvas id="tinCanvas" width="1146" height="1595"></canvas>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="brand">TRA Document Filler</div>
+            <nav class="nav">
+                <button class="tab-btn active" onclick="switchTab('tin', this)">TIN Certificate</button>
+                <button class="tab-btn" onclick="switchTab('bl', this)">Business License</button>
+                <button class="tab-btn" onclick="switchTab('wallet', this)">Buy Coins &amp; Plans</button>
+            </nav>
+            <div class="wallet-bar">
+                <button id="walletChip" class="coin-chip mono" onclick="switchTab('wallet', document.querySelectorAll('.tab-btn')[2])">0 Coins</button>
+                <button id="authActionBtn" class="btn-primary-sm" onclick="openAuthModal('register')">Sign In / 10 Free Coins</button>
+                <button id="logoutBtn" class="btn-ghost-sm" style="display:none;" onclick="logoutUser()">Sign Out</button>
             </div>
         </div>
-    </div>
+    </header>
 
-    <!-- BUSINESS LICENSE -->
-    <div id="bl-panel" class="panel">
-        <div class="form-panel">
-            <h2>Business License</h2>
-            <div class="form-group">
-                <label>B.L. Number</label>
-                <input type="text" id="bl_no" value="BL10841372026-2700038306">
-            </div>
-            <div class="form-group">
-                <label>Issuing Office</label>
-                <input type="text" id="bl_office" value="MBEYA CITY COUNCIL">
-            </div>
-            <div class="form-group">
-                <label>Tax Identification No</label>
-                <input type="text" id="bl_tin" value="182-491-24">
-            </div>
-            <div class="form-group">
-                <label>License Issued To</label>
-                <input type="text" id="bl_name" value="MATONDO MIZWAZWA MADUHU">
-            </div>
-            <div class="form-group">
-                <label>For the Business of</label>
-                <input type="text" id="bl_business" value="APP DEVELOPMENT">
-            </div>
-            <div class="form-group">
-                <label>Business Licensing</label>
-                <input type="text" id="bl_type" value="NEW LICENSE">
-            </div>
-            <div class="row">
-                <div class="form-group">
-                    <label>Date of Issue</label>
-                    <input type="date" id="bl_issue">
-                </div>
-                <div class="form-group">
-                    <label>Expiring Date</label>
-                    <input type="date" id="bl_expire">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Principal / Branch</label>
-                <input type="text" id="bl_principal" value="PRINCIPAL">
-            </div>
-            <div class="row">
-                <div class="form-group">
-                    <label>Region</label>
-                    <input type="text" id="bl_region" value="Mbeya">
-                </div>
-                <div class="form-group">
-                    <label>Ward</label>
-                    <input type="text" id="bl_ward" value="Mbeya">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Street</label>
-                <input type="text" id="bl_street" value="mbeya">
-            </div>
-            <div class="form-group">
-                <label>Amount of Fee Paid</label>
-                <input type="text" id="bl_fee" value="25000">
-            </div>
-            <button class="btn btn-gen" onclick="generateBL()">Generate License</button>
-            <button class="btn btn-dl" id="bl_dl_png" onclick="downloadBL('png')" disabled>Download PNG</button>
-            <button class="btn btn-dl" id="bl_dl_pdf" onclick="downloadBL('pdf')" disabled>Download PDF</button>
-            <p class="note">Template clean • Text placed exactly on value areas • No double text</p>
+    <main class="container">
+        <div id="globalNotice" class="notice">
+            <span id="globalNoticeText"></span>
+            <button class="mini-btn" onclick="hideNotice()">Close</button>
         </div>
-        <div class="preview-panel">
-            <h2>Preview – Business License</h2>
-            <div id="blCanvasWrap">
-                <canvas id="blCanvas" width="794" height="1123"></canvas>
+
+        <!-- TIN PANEL -->
+        <div id="tin-panel" class="panel active">
+            <section class="card">
+                <div class="card-header">
+                    <h2>TRA TIN Certificate</h2>
+                    <p>Gharama: Coin 5 kwa kila hati (au 0 kwa Unlimited)</p>
+                </div>
+                <div class="form-group">
+                    <label>Jina la Mlipakodi *</label>
+                    <input type="text" id="tin_name" value="ANTHONY KIDIMA SENI">
+                </div>
+                <div class="form-group">
+                    <label>Namba ya TIN *</label>
+                    <input type="text" id="tin_number" class="mono" value="211-724-390">
+                </div>
+                <div class="form-group">
+                    <label>With Effect From</label>
+                    <input type="date" id="tin_date" class="mono" value="2026-10-20">
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label>TRA Location</label>
+                        <input type="text" id="tin_tra" value="SIMIYU">
+                    </div>
+                    <div class="form-group">
+                        <label>Tax Office</label>
+                        <input type="text" id="tin_office" value="SIMIYU TAX CENTRE">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Physical Location</label>
+                    <input type="text" id="tin_phys" value="MALAMBO">
+                </div>
+                <div class="form-group">
+                    <label>Street / Area</label>
+                    <input type="text" id="tin_street" value="MALAMBO">
+                </div>
+                <button class="btn btn-gen" id="tin_gen_btn" onclick="unlockAndGenerate('tin')">Generate TIN (-5 Coins)</button>
+                <div class="dl-row">
+                    <button class="btn btn-dl" id="tin_dl_png" onclick="downloadTIN('png')" disabled>Download PNG</button>
+                    <button class="btn btn-dl" id="tin_dl_pdf" onclick="downloadTIN('pdf')" disabled>Download PDF (A4)</button>
+                </div>
+            </section>
+            <section class="card">
+                <div class="card-header">
+                    <h2>Preview – TIN Certificate</h2>
+                    <p>3× HiDPI A4 · Michael T. Muhoja signature</p>
+                </div>
+                <div class="preview-box">
+                    <canvas id="tinCanvas" width="2160" height="3009"></canvas>
+                </div>
+            </section>
+        </div>
+
+        <!-- BUSINESS LICENSE PANEL -->
+        <div id="bl-panel" class="panel">
+            <section class="card">
+                <div class="card-header">
+                    <h2>Business License</h2>
+                    <p>Gharama: Coin 5 kwa kila hati · Auto B.L. NO &amp; Dynamic QR</p>
+                </div>
+                <div class="form-group">
+                    <div class="label-row">
+                        <label for="bl_no">B.L. Number (Auto)</label>
+                        <button type="button" class="mini-btn" onclick="refreshBlNo()">New B.L. No</button>
+                    </div>
+                    <input type="text" id="bl_no" class="mono" value="">
+                </div>
+                <div class="form-group">
+                    <label>Issuing Office</label>
+                    <input type="text" id="bl_office" value="KIGOMA">
+                </div>
+                <div class="form-group">
+                    <label>Tax Identification No</label>
+                    <input type="text" id="bl_tin" class="mono" value="128-624-855">
+                </div>
+                <div class="form-group">
+                    <label>License Issued To</label>
+                    <input type="text" id="bl_name" value="HAMIS JUMA JOHNSTONE">
+                </div>
+                <div class="form-group">
+                    <label>For the Business of</label>
+                    <input type="text" id="bl_business" value="BOOKSTORE AND STATIONERY - DISTRICT">
+                </div>
+                <div class="form-group">
+                    <label>Business Licensing</label>
+                    <input type="text" id="bl_type" value="NEW LICENSE">
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label>Date of Issue</label>
+                        <input type="date" id="bl_issue" class="mono" value="2026-10-25">
+                    </div>
+                    <div class="form-group">
+                        <label>Expiring Date</label>
+                        <input type="date" id="bl_expire" class="mono" value="2027-10-24">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Principal / Branch</label>
+                    <input type="text" id="bl_principal" value="PRINCIPAL">
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label>Region</label>
+                        <input type="text" id="bl_region" value="Kigoma">
+                    </div>
+                    <div class="form-group">
+                        <label>Ward</label>
+                        <input type="text" id="bl_ward" value="Kakonko">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Street</label>
+                    <input type="text" id="bl_street" value="Kasanda">
+                </div>
+                <div class="form-group">
+                    <label>Amount of Fee Paid</label>
+                    <input type="text" id="bl_fee" class="mono" value="70000">
+                </div>
+                <button class="btn btn-gen" id="bl_gen_btn" onclick="unlockAndGenerate('bl')">Generate License (-5 Coins)</button>
+                <div class="dl-row">
+                    <button class="btn btn-dl" id="bl_dl_png" onclick="downloadBL('png')" disabled>Download PNG</button>
+                    <button class="btn btn-dl" id="bl_dl_pdf" onclick="downloadBL('pdf')" disabled>Download PDF (A4)</button>
+                </div>
+            </section>
+            <section class="card">
+                <div class="card-header">
+                    <h2>Preview – Business License</h2>
+                    <p>3× HiDPI A4 · Open Sans 12.5px SemiBold</p>
+                </div>
+                <div class="preview-box">
+                    <canvas id="blCanvas" width="2160" height="3030"></canvas>
+                </div>
+            </section>
+        </div>
+
+        <!-- WALLET & DALIPAY PANEL -->
+        <div id="wallet-panel" class="panel">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="k">Salio la Coin</div>
+                    <div class="v mono" id="statCoins">0 Coins</div>
+                    <div class="s">Kila generation ni coin 5</div>
+                </div>
+                <div class="stat-card">
+                    <div class="k">Mpango wa Unlimited</div>
+                    <div class="v" id="statUnlimited">Standard</div>
+                    <div class="s" id="statUnlimitedSub">TZS 30,000 (30d) / TZS 50,000 (55d)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="k">Ofa ya Kuanza</div>
+                    <div class="v mono">10 Free Coins</div>
+                    <div class="s">Mara moja kwa kifaa (device_id + Cookie)</div>
+                </div>
             </div>
+
+            <div class="wallet-grid">
+                <div class="table-card">
+                    <div class="table-card-head">
+                        <h3>Vifurushi vya Coin &amp; Unlimited (Dalipay)</h3>
+                        <p>Bonyeza kifurushi kisha thibitisha malipo kwa simu.</p>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Kifurushi</th>
+                                    <th>Maelezo</th>
+                                    <th class="text-right">Bei (TZS)</th>
+                                    <th class="text-right">Chagua</th>
+                                </tr>
+                            </thead>
+                            <tbody id="packagesTbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Lipa kwa Dalipay</h2>
+                        <p>M-Pesa · Tigo Pesa/Yas · Airtel Money · HaloPesa</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Kifurushi</label>
+                        <input type="text" id="selectedPkgLabel" readonly value="22 Coins — TZS 2,000">
+                    </div>
+                    <div class="form-group" id="customAmountGroup" style="display:none;">
+                        <label>Kiasi cha TZS (Kuanzia 1,000)</label>
+                        <input type="number" id="customAmountInput" class="mono" min="1000" step="500" value="15000" oninput="updateSelectedPackageUI()">
+                    </div>
+                    <div class="form-group">
+                        <label>Namba ya Simu ya Malipo</label>
+                        <input type="tel" id="dalipayPhone" class="mono" placeholder="0754123456">
+                    </div>
+                    <button class="btn btn-gen" id="dalipayBtn" onclick="startDalipayPayment()">Lipa sasa na Dalipay</button>
+                </div>
+            </div>
+
+            <div class="history-grid">
+                <div class="table-card">
+                    <div class="table-card-head"><h3>Historia ya Malipo</h3></div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Reference</th><th>Kifurushi</th><th class="text-right">TZS</th><th>Hali</th></tr></thead>
+                            <tbody id="paymentsTbody"><tr><td colspan="4" style="text-align:center;color:#64748b;">Ingia kuona historia yako.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="table-card">
+                    <div class="table-card-head"><h3>Historia ya Hati</h3></div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Hati</th><th class="text-right">Coin</th></tr></thead>
+                            <tbody id="generationsTbody"><tr><td colspan="2" style="text-align:center;color:#64748b;">Ingia kuona historia yako.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- AUTH MODAL -->
+    <div id="authModal" class="modal-backdrop">
+        <div class="modal-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <h3 id="authTitle" style="font-size:1.05rem;font-weight:700;">Fungua Akaunti (10 Free Coins)</h3>
+                <button class="mini-btn" onclick="closeAuthModal()">Close</button>
+            </div>
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tabReg" onclick="setAuthMode('register')">Register</button>
+                <button class="auth-tab" id="tabLogin" onclick="setAuthMode('login')">Sign In</button>
+            </div>
+            <div id="regExtraFields">
+                <div class="form-group">
+                    <label>Jina Kamili</label>
+                    <input type="text" id="auth_name">
+                </div>
+                <div class="form-group">
+                    <label>Namba ya Simu (Hiari)</label>
+                    <input type="tel" id="auth_phone" class="mono" placeholder="0754123456">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Barua Pepe</label>
+                <input type="email" id="auth_email">
+            </div>
+            <div class="form-group">
+                <label>Nenosiri (Angalau herufi 6)</label>
+                <input type="password" id="auth_pass">
+            </div>
+            <p id="authErrorMsg" style="color:#b91c1c;font-size:0.78rem;margin-bottom:8px;display:none;"></p>
+            <button class="btn btn-gen" onclick="submitAuth()">Endelea</button>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
     <script>
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            if (tab === 'tin') {
-                document.querySelectorAll('.tab-btn')[0].classList.add('active');
-                document.getElementById('tin-panel').classList.add('active');
+        const RENDER_SCALE = 3;
+        let authToken = null;
+        let currentUser = null;
+        let authMode = 'register';
+        let selectedPkgId = 'coins_22';
+        let packagesList = [];
+        let deviceIdCache = '';
+        let pollTimer = null;
+
+        async function getDeviceId() {
+            if (deviceIdCache) return deviceIdCache;
+            const parts = [
+                navigator.userAgent || '',
+                navigator.platform || '',
+                navigator.language || '',
+                String(navigator.hardwareConcurrency || ''),
+                String(screen.width || 0),
+                String(screen.height || 0),
+                String(screen.colorDepth || 0),
+                Intl.DateTimeFormat().resolvedOptions().timeZone || ''
+            ];
+            const raw = parts.join('|');
+            if (window.crypto && window.crypto.subtle) {
+                const buf = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw));
+                deviceIdCache = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 40);
             } else {
-                document.querySelectorAll('.tab-btn')[1].classList.add('active');
-                document.getElementById('bl-panel').classList.add('active');
+                deviceIdCache = 'dev_' + btoa(raw).slice(0, 24);
+            }
+            return deviceIdCache;
+        }
+
+        function showNotice(text, type = 'info') {
+            const box = document.getElementById('globalNotice');
+            box.className = 'notice ' + (type === 'error' ? 'error' : type === 'success' ? 'success' : '');
+            document.getElementById('globalNoticeText').textContent = text;
+            box.style.display = 'flex';
+        }
+        function hideNotice() {
+            document.getElementById('globalNotice').style.display = 'none';
+        }
+
+        function switchTab(tab, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            document.getElementById('tin-panel').className = 'panel' + (tab === 'tin' ? ' active' : '');
+            document.getElementById('bl-panel').className = 'panel' + (tab === 'bl' ? ' active' : '');
+            document.getElementById('wallet-panel').className = 'panel' + (tab === 'wallet' ? ' wallet-active' : '');
+        }
+
+        function openAuthModal(mode) {
+            setAuthMode(mode || 'register');
+            document.getElementById('authModal').classList.add('open');
+        }
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('open');
+        }
+        function setAuthMode(mode) {
+            authMode = mode;
+            document.getElementById('tabReg').classList.toggle('active', mode === 'register');
+            document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
+            document.getElementById('regExtraFields').style.display = mode === 'register' ? 'block' : 'none';
+            document.getElementById('authTitle').textContent = mode === 'register' ? 'Fungua Akaunti (10 Free Coins)' : 'Ingia Kwenye Akaunti';
+            document.getElementById('authErrorMsg').style.display = 'none';
+        }
+
+        function updateUserUI() {
+            const chip = document.getElementById('walletChip');
+            const authBtn = document.getElementById('authActionBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (currentUser) {
+                chip.textContent = currentUser.isUnlimited ? `Unlimited (${currentUser.coins} Coins)` : `${currentUser.coins} Coins`;
+                authBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                document.getElementById('statCoins').textContent = `${currentUser.coins} Coins`;
+                document.getElementById('statUnlimited').textContent = currentUser.isUnlimited ? 'Active' : 'Standard';
+                document.getElementById('statUnlimitedSub').textContent = currentUser.isUnlimited
+                    ? 'Mpaka ' + new Date(currentUser.unlimitedUntil).toLocaleDateString()
+                    : 'TZS 30,000 (30d) / TZS 50,000 (55d)';
+                document.getElementById('tin_gen_btn').textContent = currentUser.isUnlimited ? 'Generate TIN (Unlimited · 0 Coins)' : 'Generate TIN (-5 Coins)';
+                document.getElementById('bl_gen_btn').textContent = currentUser.isUnlimited ? 'Generate License (Unlimited · 0 Coins)' : 'Generate License (-5 Coins)';
+            } else {
+                chip.textContent = '0 Coins';
+                authBtn.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+                document.getElementById('statCoins').textContent = 'Sign In';
+                document.getElementById('statUnlimited').textContent = 'Standard';
+                document.getElementById('tin_gen_btn').textContent = 'Generate TIN (-5 Coins)';
+                document.getElementById('bl_gen_btn').textContent = 'Generate License (-5 Coins)';
             }
         }
 
-        // ========== TIN ==========
+        function logoutUser() {
+            authToken = null;
+            currentUser = null;
+            document.getElementById('tin_dl_png').disabled = true;
+            document.getElementById('tin_dl_pdf').disabled = true;
+            document.getElementById('bl_dl_png').disabled = true;
+            document.getElementById('bl_dl_pdf').disabled = true;
+            updateUserUI();
+            showNotice('Umetoka kwenye akaunti.');
+        }
+
+        async function submitAuth() {
+            const errEl = document.getElementById('authErrorMsg');
+            errEl.style.display = 'none';
+            const devId = await getDeviceId();
+            const endpoint = authMode === 'register' ? '/api/auth/register' : '/api/auth/login';
+            const body = authMode === 'register'
+                ? {
+                    fullName: document.getElementById('auth_name').value,
+                    phone: document.getElementById('auth_phone').value,
+                    email: document.getElementById('auth_email').value,
+                    password: document.getElementById('auth_pass').value,
+                    deviceId: devId
+                }
+                : {
+                    email: document.getElementById('auth_email').value,
+                    password: document.getElementById('auth_pass').value,
+                    deviceId: devId
+                };
+
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                errEl.textContent = data.error || 'Imeshindwa.';
+                errEl.style.display = 'block';
+                return;
+            }
+            authToken = data.token;
+            currentUser = data.user;
+            if (currentUser.phone) document.getElementById('dalipayPhone').value = currentUser.phone;
+            closeAuthModal();
+            updateUserUI();
+            if (data.message) showNotice(data.message, data.bonusAwarded ? 'success' : 'info');
+            refreshProfile();
+        }
+
+        async function refreshProfile() {
+            if (!authToken) return;
+            const res = await fetch('/api/auth/me', {
+                headers: { Authorization: 'Bearer ' + authToken },
+                credentials: 'include'
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            currentUser = data.user;
+            updateUserUI();
+
+            const pt = document.getElementById('paymentsTbody');
+            pt.textContent = '';
+            if (data.payments && data.payments.length) {
+                data.payments.forEach(p => {
+                    const tr = document.createElement('tr');
+                    const tdRef = document.createElement('td');
+                    tdRef.className = 'mono';
+                    tdRef.textContent = String(p.reference || '');
+                    const tdPkg = document.createElement('td');
+                    tdPkg.textContent = String(p.package_label || '');
+                    const tdAmt = document.createElement('td');
+                    tdAmt.className = 'text-right mono';
+                    tdAmt.textContent = Number(p.amount_tzs || 0).toLocaleString();
+                    const tdStatus = document.createElement('td');
+                    tdStatus.textContent = String(p.status || '');
+                    tr.append(tdRef, tdPkg, tdAmt, tdStatus);
+                    pt.appendChild(tr);
+                });
+            } else {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 4;
+                td.style.textAlign = 'center';
+                td.style.color = '#64748b';
+                td.textContent = 'Hakuna miamala bado.';
+                tr.appendChild(td);
+                pt.appendChild(tr);
+            }
+
+            const gt = document.getElementById('generationsTbody');
+            gt.textContent = '';
+            if (data.generations && data.generations.length) {
+                data.generations.forEach(g => {
+                    const tr = document.createElement('tr');
+                    const tdLabel = document.createElement('td');
+                    tdLabel.textContent = String(g.doc_label || '');
+                    const tdCoins = document.createElement('td');
+                    tdCoins.className = 'text-right mono';
+                    tdCoins.textContent = String(g.coins_spent ?? 0);
+                    tr.append(tdLabel, tdCoins);
+                    gt.appendChild(tr);
+                });
+            } else {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 2;
+                td.style.textAlign = 'center';
+                td.style.color = '#64748b';
+                td.textContent = 'Bado hujatengeneza hati.';
+                tr.appendChild(td);
+                gt.appendChild(tr);
+            }
+        }
+
+        async function loadPackages() {
+            const res = await fetch('/api/packages');
+            const data = await res.json();
+            packagesList = data.packages || [];
+            renderPackagesTable();
+        }
+
+        function renderPackagesTable() {
+            const tbody = document.getElementById('packagesTbody');
+            const rows = packagesList.map(p => {
+                const desc = p.category === 'unlimited' ? `Siku ${p.unlimitedDays} · Unlimited` : `~Hati ${Math.floor(p.coins / 5)} (Coin ${p.coins})`;
+                const sel = selectedPkgId === p.id;
+                return `<tr class="${sel ? 'selected-row' : ''}" onclick="selectPackage('${p.id}')">
+                    <td><strong>${p.label}</strong></td>
+                    <td>${desc}</td>
+                    <td class="text-right mono"><strong>${p.amountTzs.toLocaleString()}</strong></td>
+                    <td class="text-right"><button class="mini-btn" onclick="event.stopPropagation();selectPackage('${p.id}')">${sel ? 'Selected' : 'Select'}</button></td>
+                </tr>`;
+            }).join('');
+            const customSel = selectedPkgId === 'custom';
+            const amt = Math.max(0, Number(document.getElementById('customAmountInput').value) || 0);
+            const customCoins = Math.floor((amt / 9000) * 100);
+            tbody.innerHTML = rows + `<tr class="${customSel ? 'selected-row' : ''}" onclick="selectPackage('custom')">
+                <td><strong>Custom Coins</strong></td>
+                <td class="mono">Coin ${customCoins}</td>
+                <td class="text-right mono"><strong>${amt.toLocaleString()}</strong></td>
+                <td class="text-right"><button class="mini-btn" onclick="event.stopPropagation();selectPackage('custom')">${customSel ? 'Selected' : 'Select'}</button></td>
+            </tr>`;
+        }
+
+        function selectPackage(id) {
+            selectedPkgId = id;
+            document.getElementById('customAmountGroup').style.display = id === 'custom' ? 'block' : 'none';
+            updateSelectedPackageUI();
+        }
+
+        function updateSelectedPackageUI() {
+            renderPackagesTable();
+            if (selectedPkgId === 'custom') {
+                const amt = Math.max(0, Number(document.getElementById('customAmountInput').value) || 0);
+                const coins = Math.floor((amt / 9000) * 100);
+                document.getElementById('selectedPkgLabel').value = `${coins} Coins — TZS ${amt.toLocaleString()}`;
+            } else {
+                const p = packagesList.find(x => x.id === selectedPkgId);
+                if (p) document.getElementById('selectedPkgLabel').value = `${p.label} — TZS ${p.amountTzs.toLocaleString()}`;
+            }
+        }
+
+        async function startDalipayPayment() {
+            if (!authToken) {
+                openAuthModal('register');
+                return;
+            }
+            const phone = document.getElementById('dalipayPhone').value;
+            const customAmt = Number(document.getElementById('customAmountInput').value);
+            const res = await fetch('/api/payments/dalipay/initiate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
+                credentials: 'include',
+                body: JSON.stringify({
+                    packageId: selectedPkgId,
+                    customAmountTzs: selectedPkgId === 'custom' ? customAmt : undefined,
+                    phoneNumber: phone
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                showNotice(data.error || 'Malipo yameshindwa.', 'error');
+                return;
+            }
+            showNotice(data.message + ' (' + data.reference + ')', 'info');
+            refreshProfile();
+            if (pollTimer) clearInterval(pollTimer);
+            pollTimer = setInterval(async () => {
+                const sr = await fetch('/api/payments/status/' + encodeURIComponent(data.reference), {
+                    headers: { Authorization: 'Bearer ' + authToken },
+                    credentials: 'include'
+                });
+                if (!sr.ok) return;
+                const sd = await sr.json();
+                if (sd.status === 'completed') {
+                    clearInterval(pollTimer);
+                    currentUser = sd.user;
+                    updateUserUI();
+                    refreshProfile();
+                    showNotice('Malipo yamethibitishwa! Salio lako limesasishwa.', 'success');
+                } else if (sd.status === 'failed') {
+                    clearInterval(pollTimer);
+                    showNotice('Malipo yameshindwa.', 'error');
+                }
+            }, 3500);
+        }
+
+        async function unlockAndGenerate(docType) {
+            if (!authToken) {
+                openAuthModal('register');
+                return;
+            }
+            const docLabel = docType === 'tin'
+                ? 'TIN · ' + document.getElementById('tin_name').value.trim()
+                : 'BL · ' + document.getElementById('bl_name').value.trim();
+
+            const res = await fetch('/api/documents/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
+                credentials: 'include',
+                body: JSON.stringify({ docType, docLabel })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                showNotice(data.error || 'Salio halitoshi.', 'error');
+                if (res.status === 402) switchTab('wallet', document.querySelectorAll('.tab-btn')[2]);
+                return;
+            }
+            currentUser = data.user;
+            updateUserUI();
+            refreshProfile();
+            showNotice(data.message, 'success');
+            if (docType === 'tin') {
+                generateTIN();
+                document.getElementById('tin_dl_png').disabled = false;
+                document.getElementById('tin_dl_pdf').disabled = false;
+            } else {
+                await generateBL();
+                document.getElementById('bl_dl_png').disabled = false;
+                document.getElementById('bl_dl_pdf').disabled = false;
+            }
+        }
+
+        // ========== DOCUMENT RENDERING (3x HiDPI) ==========
+        function generateBlNumber(dateStr) {
+            let startYear = new Date().getFullYear();
+            if (dateStr) {
+                const d = new Date(dateStr + 'T00:00:00');
+                if (!isNaN(d.getTime())) startYear = d.getFullYear();
+            }
+            const nextYy = String((startYear + 1) % 100).padStart(2, '0');
+            const officeCode = String(Math.floor(100000 + Math.random() * 1899999)).padStart(7, '0');
+            const serial = String(Math.floor(100 + Math.random() * 99899)).padStart(8, '0');
+            return `BL${officeCode}${startYear}-${nextYy}${serial}`;
+        }
+
+        function refreshBlNo() {
+            document.getElementById('bl_no').value = generateBlNumber(document.getElementById('bl_issue').value);
+            generateBL();
+        }
+        document.getElementById('bl_no').value = generateBlNumber(document.getElementById('bl_issue').value);
+
         const tinCanvas = document.getElementById('tinCanvas');
         const tinCtx = tinCanvas.getContext('2d');
-        let tinImg = new Image();
+        const tinImg = new Image();
         let tinReady = false;
         tinImg.src = 'tin_template.png';
-        tinImg.onload = () => {
-            tinCtx.drawImage(tinImg, 0, 0);
-            tinReady = true;
-            generateTIN();
-        };
+        tinImg.onload = () => { tinReady = true; generateTIN(); };
 
         function getDateParts(dateStr) {
             if (!dateStr) return null;
             const d = new Date(dateStr + 'T00:00:00');
+            if (isNaN(d.getTime())) return null;
             const day = String(d.getDate());
             const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
             const n = d.getDate();
@@ -317,78 +887,67 @@
             const phys = document.getElementById('tin_phys').value.trim().toUpperCase();
             const street = document.getElementById('tin_street').value.trim().toUpperCase();
 
-            tinCtx.clearRect(0, 0, 1146, 1595);
-            tinCtx.drawImage(tinImg, 0, 0);
+            tinCtx.setTransform(1, 0, 0, 1, 0, 0);
+            tinCtx.clearRect(0, 0, tinCanvas.width, tinCanvas.height);
+            tinCtx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);
+            tinCtx.imageSmoothingEnabled = true;
+            tinCtx.imageSmoothingQuality = 'high';
+            tinCtx.drawImage(tinImg, 0, 0, 720, 1003);
 
             const fontFamily = 'Arial, "Liberation Sans", "DejaVu Sans", Helvetica, sans-serif';
-            tinCtx.fillStyle = '#111111';
+            tinCtx.fillStyle = '#000000';
             tinCtx.textAlign = 'center';
 
-            // JINA LA MLIPAKODI
-            let fs = 22;
+            let fs = 16;
             tinCtx.font = `bold ${fs}px ${fontFamily}`;
-            while (tinCtx.measureText(name).width > 760 && fs > 14) {
-                fs--;
-                tinCtx.font = `bold ${fs}px ${fontFamily}`;
-            }
-            tinCtx.fillText(name, 573, 738);
+            while (tinCtx.measureText(name).width > 480 && fs > 10) { fs -= 0.5; tinCtx.font = `bold ${fs}px ${fontFamily}`; }
+            tinCtx.fillText(name, 360, 468);
 
-            // NAMBA YA TIN
-            fs = 22;
+            fs = 16;
             tinCtx.font = `bold ${fs}px ${fontFamily}`;
-            while (tinCtx.measureText(tin).width > 420 && fs > 14) {
-                fs--;
-                tinCtx.font = `bold ${fs}px ${fontFamily}`;
-            }
-            tinCtx.fillText(tin, 573, 938);
+            while (tinCtx.measureText(tin).width > 280 && fs > 10) { fs -= 0.5; tinCtx.font = `bold ${fs}px ${fontFamily}`; }
+            tinCtx.fillText(tin, 360, 586);
 
-            // ========== SEHEMU ZA CHINI (KAMA OFFICIAL) ==========
             tinCtx.textAlign = 'left';
-
-            // WITH EFFECT FROM – Date
             if (dateParts) {
-                tinCtx.font = `21px ${fontFamily}`;
-                tinCtx.fillText(':', 405, 1024);
-
-                let curX = 420;
-
-                // siku (20)
-                tinCtx.font = `bold 21px ${fontFamily}`;
-                tinCtx.fillText(dateParts.day, curX, 1024);
-                curX += tinCtx.measureText(dateParts.day).width + 1;
-
-                // th / st / nd / rd (superscript)
+                let curX = 256;
                 tinCtx.font = `bold 14px ${fontFamily}`;
-                tinCtx.fillText(dateParts.suffix, curX, 1013);
-                curX += tinCtx.measureText(dateParts.suffix).width + 7;
-
-                // October 2026
-                tinCtx.font = `bold 21px ${fontFamily}`;
-                tinCtx.fillText(dateParts.rest, curX, 1024);
+                tinCtx.fillText(dateParts.day, curX, 637);
+                curX += tinCtx.measureText(dateParts.day).width + 1;
+                tinCtx.font = `bold 9.5px ${fontFamily}`;
+                tinCtx.fillText(dateParts.suffix, curX, 630);
+                curX += tinCtx.measureText(dateParts.suffix).width + 5;
+                tinCtx.font = `bold 14px ${fontFamily}`;
+                tinCtx.fillText(dateParts.rest, curX, 637);
             }
-
-            // TRA LOCATION
-            tinCtx.font = `bold 20px ${fontFamily}`;
-            if (tra) tinCtx.fillText(tra, 368, 1083);
-
-            // TAX OFFICE
+            if (tra) {
+                let traFs = 13.5;
+                tinCtx.font = `bold ${traFs}px ${fontFamily}`;
+                while (tinCtx.measureText(tra).width > 155 && traFs > 9.5) { traFs -= 0.5; tinCtx.font = `bold ${traFs}px ${fontFamily}`; }
+                tinCtx.fillText(tra, 223, 675);
+            }
+            tinCtx.font = `13.5px ${fontFamily}`;
+            tinCtx.fillText('E:', 456, 675);
+            const officeStartX = 456 + tinCtx.measureText('E:').width + 6;
             if (office) {
-                tinCtx.font = `20px ${fontFamily}`;
-                tinCtx.fillText(':', 746, 1083);
-                tinCtx.font = `bold 20px ${fontFamily}`;
-                tinCtx.fillText(office, 762, 1083);
+                let offFs = 13.5;
+                tinCtx.font = `bold ${offFs}px ${fontFamily}`;
+                const maxOffW = 622 - officeStartX;
+                while (tinCtx.measureText(office).width > maxOffW && offFs > 9) { offFs -= 0.5; tinCtx.font = `bold ${offFs}px ${fontFamily}`; }
+                tinCtx.fillText(office, officeStartX, 675);
             }
-
-            // PHYSICAL LOCATION
-            tinCtx.font = `bold 20px ${fontFamily}`;
-            if (phys) tinCtx.fillText(phys, 448, 1130);
-
-            // STREET / AREA
-            tinCtx.font = `bold 20px ${fontFamily}`;
-            if (street) tinCtx.fillText(street, 379.5, 1177);
-
-            document.getElementById('tin_dl_png').disabled = false;
-            document.getElementById('tin_dl_pdf').disabled = false;
+            if (phys) {
+                let physFs = 13.5;
+                tinCtx.font = `bold ${physFs}px ${fontFamily}`;
+                while (tinCtx.measureText(phys).width > 345 && physFs > 9.5) { physFs -= 0.5; tinCtx.font = `bold ${physFs}px ${fontFamily}`; }
+                tinCtx.fillText(phys, 264, 704);
+            }
+            if (street) {
+                let stFs = 13.5;
+                tinCtx.font = `bold ${stFs}px ${fontFamily}`;
+                while (tinCtx.measureText(street).width > 385 && stFs > 9.5) { stFs -= 0.5; tinCtx.font = `bold ${stFs}px ${fontFamily}`; }
+                tinCtx.fillText(street, 224, 734);
+            }
         }
 
         function downloadTIN(type) {
@@ -400,73 +959,121 @@
                 a.click();
             } else {
                 const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [1146, 1595] });
-                pdf.addImage(tinCanvas.toDataURL('image/png'), 'PNG', 0, 0, 1146, 1595);
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                pdf.addImage(tinCanvas.toDataURL('image/png'), 'PNG', 0, 0, 210, 297);
                 pdf.save(`TRA_TIN_${name}.pdf`);
             }
         }
 
-        // ========== BUSINESS LICENSE ==========
         const blCanvas = document.getElementById('blCanvas');
         const blCtx = blCanvas.getContext('2d');
-        let blImg = new Image();
+        const blImg = new Image();
         let blReady = false;
         blImg.src = 'bl_template.png';
-        blImg.onload = () => {
-            blCtx.drawImage(blImg, 0, 0);
-            blReady = true;
-            generateBL();
-        };
+        blImg.onload = () => { blReady = true; generateBL(); };
 
-        function generateBL() {
+        function formatFee(raw) {
+            const trimmed = raw.trim();
+            if (!trimmed) return '';
+            const num = Number(trimmed.replace(/,/g, ''));
+            if (!isFinite(num)) return trimmed;
+            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        async function generateBL() {
             if (!blReady) return;
-            blCtx.clearRect(0, 0, 794, 1123);
-            blCtx.drawImage(blImg, 0, 0);
+            if (document.fonts) {
+                try {
+                    await Promise.all([
+                        document.fonts.load('600 12.5px "Open Sans"'),
+                        document.fonts.load('600 13.5px "Open Sans"')
+                    ]);
+                    await document.fonts.ready;
+                } catch (e) {}
+            }
 
-            // Rangi ya B.L. NO iliyolingana na screenshot
-            const blueCol = '#77B4C7';
-            const blackCol = '#111111';
+            const blNo = document.getElementById('bl_no').value.trim();
+            const office = document.getElementById('bl_office').value.trim().toUpperCase();
+            const tin = document.getElementById('bl_tin').value.trim();
+            const name = document.getElementById('bl_name').value.trim().toUpperCase();
+            const business = document.getElementById('bl_business').value.trim().toUpperCase();
+            const type = document.getElementById('bl_type').value.trim().toUpperCase();
+            const issue = document.getElementById('bl_issue').value.trim();
+            const exp = document.getElementById('bl_expire').value.trim();
+            const principal = document.getElementById('bl_principal').value.trim().toUpperCase();
+            const region = document.getElementById('bl_region').value.trim();
+            const ward = document.getElementById('bl_ward').value.trim();
+            const street = document.getElementById('bl_street').value.trim();
+            const fee = formatFee(document.getElementById('bl_fee').value);
+
+            const qrPayload = [
+                'THE UNITED REPUBLIC OF TANZANIA',
+                'BUSINESS LICENSE',
+                `B.L. NO: ${blNo}`,
+                `Issuing Office: ${office}`,
+                `TIN: ${tin}`,
+                `License Issued To: ${name}`,
+                `For the Business of: ${business}`,
+                `Business Licensing: ${type}`,
+                `Date of Issue: ${issue}`,
+                `Expiring Date: ${exp}`,
+                `Principal/Branch: ${principal}`,
+                `Location: ${[region, ward, street].filter(Boolean).join(', ')}`,
+                `Amount of Fee Paid: ${fee}`
+            ].join('\n');
+
+            const qrOffscreen = document.createElement('canvas');
+            if (window.QRCode && window.QRCode.toCanvas) {
+                await window.QRCode.toCanvas(qrOffscreen, qrPayload, {
+                    width: 164 * RENDER_SCALE,
+                    margin: 1,
+                    errorCorrectionLevel: 'M',
+                    color: { dark: '#000000', light: '#FFFFFF' }
+                });
+            }
+
+            blCtx.setTransform(1, 0, 0, 1, 0, 0);
+            blCtx.clearRect(0, 0, blCanvas.width, blCanvas.height);
+            blCtx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);
+            blCtx.imageSmoothingEnabled = true;
+            blCtx.imageSmoothingQuality = 'high';
+            blCtx.drawImage(blImg, 0, 0, 720, 1010);
+
+            const fontFamily = '"Open Sans", "Noto Sans", Arial, Helvetica, sans-serif';
+            if (blNo) {
+                blCtx.textAlign = 'center';
+                blCtx.fillStyle = '#2C8CB3';
+                blCtx.font = `600 13.5px ${fontFamily}`;
+                blCtx.fillText(`B.L. NO : ${blNo}`, 360, 222);
+            }
+
             blCtx.textAlign = 'left';
-            blCtx.font = '14.5px Arial, Helvetica, sans-serif';
-
-            function put(text, x, y, color = blackCol) {
+            function put(text, x, y, maxW = 415) {
                 if (!text) return;
-                blCtx.fillStyle = color;
+                blCtx.fillStyle = '#000000';
+                let fs = 12.5;
+                blCtx.font = `600 ${fs}px ${fontFamily}`;
+                while (blCtx.measureText(text).width > maxW && fs > 9.0) { fs -= 0.4; blCtx.font = `600 ${fs}px ${fontFamily}`; }
                 blCtx.fillText(text, x, y);
             }
+            put(office, 255, 311);
+            put(tin, 255, 342);
+            put(name, 255, 373);
+            put(business, 255, 406);
+            put(type, 255, 438);
+            put(issue, 255, 466);
+            put(exp, 255, 497);
+            put(principal, 255, 525);
+            put(region, 255, 600, 175);
+            put(ward, 255, 632, 175);
+            put(street, 255, 663, 175);
+            put(fee, 255, 728, 175);
 
-            put(document.getElementById('bl_no').value.trim(), 322, 247, blueCol);
-            put(document.getElementById('bl_office').value.trim().toUpperCase(), 288, 348);
-            put(document.getElementById('bl_tin').value.trim(), 288, 380);
-            put(document.getElementById('bl_name').value.trim().toUpperCase(), 288, 420);
-            put(document.getElementById('bl_business').value.trim().toUpperCase(), 288, 455);
-            put(document.getElementById('bl_type').value.trim().toUpperCase(), 288, 490);
-
-            const issue = document.getElementById('bl_issue').value;
-            if (issue) {
-                const d = new Date(issue + 'T00:00:00');
-                put(
-                    `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`,
-                    288, 525
-                );
+            if (window.QRCode && window.QRCode.toCanvas) {
+                blCtx.fillStyle = '#FFFFFF';
+                blCtx.fillRect(438, 550, 190, 206);
+                blCtx.drawImage(qrOffscreen, 451, 568, 164, 164);
             }
-            const exp = document.getElementById('bl_expire').value;
-            if (exp) {
-                const d = new Date(exp + 'T00:00:00');
-                put(
-                    `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`,
-                    288, 560
-                );
-            }
-
-            put(document.getElementById('bl_principal').value.trim().toUpperCase(), 288, 595);
-            put(document.getElementById('bl_region').value.trim(), 288, 675);
-            put(document.getElementById('bl_ward').value.trim(), 288, 710);
-            put(document.getElementById('bl_street').value.trim(), 288, 745);
-            put(document.getElementById('bl_fee').value.trim(), 288, 810);
-
-            document.getElementById('bl_dl_png').disabled = false;
-            document.getElementById('bl_dl_pdf').disabled = false;
         }
 
         function downloadBL(type) {
@@ -478,24 +1085,34 @@
                 a.click();
             } else {
                 const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [794, 1123] });
-                pdf.addImage(blCanvas.toDataURL('image/png'), 'PNG', 0, 0, 794, 1123);
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                pdf.addImage(blCanvas.toDataURL('image/png'), 'PNG', 0, 0, 210, 297);
                 pdf.save(`Business_License_${name}.pdf`);
             }
         }
 
         document.querySelectorAll('#tin-panel input').forEach(el => {
             el.addEventListener('input', () => {
+                document.getElementById('tin_dl_png').disabled = true;
+                document.getElementById('tin_dl_pdf').disabled = true;
                 clearTimeout(window._t);
-                window._t = setTimeout(generateTIN, 350);
+                window._t = setTimeout(generateTIN, 200);
             });
+        });
+        document.getElementById('bl_issue').addEventListener('input', () => {
+            document.getElementById('bl_no').value = generateBlNumber(document.getElementById('bl_issue').value);
         });
         document.querySelectorAll('#bl-panel input').forEach(el => {
             el.addEventListener('input', () => {
+                document.getElementById('bl_dl_png').disabled = true;
+                document.getElementById('bl_dl_pdf').disabled = true;
                 clearTimeout(window._b);
-                window._b = setTimeout(generateBL, 350);
+                window._b = setTimeout(generateBL, 200);
             });
         });
+
+        loadPackages();
+        updateUserUI();
     </script>
 </body>
 </html>
