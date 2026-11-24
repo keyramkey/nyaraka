@@ -4,7 +4,6 @@ import hmac
 import json
 import os
 import secrets
-import sqlite3
 import time
 from functools import wraps
 from urllib.parse import urlparse
@@ -14,7 +13,6 @@ from flask import Flask, g, jsonify, request, send_from_directory
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 
-DB_PATH = os.environ.get('DATABASE_PATH', os.path.join(os.path.dirname(__file__), 'tra_filler.db'))
 SESSION_SECRET = os.environ.get('SESSION_SECRET') or secrets.token_hex(32)
 DEVICE_COOKIE_NAME = 'tra_device_token'
 GENERATION_COIN_COST = 5
@@ -45,75 +43,53 @@ PACKAGES = {
 }
 
 
-def get_db():
-    if 'db' not in g:
-        conn = sqlite3.connect(DB_PATH, isolation_level=None)
-        conn.row_factory = sqlite3.Row
-        g.db = conn
-    return g.db
-
-
-@app.teardown_appcontext
-def close_db(_exc):
-    conn = g.pop('db', None)
-    if conn is not None:
-        conn.close()
-
-
-def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.executescript(
-        """
-        PRAGMA journal_mode = WAL;
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            full_name TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            phone TEXT NOT NULL DEFAULT '',
-            password_hash TEXT NOT NULL,
-            coins INTEGER NOT NULL DEFAULT 0,
-            unlimited_until INTEGER NOT NULL DEFAULT 0,
-            free_bonus_granted INTEGER NOT NULL DEFAULT 0,
-            created_at INTEGER NOT NULL
-        );
-        CREATE TABLE IF NOT EXISTS device_claims (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            device_id TEXT,
-            cookie_token TEXT,
-            user_id INTEGER NOT NULL,
-            created_at INTEGER NOT NULL
-        );
-        CREATE INDEX IF NOT EXISTS idx_device_claims_device ON device_claims(device_id);
-        CREATE INDEX IF NOT EXISTS idx_device_claims_cookie ON device_claims(cookie_token);
-        CREATE TABLE IF NOT EXISTS payments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            reference TEXT NOT NULL UNIQUE,
-            user_id INTEGER NOT NULL,
-            package_id TEXT NOT NULL,
-            package_label TEXT NOT NULL,
-            amount_tzs INTEGER NOT NULL,
-            coins_awarded INTEGER NOT NULL DEFAULT 0,
-            unlimited_days INTEGER NOT NULL DEFAULT 0,
-            phone_number TEXT NOT NULL,
-            status TEXT NOT NULL DEFAULT 'pending',
-            provider_ref TEXT NOT NULL DEFAULT '',
-            created_at INTEGER NOT NULL,
-            completed_at INTEGER
-        );
-        CREATE TABLE IF NOT EXISTS generations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            doc_type TEXT NOT NULL,
-            doc_label TEXT NOT NULL,
-            coins_spent INTEGER NOT NULL,
-            created_at INTEGER NOT NULL
-        );
-        """
+def get_supabase_config():
+    url = os.environ.get('SUPABASE_URL', '').strip().rstrip('/')
+    key = (
+        os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '').strip()
+        or os.environ.get('SUPABASE_SECRET_KEY', '').strip()
     )
-    conn.close()
+    if not url or not key:
+        raise RuntimeError('SUPABASE_URL na SUPABASE_SERVICE_ROLE_KEY hazijawekwa kwenye Environment Variables.')
+    return url, key
 
 
-init_db()
+def sb_headers(service_key: str, prefer: str = 'return=representation'):
+    return {
+        'apikey': service_key,
+        'Authorization': f'Bearer {service_key}',
+        'Content-Type': 'application/json',
+        'Prefer': prefer,
+    }
+
+
+def sb_select(table: str, params: dict):
+    url, key = get_supabase_config()
+    resp = requests.get(f'{url}/rest/v1/{table}', headers=sb_headers(key), params=params, timeout=15)
+    resp.raise_for_status()
+    return resp.json()
+
+
+def sb_insert(table: str, payload: dict):
+    url, key = get_supabase_config()
+    resp = requests.post(f'{url}/rest/v1/{table}', headers=sb_headers(key), json=payload, timeout=15)
+    resp.raise_for_status()
+    rows = resp.json()
+    return rows[0] if isinstance(rows, list) and rows else rows
+
+
+def sb_update(table: str, params: dict, payload: dict):
+    url, key = get_supabase_config()
+    resp = requests.patch(f'{url}/rest/v1/{table}', headers=sb_headers(key), params=params, json=payload, timeout=15)
+    resp.raise_for_status()
+    return resp.json()
+
+
+def sb_rpc(fn_name: str, payload: dict):
+    url, key = get_supabase_config()
+    resp = requests.post(f'{url}/rest/v1/rpc/{fn_name}', headers=sb_headers(key), json=payload, timeout=15)
+    resp.raise_for_status()
+    return resp.json()
 
 
 def now_ms():
@@ -168,11 +144,23 @@ def verify_token(token: str):
         return None
 
 
+def sanitize_identifier(raw) -> str:
+    if not isinstance(raw, str):
+        return ''
+    return ''.join(ch for ch in raw.strip() if ch.isalnum() or ch in ('_', '-'))[:128]
+
+
 def set_device_cookie(response, token: str):
     max_age = 60 * 60 * 24 * 365 * 2
+    is_https = (
+        request.is_secure
+        or request.headers.get('X-Forwarded-Proto', '') == 'https'
+        or os.environ.get('VERCEL') == '1'
+    )
+    attrs = 'HttpOnly; Secure; SameSite=None; Partitioned' if is_https else 'HttpOnly; SameSite=Lax'
     response.headers.add(
         'Set-Cookie',
-        f'{DEVICE_COOKIE_NAME}={token}; Path=/; Max-Age={max_age}; HttpOnly; Secure; SameSite=None; Partitioned',
+        f'{DEVICE_COOKIE_NAME}={token}; Path=/; Max-Age={max_age}; {attrs}',
     )
 
 
@@ -203,17 +191,17 @@ def require_auth(fn):
     return wrapper
 
 
-def sanitize_user(row):
-    unlimited_until = int(row['unlimited_until'] or 0)
+def sanitize_user(row: dict):
+    unlimited_until = int(row.get('unlimited_until') or 0)
     return {
         'id': int(row['id']),
         'fullName': row['full_name'],
         'email': row['email'],
-        'phone': row['phone'] or '',
-        'coins': int(row['coins'] or 0),
+        'phone': row.get('phone') or '',
+        'coins': int(row.get('coins') or 0),
         'unlimitedUntil': unlimited_until,
         'isUnlimited': unlimited_until > now_ms(),
-        'freeBonusGranted': bool(row['free_bonus_granted']),
+        'freeBonusGranted': bool(row.get('free_bonus_granted')),
     }
 
 
@@ -241,6 +229,13 @@ def index():
 
 @app.route('/api/packages', methods=['GET'])
 def api_packages():
+    supabase_ready = bool(
+        os.environ.get('SUPABASE_URL', '').strip()
+        and (
+            os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '').strip()
+            or os.environ.get('SUPABASE_SECRET_KEY', '').strip()
+        )
+    )
     return jsonify(
         {
             'generationCost': GENERATION_COIN_COST,
@@ -250,6 +245,7 @@ def api_packages():
                 os.environ.get('DALIPAY_SECRET_KEY', '').strip()
                 and os.environ.get('DALIPAY_PUBLIC_KEY', '').strip()
             ),
+            'supabaseConfigured': supabase_ready,
         }
     )
 
@@ -264,48 +260,60 @@ def api_register():
     email = str(data.get('email', '')).strip().lower()
     phone = str(data.get('phone', '')).strip()
     password = str(data.get('password', ''))
-    device_id = str(data.get('deviceId') or data.get('device_id') or '').strip()[:128]
+    device_id = sanitize_identifier(data.get('deviceId') or data.get('device_id') or '')
 
     if len(full_name) < 2 or '@' not in email or len(password) < 6:
         return jsonify({'error': 'Jaza jina kamili, barua pepe sahihi, na nenosiri (angalau herufi 6).'}), 400
 
-    db = get_db()
-    if db.execute('SELECT id FROM users WHERE email = ?', (email,)).fetchone():
-        return jsonify({'error': 'Barua pepe hii tayari imesajiliwa. Tafadhali ingia.'}), 409
-
-    existing_cookie = request.cookies.get(DEVICE_COOKIE_NAME, '').strip()
-
-    # Detect returning device_id OR returning browser cookie
-    already_claimed = False
-    if device_id:
-        if db.execute('SELECT id FROM device_claims WHERE device_id = ? LIMIT 1', (device_id,)).fetchone():
-            already_claimed = True
-    if not already_claimed and existing_cookie:
-        if db.execute('SELECT id FROM device_claims WHERE cookie_token = ? LIMIT 1', (existing_cookie,)).fetchone():
-            already_claimed = True
-
-    cookie_token = existing_cookie or secrets.token_hex(24)
-    starting_coins = 0 if already_claimed else FREE_SIGNUP_COINS
-    bonus_flag = 0 if already_claimed else 1
-    ts = now_ms()
-
-    db.execute('BEGIN IMMEDIATE')
     try:
-        cur = db.execute(
-            'INSERT INTO users (full_name, email, phone, password_hash, coins, unlimited_until, free_bonus_granted, created_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?)',
-            (full_name, email, phone, hash_password(password), starting_coins, bonus_flag, ts),
-        )
-        user_id = cur.lastrowid
-        db.execute(
-            'INSERT INTO device_claims (device_id, cookie_token, user_id, created_at) VALUES (?, ?, ?, ?)',
-            (device_id or None, cookie_token, user_id, ts),
-        )
-        db.execute('COMMIT')
-    except Exception:
-        db.execute('ROLLBACK')
-        return jsonify({'error': 'Imeshindwa kusajili akaunti.'}), 500
+        existing_users = sb_select('users', {'select': 'id', 'email': f'eq.{email}', 'limit': '1'})
+        if existing_users:
+            return jsonify({'error': 'Barua pepe hii tayari imesajiliwa. Tafadhali ingia.'}), 409
 
-    user_row = db.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
+        existing_cookie = sanitize_identifier(request.cookies.get(DEVICE_COOKIE_NAME, ''))
+
+        # Check Supabase device_claims for both device_id and persistent browser cookie
+        already_claimed = False
+        if device_id:
+            if sb_select('device_claims', {'select': 'id', 'device_id': f'eq.{device_id}', 'limit': '1'}):
+                already_claimed = True
+        if not already_claimed and existing_cookie:
+            if sb_select('device_claims', {'select': 'id', 'cookie_token': f'eq.{existing_cookie}', 'limit': '1'}):
+                already_claimed = True
+
+        cookie_token = existing_cookie or secrets.token_hex(24)
+        starting_coins = 0 if already_claimed else FREE_SIGNUP_COINS
+        ts = now_ms()
+
+        user_row = sb_insert(
+            'users',
+            {
+                'full_name': full_name,
+                'email': email,
+                'phone': phone,
+                'password_hash': hash_password(password),
+                'coins': starting_coins,
+                'unlimited_until': 0,
+                'free_bonus_granted': not already_claimed,
+                'created_at': ts,
+            },
+        )
+        user_id = int(user_row['id'])
+
+        sb_insert(
+            'device_claims',
+            {
+                'device_id': device_id or None,
+                'cookie_token': cookie_token,
+                'user_id': user_id,
+                'created_at': ts,
+            },
+        )
+    except RuntimeError as e:
+        return jsonify({'error': str(e)}), 503
+    except Exception:
+        return jsonify({'error': 'Imeshindwa kusajili akaunti kwenye Supabase.'}), 500
+
     resp = jsonify(
         {
             'token': sign_token(user_id),
@@ -331,19 +339,30 @@ def api_login():
     data = request.get_json(silent=True) or {}
     email = str(data.get('email', '')).strip().lower()
     password = str(data.get('password', ''))
-    device_id = str(data.get('deviceId') or data.get('device_id') or '').strip()[:128]
+    device_id = sanitize_identifier(data.get('deviceId') or data.get('device_id') or '')
 
-    db = get_db()
-    user_row = db.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+    try:
+        rows = sb_select('users', {'select': '*', 'email': f'eq.{email}', 'limit': '1'})
+        user_row = rows[0] if rows else None
+    except RuntimeError as e:
+        return jsonify({'error': str(e)}), 503
+
     if not user_row or not verify_password(password, user_row['password_hash']):
         return jsonify({'error': 'Barua pepe au nenosiri si sahihi.'}), 401
 
-    cookie_token = request.cookies.get(DEVICE_COOKIE_NAME, '').strip() or secrets.token_hex(24)
-    if device_id and not db.execute('SELECT id FROM device_claims WHERE device_id = ? LIMIT 1', (device_id,)).fetchone():
-        db.execute(
-            'INSERT INTO device_claims (device_id, cookie_token, user_id, created_at) VALUES (?, ?, ?, ?)',
-            (device_id, cookie_token, int(user_row['id']), now_ms()),
-        )
+    cookie_token = sanitize_identifier(request.cookies.get(DEVICE_COOKIE_NAME, '')) or secrets.token_hex(24)
+    if device_id:
+        existing_dev = sb_select('device_claims', {'select': 'id', 'device_id': f'eq.{device_id}', 'limit': '1'})
+        if not existing_dev:
+            sb_insert(
+                'device_claims',
+                {
+                    'device_id': device_id,
+                    'cookie_token': cookie_token,
+                    'user_id': int(user_row['id']),
+                    'created_at': now_ms(),
+                },
+            )
 
     resp = jsonify({'token': sign_token(int(user_row['id'])), 'user': sanitize_user(user_row)})
     set_device_cookie(resp, cookie_token)
@@ -353,26 +372,33 @@ def api_login():
 @app.route('/api/auth/me', methods=['GET'])
 @require_auth
 def api_me():
-    db = get_db()
-    user_row = db.execute('SELECT * FROM users WHERE id = ?', (g.user_id,)).fetchone()
-    if not user_row:
-        return jsonify({'error': 'Akaunti haipatikani.'}), 404
+    try:
+        rows = sb_select('users', {'select': '*', 'id': f'eq.{g.user_id}', 'limit': '1'})
+        if not rows:
+            return jsonify({'error': 'Akaunti haipatikani.'}), 404
+        user_row = rows[0]
 
-    payments = [
-        dict(r)
-        for r in db.execute(
-            'SELECT reference, package_label, amount_tzs, coins_awarded, unlimited_days, phone_number, status, created_at, completed_at FROM payments WHERE user_id = ? ORDER BY created_at DESC LIMIT 20',
-            (g.user_id,),
-        ).fetchall()
-    ]
-    generations = [
-        dict(r)
-        for r in db.execute(
-            'SELECT id, doc_type, doc_label, coins_spent, created_at FROM generations WHERE user_id = ? ORDER BY created_at DESC LIMIT 20',
-            (g.user_id,),
-        ).fetchall()
-    ]
-    return jsonify({'user': sanitize_user(user_row), 'payments': payments, 'generations': generations})
+        payments = sb_select(
+            'payments',
+            {
+                'select': 'reference,package_label,amount_tzs,coins_awarded,unlimited_days,phone_number,status,created_at,completed_at',
+                'user_id': f'eq.{g.user_id}',
+                'order': 'created_at.desc',
+                'limit': '20',
+            },
+        )
+        generations = sb_select(
+            'generations',
+            {
+                'select': 'id,doc_type,doc_label,coins_spent,created_at',
+                'user_id': f'eq.{g.user_id}',
+                'order': 'created_at.desc',
+                'limit': '20',
+            },
+        )
+        return jsonify({'user': sanitize_user(user_row), 'payments': payments, 'generations': generations})
+    except RuntimeError as e:
+        return jsonify({'error': str(e)}), 503
 
 
 @app.route('/api/documents/generate', methods=['POST'])
@@ -384,50 +410,33 @@ def api_generate_document():
         return jsonify({'error': 'Aina ya hati si sahihi.'}), 400
 
     doc_label = str(data.get('docLabel') or ('TIN Certificate' if doc_type == 'tin' else 'Business License')).strip()[:120]
-    ts = now_ms()
-    db = get_db()
-    db.execute('BEGIN IMMEDIATE')
     try:
-        user_row = db.execute('SELECT * FROM users WHERE id = ?', (g.user_id,)).fetchone()
-        if not user_row:
-            db.execute('ROLLBACK')
-            return jsonify({'error': 'Akaunti haipatikani.'}), 404
-
-        is_unlimited = int(user_row['unlimited_until'] or 0) > ts
-        current_coins = int(user_row['coins'] or 0)
-
-        if not is_unlimited and current_coins < GENERATION_COIN_COST:
-            db.execute('ROLLBACK')
-            return (
-                jsonify(
-                    {
-                        'error': f'Salio lako ni coin {current_coins}. Unahitaji coin {GENERATION_COIN_COST} kutengeneza hati. Tafadhali nunua coin kupitia Dalipay.',
-                        'requiredCoins': GENERATION_COIN_COST,
-                        'currentCoins': current_coins,
-                    }
-                ),
-                402,
-            )
-
-        spent = 0 if is_unlimited else GENERATION_COIN_COST
-        if spent > 0:
-            db.execute('UPDATE users SET coins = coins - ? WHERE id = ?', (spent, g.user_id))
-        db.execute(
-            'INSERT INTO generations (user_id, doc_type, doc_label, coins_spent, created_at) VALUES (?, ?, ?, ?, ?)',
-            (g.user_id, doc_type, doc_label, spent, ts),
+        result = sb_rpc(
+            'deduct_generation_coins',
+            {
+                'p_user_id': g.user_id,
+                'p_doc_type': doc_type,
+                'p_doc_label': doc_label,
+                'p_cost': GENERATION_COIN_COST,
+                'p_now_ms': now_ms(),
+            },
         )
-        updated = db.execute('SELECT * FROM users WHERE id = ?', (g.user_id,)).fetchone()
-        db.execute('COMMIT')
+        if not result.get('ok'):
+            return jsonify({'error': result.get('error', 'Salio halitoshi.')}), int(result.get('status_code', 402))
+
+        spent = int(result.get('coins_spent', 0))
+        is_unlimited = bool(result.get('is_unlimited', False))
         return jsonify(
             {
                 'ok': True,
                 'coinsSpent': spent,
-                'user': sanitize_user(updated),
+                'user': sanitize_user(result['user']),
                 'message': 'Unlimited inafanya kazi (coin 0 zimekatwa).' if is_unlimited else f'Coin {spent} zimekatwa kwa mafanikio.',
             }
         )
+    except RuntimeError as e:
+        return jsonify({'error': str(e)}), 503
     except Exception:
-        db.execute('ROLLBACK')
         return jsonify({'error': 'Hitilafu imetokea wakati wa kukata coin.'}), 500
 
 
@@ -474,11 +483,24 @@ def api_dalipay_initiate():
         )
 
     reference = f'DP-{now_ms()}-{secrets.token_hex(4).upper()}'
-    db = get_db()
-    db.execute(
-        'INSERT INTO payments (reference, user_id, package_id, package_label, amount_tzs, coins_awarded, unlimited_days, phone_number, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        (reference, g.user_id, package_id, package_label, amount_tzs, coins_awarded, unlimited_days, phone_clean, 'pending', now_ms()),
-    )
+    try:
+        sb_insert(
+            'payments',
+            {
+                'reference': reference,
+                'user_id': g.user_id,
+                'package_id': package_id,
+                'package_label': package_label,
+                'amount_tzs': amount_tzs,
+                'coins_awarded': coins_awarded,
+                'unlimited_days': unlimited_days,
+                'phone_number': phone_clean,
+                'status': 'pending',
+                'created_at': now_ms(),
+            },
+        )
+    except RuntimeError as e:
+        return jsonify({'error': str(e)}), 503
 
     try:
         resp = requests.post(
@@ -500,12 +522,12 @@ def api_dalipay_initiate():
         )
         res_json = resp.json() if resp.content else {}
         if not resp.ok:
-            db.execute('UPDATE payments SET status = ? WHERE reference = ?', ('failed', reference))
+            sb_update('payments', {'reference': f'eq.{reference}'}, {'status': 'failed'})
             return jsonify({'error': res_json.get('message') or 'Ombi la malipo ya Dalipay limekataliwa.', 'reference': reference}), 502
 
         provider_ref = str(res_json.get('transaction_id') or res_json.get('id') or '')
         if provider_ref:
-            db.execute('UPDATE payments SET provider_ref = ? WHERE reference = ?', (provider_ref, reference))
+            sb_update('payments', {'reference': f'eq.{reference}'}, {'provider_ref': provider_ref})
 
         return jsonify(
             {
@@ -518,27 +540,33 @@ def api_dalipay_initiate():
             }
         )
     except Exception:
-        db.execute('UPDATE payments SET status = ? WHERE reference = ?', ('failed', reference))
+        sb_update('payments', {'reference': f'eq.{reference}'}, {'status': 'failed'})
         return jsonify({'error': 'Imeshindwa kuwasiliana na seva ya Dalipay.', 'reference': reference}), 502
 
 
 @app.route('/api/payments/status/<reference>', methods=['GET'])
 @require_auth
 def api_payment_status(reference):
-    db = get_db()
-    payment = db.execute('SELECT * FROM payments WHERE reference = ? AND user_id = ?', (reference, g.user_id)).fetchone()
-    if not payment:
-        return jsonify({'error': 'Muamala haupatikani.'}), 404
-    user_row = db.execute('SELECT * FROM users WHERE id = ?', (g.user_id,)).fetchone()
-    return jsonify(
-        {
-            'reference': payment['reference'],
-            'status': payment['status'],
-            'packageLabel': payment['package_label'],
-            'amountTzs': int(payment['amount_tzs']),
-            'user': sanitize_user(user_row),
-        }
-    )
+    try:
+        payments = sb_select(
+            'payments',
+            {'select': '*', 'reference': f'eq.{reference}', 'user_id': f'eq.{g.user_id}', 'limit': '1'},
+        )
+        if not payments:
+            return jsonify({'error': 'Muamala haupatikani.'}), 404
+        payment = payments[0]
+        user_row = sb_select('users', {'select': '*', 'id': f'eq.{g.user_id}', 'limit': '1'})[0]
+        return jsonify(
+            {
+                'reference': payment['reference'],
+                'status': payment['status'],
+                'packageLabel': payment['package_label'],
+                'amountTzs': int(payment['amount_tzs']),
+                'user': sanitize_user(user_row),
+            }
+        )
+    except RuntimeError as e:
+        return jsonify({'error': str(e)}), 503
 
 
 def _handle_dalipay_webhook():
@@ -563,51 +591,24 @@ def _handle_dalipay_webhook():
         return jsonify({'error': 'Invalid webhook signature.'}), 401
 
     payload = request.get_json(silent=True) or {}
-    reference = str(payload.get('reference') or payload.get('order_id') or payload.get('merchant_reference') or '').strip()
+    reference = sanitize_identifier(payload.get('reference') or payload.get('order_id') or payload.get('merchant_reference') or '')
     status_raw = str(payload.get('status') or payload.get('event') or '').lower()
     provider_ref = str(payload.get('transaction_id') or payload.get('id') or '')
 
     if not reference:
         return jsonify({'error': 'Missing payment reference.'}), 400
 
-    db = get_db()
     if status_raw in ('success', 'succeeded', 'completed', 'paid', 'payment.success'):
-        db.execute('BEGIN IMMEDIATE')
-        try:
-            payment = db.execute('SELECT * FROM payments WHERE reference = ?', (reference,)).fetchone()
-            if not payment:
-                db.execute('ROLLBACK')
-                return jsonify({'error': 'Payment reference not found.'}), 404
-            if payment['status'] == 'completed':
-                db.execute('COMMIT')
-                return jsonify({'received': True, 'status': 'completed'})
-
-            user_row = db.execute('SELECT id, unlimited_until FROM users WHERE id = ?', (int(payment['user_id']),)).fetchone()
-            if not user_row:
-                db.execute('ROLLBACK')
-                return jsonify({'error': 'User not found.'}), 404
-
-            ts = now_ms()
-            if int(payment['coins_awarded'] or 0) > 0:
-                db.execute('UPDATE users SET coins = coins + ? WHERE id = ?', (int(payment['coins_awarded']), int(user_row['id'])))
-            if int(payment['unlimited_days'] or 0) > 0:
-                cur_until = int(user_row['unlimited_until'] or 0)
-                base_ts = cur_until if cur_until > ts else ts
-                next_until = base_ts + int(payment['unlimited_days']) * 24 * 60 * 60 * 1000
-                db.execute('UPDATE users SET unlimited_until = ? WHERE id = ?', (next_until, int(user_row['id'])))
-
-            db.execute(
-                'UPDATE payments SET status = ?, provider_ref = COALESCE(NULLIF(?, ""), provider_ref), completed_at = ? WHERE reference = ?',
-                ('completed', provider_ref, ts, reference),
-            )
-            db.execute('COMMIT')
-            return jsonify({'received': True, 'status': 'completed'})
-        except Exception:
-            db.execute('ROLLBACK')
-            return jsonify({'error': 'Failed to settle payment.'}), 500
+        res = sb_rpc(
+            'settle_dalipay_payment',
+            {'p_reference': reference, 'p_provider_ref': provider_ref, 'p_now_ms': now_ms()},
+        )
+        if not res.get('ok'):
+            return jsonify({'error': res.get('error', 'Settlement failed')}), int(res.get('status_code', 404))
+        return jsonify({'received': True, 'status': 'completed'})
 
     if status_raw in ('failed', 'cancelled', 'canceled', 'expired', 'payment.failed'):
-        db.execute('UPDATE payments SET status = ? WHERE reference = ? AND status = ?', ('failed', reference, 'pending'))
+        sb_update('payments', {'reference': f'eq.{reference}', 'status': 'eq.pending'}, {'status': 'failed'})
         return jsonify({'received': True, 'status': 'failed'})
 
     return jsonify({'received': True, 'status': status_raw or 'ignored'})
