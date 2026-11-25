@@ -289,6 +289,46 @@ def normalize_phone_tz(raw: str):
     return None
 
 
+def to_local_tz_phone(normalized_phone: str) -> str:
+    if normalized_phone.startswith('255') and len(normalized_phone) == 12:
+        return '0' + normalized_phone[3:]
+    return normalized_phone
+
+
+VALID_DALIPAY_PROVIDERS = ('Tigo', 'Airtel', 'Halopesa', 'Azampesa', 'Mpesa')
+
+
+def resolve_dalipay_provider(raw_provider: str, normalized_phone: str) -> str:
+    cleaned = (raw_provider or '').strip().lower()
+    for p in VALID_DALIPAY_PROVIDERS:
+        if p.lower() == cleaned:
+            return p
+    local = to_local_tz_phone(normalized_phone)
+    prefix = local[:3]
+    if prefix in ('074', '075', '076', '079'):
+        return 'Mpesa'
+    if prefix in ('071', '065', '067', '077'):
+        return 'Tigo'
+    if prefix in ('078', '068', '069'):
+        return 'Airtel'
+    if prefix in ('061', '062'):
+        return 'Halopesa'
+    return 'Mpesa'
+
+
+def resolve_dalipay_urls():
+    explicit_api = os.environ.get('DALIPAY_API_URL', '').strip().rstrip('/')
+    raw_base = (os.environ.get('DALIPAY_BASE_URL', '') or 'https://app.dalipay.co.tz').strip().rstrip('/')
+    if not raw_base.startswith(('http://', 'https://')):
+        raw_base = f'https://{raw_base}'
+    if raw_base.endswith('/api/v1/collections'):
+        raw_base = raw_base[:-len('/api/v1/collections')]
+    elif raw_base.endswith('/api/v1'):
+        raw_base = raw_base[:-len('/api/v1')]
+    collections_url = explicit_api or f'{raw_base}/api/v1/collections'
+    return raw_base, collections_url
+
+
 def get_contact_config():
     raw_wa = os.environ.get('CONTACT_WHATSAPP', '').strip()
     raw_phone = os.environ.get('CONTACT_PHONE', '').strip()
@@ -566,7 +606,7 @@ def api_dalipay_initiate():
 
     public_key = os.environ.get('DALIPAY_PUBLIC_KEY', '').strip()
     secret_key = os.environ.get('DALIPAY_SECRET_KEY', '').strip()
-    api_url = os.environ.get('DALIPAY_API_URL', '').strip() or 'https://api.dalipay.co.tz/v1/payments/mobile'
+    _, collections_url = resolve_dalipay_urls()
 
     if not public_key or not secret_key:
         return (
@@ -578,7 +618,19 @@ def api_dalipay_initiate():
             503,
         )
 
-    reference = f'DP-{now_ms()}-{secrets.token_hex(4).upper()}'
+    # Dalipay external_id max length is 30 chars
+    reference = f'DP-{now_ms()}-{secrets.token_hex(4).upper()}'[:30]
+    provider = resolve_dalipay_provider(str(data.get('provider') or ''), phone_clean)
+    local_account = to_local_tz_phone(phone_clean)
+
+    customer_name = ''
+    try:
+        u_rows = sb_select('users', {'select': 'full_name', 'id': f'eq.{g.user_id}', 'limit': '1'})
+        if u_rows:
+            customer_name = str(u_rows[0].get('full_name') or '').strip()[:100]
+    except Exception:
+        customer_name = ''
+
     try:
         sb_insert(
             'payments',
@@ -598,32 +650,64 @@ def api_dalipay_initiate():
     except RuntimeError as e:
         return jsonify({'error': str(e)}), 503
 
+    payload_body = {
+        'account_number': local_account,
+        'amount': amount_tzs,
+        'currency': 'TZS',
+        'provider': provider,
+        'external_id': reference,
+    }
+    if customer_name:
+        payload_body['customer_name'] = customer_name
+
     try:
         resp = requests.post(
-            api_url,
+            collections_url,
             headers={
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': f'Bearer {secret_key}',
                 'X-Public-Key': public_key,
+                'X-Secret-Key': secret_key,
             },
-            json={
-                'amount': amount_tzs,
-                'currency': 'TZS',
-                'phone_number': phone_clean,
-                'reference': reference,
-                'description': f'MALIMI COPY - {package_label}',
-            },
+            json=payload_body,
             timeout=20,
         )
         res_json = resp.json() if resp.content else {}
-        if not resp.ok:
+        nested_data = res_json.get('data') if isinstance(res_json.get('data'), dict) else {}
+
+        if not resp.ok or res_json.get('success') is False:
             sb_update('payments', {'reference': f'eq.{reference}'}, {'status': 'failed'})
             return jsonify({'error': res_json.get('message') or 'Ombi la malipo ya Dalipay limekataliwa.', 'reference': reference}), 502
 
-        provider_ref = str(res_json.get('transaction_id') or res_json.get('id') or '')
+        provider_ref = str(
+            nested_data.get('uuid')
+            or nested_data.get('reference')
+            or res_json.get('uuid')
+            or res_json.get('transaction_id')
+            or res_json.get('id')
+            or ''
+        )
         if provider_ref:
             sb_update('payments', {'reference': f'eq.{reference}'}, {'provider_ref': provider_ref})
+
+        upstream_status = str(nested_data.get('status') or res_json.get('status') or '').lower()
+        if upstream_status in ('success', 'succeeded', 'completed', 'paid'):
+            sb_rpc(
+                'settle_dalipay_payment',
+                {'p_reference': reference, 'p_provider_ref': provider_ref, 'p_now_ms': now_ms()},
+            )
+            user_rows = sb_select('users', {'select': '*', 'id': f'eq.{g.user_id}', 'limit': '1'})
+            return jsonify(
+                {
+                    'ok': True,
+                    'reference': reference,
+                    'status': 'completed',
+                    'amountTzs': amount_tzs,
+                    'packageLabel': package_label,
+                    'user': sanitize_user(user_rows[0]) if user_rows else None,
+                    'message': 'Malipo yamethibitishwa! Salio lako limesasishwa.',
+                }
+            )
 
         return jsonify(
             {
@@ -651,6 +735,43 @@ def api_payment_status(reference):
         if not payments:
             return jsonify({'error': 'Muamala haupatikani.'}), 404
         payment = payments[0]
+
+        public_key = os.environ.get('DALIPAY_PUBLIC_KEY', '').strip()
+        secret_key = os.environ.get('DALIPAY_SECRET_KEY', '').strip()
+        provider_ref = str(payment.get('provider_ref') or '').strip()
+        if payment.get('status') == 'pending' and provider_ref and public_key and secret_key:
+            try:
+                base_url, _ = resolve_dalipay_urls()
+                st_resp = requests.get(
+                    f'{base_url}/api/v1/collections/{provider_ref}/status',
+                    headers={
+                        'Accept': 'application/json',
+                        'X-Public-Key': public_key,
+                        'X-Secret-Key': secret_key,
+                    },
+                    timeout=8,
+                )
+                if st_resp.ok and st_resp.content:
+                    st_json = st_resp.json()
+                    nested = st_json.get('data') if isinstance(st_json.get('data'), dict) else {}
+                    upstream_status = str(nested.get('status') or st_json.get('status') or '').lower()
+                    if upstream_status in ('success', 'succeeded', 'completed', 'paid'):
+                        sb_rpc(
+                            'settle_dalipay_payment',
+                            {'p_reference': reference, 'p_provider_ref': provider_ref, 'p_now_ms': now_ms()},
+                        )
+                        refreshed = sb_select(
+                            'payments',
+                            {'select': '*', 'reference': f'eq.{reference}', 'user_id': f'eq.{g.user_id}', 'limit': '1'},
+                        )
+                        if refreshed:
+                            payment = refreshed[0]
+                    elif upstream_status in ('failed', 'cancelled', 'canceled', 'expired'):
+                        sb_update('payments', {'reference': f'eq.{reference}', 'status': 'eq.pending'}, {'status': 'failed'})
+                        payment['status'] = 'failed'
+            except Exception:
+                pass
+
         user_row = sb_select('users', {'select': '*', 'id': f'eq.{g.user_id}', 'limit': '1'})[0]
         return jsonify(
             {
@@ -687,14 +808,28 @@ def _handle_dalipay_webhook():
         return jsonify({'error': 'Invalid webhook signature.'}), 401
 
     payload = request.get_json(silent=True) or {}
-    reference = sanitize_identifier(payload.get('reference') or payload.get('order_id') or payload.get('merchant_reference') or '')
-    status_raw = str(payload.get('status') or payload.get('event') or '').lower()
-    provider_ref = str(payload.get('transaction_id') or payload.get('id') or '')
+    event_data = payload.get('data') if isinstance(payload.get('data'), dict) else {}
+    reference = sanitize_identifier(
+        event_data.get('external_id')
+        or payload.get('external_id')
+        or payload.get('reference')
+        or payload.get('order_id')
+        or payload.get('merchant_reference')
+        or ''
+    )
+    status_raw = str(event_data.get('status') or payload.get('status') or payload.get('event') or '').lower()
+    provider_ref = str(
+        event_data.get('uuid')
+        or event_data.get('reference')
+        or payload.get('transaction_id')
+        or payload.get('id')
+        or ''
+    )
 
     if not reference:
         return jsonify({'error': 'Missing payment reference.'}), 400
 
-    if status_raw in ('success', 'succeeded', 'completed', 'paid', 'payment.success'):
+    if status_raw in ('success', 'succeeded', 'completed', 'paid', 'payment.success', 'collection.success'):
         res = sb_rpc(
             'settle_dalipay_payment',
             {'p_reference': reference, 'p_provider_ref': provider_ref, 'p_now_ms': now_ms()},
@@ -703,7 +838,7 @@ def _handle_dalipay_webhook():
             return jsonify({'error': res.get('error', 'Settlement failed')}), int(res.get('status_code', 404))
         return jsonify({'received': True, 'status': 'completed'})
 
-    if status_raw in ('failed', 'cancelled', 'canceled', 'expired', 'payment.failed'):
+    if status_raw in ('failed', 'cancelled', 'canceled', 'expired', 'payment.failed', 'collection.failed'):
         sb_update('payments', {'reference': f'eq.{reference}', 'status': 'eq.pending'}, {'status': 'failed'})
         return jsonify({'received': True, 'status': 'failed'})
 

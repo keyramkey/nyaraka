@@ -683,6 +683,17 @@
                             <label>Namba ya Simu ya Malipo</label>
                             <input type="tel" id="dalipayPhone" class="mono" placeholder="0754123456">
                         </div>
+                        <div class="form-group">
+                            <label>Mtandao wa Malipo</label>
+                            <select id="dalipayProvider">
+                                <option value="">Chagua Moja kwa Moja (Auto kutoka namba)</option>
+                                <option value="Mpesa">M-Pesa (Vodacom)</option>
+                                <option value="Tigo">Mixx by Yas / Tigo Pesa</option>
+                                <option value="Airtel">Airtel Money</option>
+                                <option value="Halopesa">HaloPesa (Halotel)</option>
+                                <option value="Azampesa">AzamPesa</option>
+                            </select>
+                        </div>
                         <button class="btn btn-gen" id="dalipayBtn" onclick="startDalipayPayment()">Lipa TZS 5,000 Sasa</button>
                     </div>
                 </div>
@@ -1365,17 +1376,28 @@
         async function startDalipayPayment() {
             if (!currentUser) { openAuthModal('register'); return; }
             const phone = document.getElementById('dalipayPhone').value;
+            const provider = document.getElementById('dalipayProvider').value;
             const res = await fetch('/api/payments/dalipay/initiate', {
                 method: 'POST',
                 headers: authHeaders({ 'Content-Type': 'application/json' }),
                 credentials: 'include',
                 body: JSON.stringify({
                     packageId: selectedPkgId,
-                    phoneNumber: phone
+                    phoneNumber: phone,
+                    ...(provider ? { provider } : {})
                 })
             });
             const data = await res.json();
             if (!res.ok) { showNotice(data.error || 'Malipo yameshindwa.', 'error'); return; }
+            if (data.status === 'completed') {
+                if (data.user) {
+                    currentUser = data.user;
+                    updateUserUI();
+                }
+                refreshProfile();
+                showNotice(data.message || 'Malipo yamethibitishwa! Salio lako limesasishwa.', 'success');
+                return;
+            }
             showNotice(data.message + ' (' + data.reference + ')', 'info');
             refreshProfile();
             if (pollTimer) clearInterval(pollTimer);
