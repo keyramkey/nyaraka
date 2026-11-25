@@ -715,9 +715,6 @@
         .tx-modal .mini-btn { font-size: 0.68rem; padding: 5px 10px; }
 
         /* ===== Offer FAB + Admin ===== */
-        .offer-fab { position: fixed; left: 0; top: 50%; transform: translateY(-50%); z-index: 35; display: none; flex-direction: column; align-items: center; gap: 2px; padding: 9px 8px 9px 7px; border: none; border-radius: 0 16px 16px 0; background: linear-gradient(160deg, #f43f5e, #ea580c); color: #fff; cursor: pointer; box-shadow: 0 12px 26px -10px rgba(234, 88, 12, .8); animation: ofPulse 2s infinite; }
-        .offer-fab b { font-size: .62rem; letter-spacing: .08em; } .offer-fab span.mono { font-size: .62rem; font-weight: 600; }
-        @keyframes ofPulse { 0%,100% { box-shadow: 0 12px 26px -10px rgba(234,88,12,.8); } 50% { box-shadow: 0 12px 30px -4px rgba(244,63,94,.95); } }
         .of-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; }
         #adminApp { display: none; max-width: 1100px; margin: 0 auto; padding: 14px 14px 60px; }
         body.is-admin #adminApp { display: block; }
@@ -786,6 +783,134 @@
             .a-form { max-width: 100%; padding: 14px; } .a-form input, .a-form textarea, .a-form select { min-height: 42px; }
             .a-ref { text-align: right; }
         }
+
+        /* ===== Offer FAB (kulia, ndogo) ===== */
+        .offer-fab { position: fixed; right: 0; top: 46%; transform: translateY(-50%); z-index: 35; display: none; flex-direction: column; align-items: center; gap: 1px; padding: 6px 6px 6px 7px; border: none; border-radius: 14px 0 0 14px; background: linear-gradient(160deg, #7c3aed, #db2777 60%, #f97316); color: #fff; cursor: pointer; box-shadow: 0 8px 18px -8px rgba(124, 58, 237, .85); animation: ofPulse 2s infinite; }
+        .offer-fab svg { width: 16px; height: 16px; }
+        .offer-fab b { font-size: .5rem; letter-spacing: .08em; } .offer-fab span.mono { font-size: .5rem; font-weight: 700; }
+        @keyframes ofPulse { 0%,100% { box-shadow: 0 8px 18px -8px rgba(124,58,237,.85); } 50% { box-shadow: 0 8px 22px -2px rgba(219,39,119,.95); } }
+        .of-tags .badge.coins { display: none; }
+
+        /* ===== Refresh ===== */
+        .refresh-btn svg { transition: transform .5s var(--ease); }
+        .refresh-btn.spin svg { animation: spin360 .7s linear infinite; }
+        @keyframes spin360 { to { transform: rotate(360deg); } }
+
+        /* ===== ADMIN (mpya) ===== */
+        #adminApp { --a-ink: #0f172a; --a-mute: #64748b; max-width: 1100px; }
+        .a-top { position: relative; overflow: hidden; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 16px; margin-bottom: 14px; border-radius: 22px; color: #fff; background: radial-gradient(240px 140px at 100% 0, rgba(244, 114, 182, .65), transparent 60%), radial-gradient(260px 160px at 0 120%, rgba(34, 211, 238, .5), transparent 60%), linear-gradient(120deg, #1e1b4b, #4c1d95 55%, #7e22ce); box-shadow: 0 18px 36px -18px rgba(76, 29, 149, .8); }
+        .a-top .a-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: .98rem; letter-spacing: -.01em; }
+        .a-top .a-brand small { display: block; font-size: .62rem; font-weight: 600; opacity: .75; letter-spacing: .08em; text-transform: uppercase; }
+        .a-logo { width: 38px; height: 38px; border-radius: 13px; display: grid; place-items: center; background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .25); }
+        .a-top-act { display: flex; gap: 8px; }
+        .a-ic-btn { width: 40px; height: 40px; border-radius: 13px; border: 1px solid rgba(255, 255, 255, .25); background: rgba(255, 255, 255, .14); color: #fff; display: grid; place-items: center; cursor: pointer; transition: transform .15s, background .15s; }
+        .a-ic-btn:active { transform: scale(.92); } .a-ic-btn:hover { background: rgba(255, 255, 255, .24); }
+        .a-tabs button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; font-weight: 800; }
+        .a-tabs button svg { flex: none; }
+        .a-tabs button.active { background: linear-gradient(135deg, #7c3aed, #db2777); box-shadow: 0 10px 20px -10px rgba(124, 58, 237, .9); }
+        /* loader */
+        .a-loader { display: grid; place-items: center; padding: 56px 0; }
+        .a-spin { width: 46px; height: 46px; border-radius: 50%; border: 5px solid #e9d5ff; border-top-color: #7c3aed; border-right-color: #db2777; animation: spin360 .8s linear infinite; }
+        .a-skel { height: 64px; border-radius: 18px; margin-bottom: 10px; background: linear-gradient(90deg, #eef2f7 25%, #f8fafc 50%, #eef2f7 75%); background-size: 200% 100%; animation: skel 1.1s infinite; }
+        @keyframes skel { to { background-position: -200% 0; } }
+        /* stats */
+        .a-hero { position: relative; overflow: hidden; border-radius: 24px; padding: 20px; margin-bottom: 14px; color: #fff; background: radial-gradient(260px 160px at 100% 0, rgba(250, 204, 21, .55), transparent 60%), linear-gradient(130deg, #0ea5e9, #6366f1 55%, #c026d3); box-shadow: 0 22px 40px -22px rgba(99, 102, 241, .9); }
+        .a-hero span { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
+        .a-hero b { display: block; font-size: 2rem; font-weight: 800; letter-spacing: -.03em; margin-top: 4px; }
+        .a-hero i { position: absolute; right: 14px; bottom: -10px; width: 96px; height: 96px; opacity: .22; }
+        .a-grid { grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 12px; }
+        .a-stat { position: relative; overflow: hidden; border: none; border-radius: 20px; padding: 14px; color: #fff; gap: 2px; box-shadow: 0 16px 26px -18px rgba(15, 23, 42, .7); }
+        .a-stat span { color: rgba(255, 255, 255, .88); font-weight: 700; font-size: .72rem; }
+        .a-stat b { color: #fff; font-size: 1.5rem; font-weight: 800; margin-top: 2px; }
+        .a-stat .si { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: rgba(255, 255, 255, .22); margin-bottom: 8px; }
+        .a-stat::after { content: ""; position: absolute; right: -18px; top: -18px; width: 70px; height: 70px; border-radius: 50%; background: rgba(255, 255, 255, .13); }
+        .g-blue { background: linear-gradient(135deg, #2563eb, #06b6d4); } .g-red { background: linear-gradient(135deg, #e11d48, #f97316); }
+        .g-green { background: linear-gradient(135deg, #059669, #84cc16); } .g-amber { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+        .g-pink { background: linear-gradient(135deg, #db2777, #8b5cf6); } .g-slate { background: linear-gradient(135deg, #334155, #0f172a); }
+        .g-violet { background: linear-gradient(135deg, #7c3aed, #4f46e5); }
+        /* filter chips */
+        .a-chips { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 2px; }
+        .a-chip { border: 1.5px solid #e2e8f0; background: #fff; border-radius: 999px; padding: 7px 14px; font-size: .74rem; font-weight: 800; color: #475569; cursor: pointer; white-space: nowrap; }
+        .a-chip.active { color: #fff; border-color: transparent; background: linear-gradient(135deg, #7c3aed, #db2777); }
+        .a-search { position: relative; margin-bottom: 12px; }
+        .a-search input { width: 100%; padding: 12px 14px 12px 40px; border: 1.5px solid #e2e8f0; border-radius: 14px; font: inherit; font-size: .85rem; background: #fff; outline: none; }
+        .a-search input:focus { border-color: #7c3aed; box-shadow: 0 0 0 4px rgba(124, 58, 237, .12); }
+        .a-search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+        /* list rows */
+        .a-list { display: grid; gap: 9px; }
+        .a-row { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 11px 12px; border: 1px solid var(--line); border-radius: 18px; background: #fff; cursor: pointer; box-shadow: var(--sh-s); font: inherit; transition: transform .15s var(--ease), box-shadow .15s, border-color .15s; }
+        .a-row:hover { transform: translateY(-2px); border-color: #c4b5fd; box-shadow: 0 14px 24px -18px rgba(124, 58, 237, .7); } .a-row:active { transform: scale(.985); }
+        .a-av { width: 42px; height: 42px; border-radius: 14px; flex: none; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 1rem; }
+        .a-ri { width: 42px; height: 42px; border-radius: 14px; flex: none; display: grid; place-items: center; color: #fff; }
+        .a-ri.ok { background: linear-gradient(135deg, #059669, #34d399); } .a-ri.wait { background: linear-gradient(135deg, #f59e0b, #fb923c); } .a-ri.fail { background: linear-gradient(135deg, #e11d48, #fb7185); }
+        .a-mid { flex: 1; min-width: 0; }
+        .a-t { font-weight: 800; font-size: .86rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .a-s { font-size: .68rem; color: #64748b; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .a-end { text-align: right; flex: none; display: grid; gap: 3px; justify-items: end; }
+        .a-amt { font-weight: 800; font-size: .84rem; color: #0f172a; display: inline-flex; align-items: center; gap: 5px; }
+        .a-amt .mcoin { width: 16px; height: 16px; }
+        .a-empty { text-align: center; color: #64748b; padding: 40px 10px; font-size: .85rem; }
+        /* price cards */
+        .a-pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .a-pcard { position: relative; text-align: left; border: 1.5px solid var(--line); border-radius: 20px; padding: 14px; background: #fff; cursor: pointer; font: inherit; box-shadow: var(--sh-s); transition: transform .18s var(--ease), border-color .18s, box-shadow .18s; }
+        .a-pcard:hover { transform: translateY(-3px); border-color: #c4b5fd; box-shadow: 0 18px 30px -20px rgba(124, 58, 237, .7); } .a-pcard:active { transform: scale(.98); }
+        .a-pcard.off { opacity: .55; }
+        .a-pnum { display: flex; align-items: center; gap: 8px; font-size: 1.25rem; font-weight: 800; color: #0f172a; }
+        .a-pnum .mcoin { width: 26px; height: 26px; }
+        .a-pcard small { display: block; font-size: .7rem; color: #64748b; font-weight: 600; margin-top: 2px; }
+        .a-pprice { margin-top: 12px; padding-top: 10px; border-top: 1px solid #f1f5f9; font-weight: 800; color: #6d28d9; font-size: .92rem; }
+        .a-pcard.unl { grid-column: span 3; background: linear-gradient(135deg, #0b1324, #312e81); color: #fff; border-color: #f5b301; }
+        .a-pcard.unl .a-pnum, .a-pcard.unl .a-pprice { color: #fcd34d; } .a-pcard.unl small { color: #c7d2fe; } .a-pcard.unl .a-pprice { border-color: rgba(255, 255, 255, .14); }
+        .a-pcard .a-off { position: absolute; top: 10px; right: 10px; font-size: .58rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: #fee2e2; color: #b91c1c; }
+        .a-pcard.add { display: grid; place-items: center; min-height: 112px; border-style: dashed; color: #7c3aed; font-weight: 800; background: #faf5ff; }
+        .a-savebar { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+        .a-savebar button { flex: 1; min-height: 44px; }
+        /* sheet */
+        .a-sheet-bg { position: fixed; inset: 0; z-index: 90; display: none; align-items: center; justify-content: center; padding: 14px; background: rgba(15, 12, 41, .62); backdrop-filter: blur(5px); }
+        .a-sheet-bg.open { display: flex; }
+        .a-sheet { width: min(430px, 100%); max-height: 90vh; overflow: auto; background: #fff; border-radius: 26px; padding: 0 0 16px; box-shadow: 0 34px 70px -24px rgba(0, 0, 0, .7); animation: popIn .22s; }
+        .a-sh-head { position: relative; padding: 20px 18px 16px; color: #fff; border-radius: 26px 26px 0 0; display: flex; align-items: center; gap: 12px; background: linear-gradient(130deg, #4c1d95, #7c3aed 55%, #db2777); }
+        .a-sh-head .a-av, .a-sh-head .a-ri { width: 50px; height: 50px; border-radius: 16px; background: rgba(255, 255, 255, .2); }
+        .a-sh-head h3 { font-size: 1.02rem; font-weight: 800; } .a-sh-head p { font-size: .74rem; opacity: .85; margin-top: 2px; }
+        .a-sh-x { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 11px; border: none; background: rgba(255, 255, 255, .2); color: #fff; font-size: 1.2rem; cursor: pointer; }
+        .a-sh-body { padding: 14px 18px 0; }
+        .a-dl { display: grid; gap: 0; margin-bottom: 14px; }
+        .a-dl div { display: flex; justify-content: space-between; gap: 14px; padding: 9px 0; border-bottom: 1px dashed #e8eef4; font-size: .78rem; }
+        .a-dl dt { color: #64748b; font-weight: 600; } .a-dl dd { font-weight: 800; color: #0f172a; text-align: right; word-break: break-all; display: inline-flex; align-items: center; gap: 5px; justify-content: flex-end; }
+        .a-dl dd .mcoin { width: 16px; height: 16px; }
+        .a-field { display: grid; gap: 5px; margin-bottom: 11px; font-size: .72rem; font-weight: 800; color: #334155; }
+        .a-field input, .a-field select { padding: 11px 12px; border: 1.5px solid #d6dee8; border-radius: 12px; font: inherit; font-size: .85rem; outline: none; background: #fff; min-width: 0; width: 100%; }
+        .a-field input:focus, .a-field select:focus { border-color: #7c3aed; box-shadow: 0 0 0 4px rgba(124, 58, 237, .12); }
+        .a-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+        .a-btn { min-height: 44px; border: none; border-radius: 13px; font: inherit; font-size: .8rem; font-weight: 800; cursor: pointer; color: #fff; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: transform .15s, filter .15s; }
+        .a-btn:active { transform: scale(.97); } .a-btn:hover { filter: brightness(1.07); } .a-btn.full { grid-column: 1 / -1; }
+        .a-btn.v { background: linear-gradient(135deg, #7c3aed, #db2777); } .a-btn.g { background: linear-gradient(135deg, #059669, #10b981); }
+        .a-btn.r { background: linear-gradient(135deg, #e11d48, #f43f5e); } .a-btn.s { background: #eef2f7; color: #0f172a; } .a-btn.o { background: linear-gradient(135deg, #f59e0b, #f97316); }
+        .a-quick { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+        .a-quick button { flex: 1; min-width: 52px; border: 1.5px solid #e9d5ff; background: #faf5ff; color: #6d28d9; border-radius: 11px; padding: 8px 0; font-weight: 800; font-size: .76rem; cursor: pointer; }
+        /* offer admin */
+        .a-offer-live { position: relative; overflow: hidden; border-radius: 24px; padding: 18px; margin-bottom: 14px; color: #fff; background: radial-gradient(240px 150px at 100% 0, rgba(163, 230, 53, .5), transparent 60%), linear-gradient(130deg, #6d28d9, #c026d3 55%, #f43f5e); box-shadow: 0 22px 40px -22px rgba(192, 38, 211, .9); }
+        .a-offer-live .tag { display: inline-flex; align-items: center; gap: 6px; font-size: .62rem; font-weight: 800; letter-spacing: .1em; padding: 4px 10px; border-radius: 999px; background: rgba(255, 255, 255, .2); }
+        .a-offer-live h3 { font-size: 1.2rem; font-weight: 800; margin: 10px 0 4px; letter-spacing: -.02em; }
+        .a-offer-live .big { font-size: 2.2rem; font-weight: 800; color: #d9f99d; letter-spacing: -.03em; line-height: 1; }
+        .a-offer-live p { font-size: .76rem; opacity: .9; margin-top: 6px; }
+        .a-offer-live .a-btn { margin-top: 12px; width: 100%; background: rgba(0, 0, 0, .28); }
+        .a-offer-form { background: #fff; border: 1px solid var(--line); border-radius: 24px; padding: 16px; box-shadow: var(--sh-m); width: 100%; max-width: 560px; }
+        .a-offer-form h4 { font-size: .95rem; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: #6d28d9; }
+        .a-offer-form .a-field textarea { padding: 11px 12px; border: 1.5px solid #d6dee8; border-radius: 12px; font: inherit; font-size: .85rem; outline: none; resize: vertical; width: 100%; }
+        .a-offer-form .a-field textarea:focus { border-color: #7c3aed; box-shadow: 0 0 0 4px rgba(124, 58, 237, .12); }
+        .a-dur { display: grid; grid-template-columns: 1fr 1.2fr; gap: 8px; }
+        .a-disc { display: flex; align-items: center; gap: 10px; }
+        .a-disc input[type=range] { flex: 1; accent-color: #db2777; padding: 0; border: none; box-shadow: none; }
+        .a-disc output { min-width: 62px; text-align: center; font-weight: 800; color: #fff; padding: 8px 0; border-radius: 12px; background: linear-gradient(135deg, #f43f5e, #f97316); }
+        @media (max-width: 720px) {
+            .a-pgrid { grid-template-columns: repeat(2, 1fr); } .a-pcard.unl { grid-column: span 2; }
+            .a-grid { grid-template-columns: repeat(2, 1fr); }
+            .a-tabs button { flex-direction: column; gap: 3px; padding: 7px 2px 6px; font-size: .62rem; }
+            .a-sheet-bg { align-items: flex-end; padding: 0; } .a-sheet { width: 100%; border-radius: 26px 26px 0 0; max-height: 92vh; animation: sheetUp .25s var(--ease); }
+            .a-sh-head { border-radius: 26px 26px 0 0; }
+        }
+        @keyframes sheetUp { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
     </style>
 <script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
 <body>
@@ -805,6 +930,7 @@
                 <button class="tab-btn" data-view="profile" onclick="switchView('profile')">Profile</button>
             </nav>
             <div style="display:flex;align-items:center;gap:8px;">
+                <button class="icon-btn refresh-btn" style="margin:0;" aria-label="Refresh" onclick="refreshApp(this)"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button>
                 <button id="walletChip" class="coin-chip mono" style="display:none;" onclick="switchView('wallet')">0 Coins</button>
                 <button id="authActionBtn" class="btn-primary-sm" onclick="openAuthModal('register')">Ingia / Jisajili</button>
             </div>
@@ -822,7 +948,7 @@
                 </button>
             </div>
             <div id="drawerUserBox" class="drawer-user">
-                <button class="btn btn-gen" style="min-height:36px;font-size:0.78rem;" onclick="toggleDrawer(false);openAuthModal('register')">Jisajili (Coin 10 Bure)</button>
+                <button class="btn btn-gen" style="min-height:36px;font-size:0.78rem;" onclick="toggleDrawer(false);openAuthModal('register')">Jisajili (Coin 5 Bure)</button>
             </div>
             <div class="drawer-nav">
                 <button class="drawer-item active" data-view="home" onclick="switchView('home');toggleDrawer(false)"><span class="di-ico "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span><span>Nyumbani</span></button>
@@ -831,6 +957,7 @@
                 <button class="drawer-item" data-view="wallet" onclick="switchView('wallet');toggleDrawer(false)"><span class="di-ico coin"><span class="mcoin" style="width:24px;height:24px"></span></span><span>Buy Coins</span></button>
                 <button class="drawer-item" data-view="profile" onclick="switchView('profile');toggleDrawer(false)"><span class="di-ico "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><span>Profile</span></button>
                 <hr>
+                <button class="drawer-item" onclick="refreshApp(this)"><span class="di-ico"><span class="refresh-btn" style="display:contents"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></span></span><span>Refresh App</span></button>
                 <button class="drawer-item" onclick="toggleDrawer(false);openContactModal()"><span class="di-ico green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></span><span>Contact</span></button>
                 <button class="drawer-item" onclick="logoutUser();toggleDrawer(false)" id="drawerFoot" style="display:none;color:#b91c1c;"><span class="di-ico red"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><span>Toka (Sign Out)</span></button>
             </div>
@@ -851,7 +978,7 @@
                     <p>Chagua huduma hapa chini kuendelea.</p>
                 </div>
                 <div id="heroRight">
-                    <button class="btn-gold" onclick="openAuthModal('register')">Jisajili Upate Coin 10 Bure</button>
+                    <button class="btn-gold" onclick="openAuthModal('register')">Jisajili Upate Coin 5 Bure</button>
                 </div>
             </div>
 
@@ -1086,7 +1213,7 @@
         <div id="profile-panel" class="panel">
             <div id="profileGuest" class="card" style="max-width:420px;margin:20px auto;text-align:center;">
                 <h2 style="font-size:1.1rem;font-weight:700;">Akaunti Yako</h2>
-                <p style="font-size:0.82rem;color:#64748b;margin:6px 0 18px;">Ingia au fungua akaunti upate coin 10 za bure.</p>
+                <p style="font-size:0.82rem;color:#64748b;margin:6px 0 18px;">Ingia au fungua akaunti upate coin 5 za bure.</p>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                     <button class="btn btn-gen" style="min-height:42px;" onclick="openAuthModal('register')">Jisajili</button>
                     <button class="btn" style="min-height:42px;background:#f1f5f9;color:#0f172a;" onclick="openAuthModal('login')">Ingia</button>
@@ -1132,7 +1259,7 @@
 
 
     <button id="offerFab" class="offer-fab" onclick="openOfferModal()" aria-label="Offer">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>
         <b>OFFER</b><span id="offerFabTime" class="mono"></span>
     </button>
     <div id="offerModal" class="modal-backdrop" onclick="if(event.target===this)closeOfferModal()">
@@ -1148,16 +1275,23 @@
         </div>
     </div>
     <div id="adminApp">
-        <div class="a-top"><b>MALIMI COPY · Admin</b><button class="btn-sm slate" onclick="logoutUser()">Toka</button></div>
+        <div class="a-top">
+            <div class="a-brand"><span class="a-logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6z"/><path d="m9 12 2 2 4-4"/></svg></span><span>MALIMI COPY<small>Admin Panel</small></span></div>
+            <div class="a-top-act">
+                <button class="a-ic-btn refresh-btn" aria-label="Refresh" onclick="refreshApp(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button>
+                <button class="a-ic-btn" aria-label="Toka" onclick="logoutUser()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+            </div>
+        </div>
         <div class="a-tabs">
-            <button data-atab="stats" onclick="adminShow('stats')">Muhtasari</button>
-            <button data-atab="pay" onclick="adminShow('pay')">Miamala</button>
-            <button data-atab="users" onclick="adminShow('users')">Watumiaji</button>
-            <button data-atab="prices" onclick="adminShow('prices')">Bei</button>
-            <button data-atab="offer" onclick="adminShow('offer')">Offer</button>
+            <button data-atab="stats" onclick="adminShow('stats')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span>Muhtasari</span></button>
+            <button data-atab="pay" onclick="adminShow('pay')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/></svg><span>Miamala</span></button>
+            <button data-atab="users" onclick="adminShow('users')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg><span>Watumiaji</span></button>
+            <button data-atab="prices" onclick="adminShow('prices')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"/><circle cx="7" cy="7" r="1.2"/></svg><span>Bei</span></button>
+            <button data-atab="offer" onclick="adminShow('offer')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg><span>Offer</span></button>
         </div>
         <div id="adminBody"></div>
         <div id="aToast"></div>
+        <div id="aSheetBg" class="a-sheet-bg" onclick="if(event.target===this)aClose()"><div class="a-sheet" id="aSheet"></div></div>
     </div>
     <!-- BOTTOM NAVIGATION BAR -->
     <nav class="bottom-nav" aria-label="Urambazaji wa chini">
@@ -1189,7 +1323,7 @@
     <div id="authModal" class="modal-backdrop">
         <div class="modal-box">
             <div style="display:flex;justify-content:space-between;align-items:center;">
-                <h3 id="authTitle" style="font-size:1.05rem;font-weight:700;">Fungua Akaunti (10 Free Coins)</h3>
+                <h3 id="authTitle" style="font-size:1.05rem;font-weight:700;">Fungua Akaunti (5 Free Coins)</h3>
                 <button class="mini-btn" onclick="closeAuthModal()">Funga</button>
             </div>
             <div class="auth-tabs">
@@ -1258,7 +1392,10 @@
         const SESSION_STORAGE_KEY = 'malimi_auth_token';
         let authToken = null;
         try { authToken = localStorage.getItem(SESSION_STORAGE_KEY); } catch (e) {}
+        const USER_CACHE_KEY = 'malimi_user_cache', VIEW_KEY = 'malimi_last_view';
         let currentUser = null;
+        if (authToken) { try { currentUser = JSON.parse(localStorage.getItem(USER_CACHE_KEY) || 'null'); } catch (e) {} }
+        function cacheUser(u) { try { if (u) localStorage.setItem(USER_CACHE_KEY, JSON.stringify(u)); else localStorage.removeItem(USER_CACHE_KEY); } catch (e) {} }
         let authMode = 'register';
         let selectedPkgId = 'coins_55';
         let walletFilter = 'all';
@@ -1272,7 +1409,7 @@
             authToken = tok;
             try {
                 if (tok) localStorage.setItem(SESSION_STORAGE_KEY, tok);
-                else localStorage.removeItem(SESSION_STORAGE_KEY);
+                else { localStorage.removeItem(SESSION_STORAGE_KEY); localStorage.removeItem(USER_CACHE_KEY); }
             } catch (e) {}
         }
 
@@ -1293,6 +1430,7 @@
             document.querySelectorAll('[data-view]').forEach(el => {
                 el.classList.toggle('active', el.getAttribute('data-view') === view);
             });
+            try { sessionStorage.setItem(VIEW_KEY, view); } catch (e) {}
         }
 
         function startFreshDocument(docType) {
@@ -1407,7 +1545,7 @@
             document.getElementById('tabReg').classList.toggle('active', mode === 'register');
             document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
             document.getElementById('regExtraFields').style.display = mode === 'register' ? 'block' : 'none';
-            document.getElementById('authTitle').textContent = mode === 'register' ? 'Fungua Akaunti (10 Free Coins)' : 'Ingia Kwenye Akaunti';
+            document.getElementById('authTitle').textContent = mode === 'register' ? 'Fungua Akaunti (5 Free Coins)' : 'Ingia Kwenye Akaunti';
             document.getElementById('authErrorMsg').style.display = 'none';
             document.getElementById('auth_email_lbl').textContent = mode === 'register' ? 'Barua Pepe (Hiari)' : 'Namba ya Simu au Barua Pepe';
             document.getElementById('auth_email').type = mode === 'register' ? 'email' : 'text';
@@ -1483,13 +1621,13 @@
                 dBtn.className = 'btn btn-gen';
                 dBtn.style.minHeight = '40px';
                 dBtn.style.fontSize = '0.8rem';
-                dBtn.textContent = 'Fungua Akaunti (Coin 10 Bure)';
+                dBtn.textContent = 'Fungua Akaunti (Coin 5 Bure)';
                 dBtn.onclick = () => { toggleDrawer(false); openAuthModal('register'); };
                 drawerUserBox.appendChild(dBtn);
 
                 const hBtn = document.createElement('button');
                 hBtn.className = 'btn-gold';
-                hBtn.textContent = 'Jisajili Upate Coin 10 Bure';
+                hBtn.textContent = 'Jisajili Upate Coin 5 Bure';
                 hBtn.onclick = () => openAuthModal('register');
                 heroRight.appendChild(hBtn);
 
@@ -1546,6 +1684,7 @@
             }
             saveSessionToken(data.token);
             currentUser = data.user;
+            cacheUser(currentUser);
             if (currentUser.phone) document.getElementById('dalipayPhone').value = currentUser.phone;
             closeAuthModal();
             updateUserUI();
@@ -1554,11 +1693,12 @@
         }
 
         async function refreshProfile() {
-            const res = await fetch('/api/auth/me', {
-                headers: authHeaders(),
-                credentials: 'include'
-            });
+            let res;
+            try {
+                res = await fetch('/api/auth/me', { headers: authHeaders(), credentials: 'include' });
+            } catch (e) { return; } // mtandao umekatika: baki ndani ya akaunti
             if (!res.ok) {
+                // Toka tu kama seva imekataa session kweli (si hitilafu ya muda)
                 if (res.status === 401 || res.status === 403) {
                     saveSessionToken(null);
                     currentUser = null;
@@ -1568,6 +1708,7 @@
             }
             const data = await res.json();
             currentUser = data.user;
+            cacheUser(currentUser);
             if (currentUser.phone && !document.getElementById('dalipayPhone').value) {
                 document.getElementById('dalipayPhone').value = currentUser.phone;
             }
@@ -1944,7 +2085,7 @@
                 foot.className = 'coin-card-foot';
                 const dEl = document.createElement('div');
                 dEl.className = 'coin-card-docs mono';
-                dEl.textContent = `~Hati ${docs}` + (p.bonusCoins ? ` · +${p.bonusCoins} bonus` : '');
+                dEl.textContent = `~Hati ${docs}`;
                 const pEl = document.createElement('div');
                 pEl.className = 'coin-card-price mono';
                 pEl.textContent = `TZS ${Number(p.amountTzs || 0).toLocaleString()}`;
@@ -2378,17 +2519,38 @@
             document.getElementById('offerTitle').textContent = offerData.title || 'Offer';
             document.getElementById('offerDesc').textContent = offerData.description || '';
             const tg = document.getElementById('offerTags'); tg.textContent = '';
-            if (offerData.bonusPercent) tg.appendChild(badge('coins', '+' + offerData.bonusPercent + '% Coins za ziada'));
-            if (offerData.discountPercent) tg.appendChild(badge('ok', '-' + offerData.discountPercent + '% Punguzo la bei'));
+                        if (offerData.discountPercent) tg.appendChild(badge('ok', '-' + offerData.discountPercent + '% Punguzo la bei'));
             document.getElementById('offerModal').classList.add('open');
         }
         function closeOfferModal() { document.getElementById('offerModal').classList.remove('open'); }
         setInterval(() => { if (!document.hidden) loadPackages(); }, 60000);
 
         // ========== ADMIN DASHBOARD ==========
-        let adminReady = false, aPk = [], aCur = '';
+        let adminReady = false, aPk = [], aCur = '', aCache = {}, aPayF = '', aPays = [], aUsrs = [], aT = null, aEdit = -1;
         const $a = id => document.getElementById(id);
         const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const AI = {
+            users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>',
+            ban: '<circle cx="12" cy="12" r="9"/><line x1="5.6" y1="5.6" x2="18.4" y2="18.4"/>',
+            cash: '<rect x="2" y="6" width="20" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.6"/><path d="M6 12h.01M18 12h.01"/>',
+            ok: '<polyline points="20 6 9 17 4 12"/>', wait: '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>',
+            fail: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+            doc: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+            search: '<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/>',
+            inf: '<path d="M18.2 7.8a4.6 4.6 0 1 0 0 8.4c2.4 0 4-3 4-4.2s-1.6-4.2-4-4.2c-3.4 0-5.2 8.4-8.6 8.4a4.2 4.2 0 1 1 0-8.4"/>',
+            plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+            trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>',
+            save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>',
+            gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
+            unlock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>',
+            power: '<path d="M18.4 6.6a9 9 0 1 1-12.8 0"/><line x1="12" y1="2" x2="12" y2="12"/>'
+        };
+        const aIc = (n, s) => '<svg width="' + (s || 18) + '" height="' + (s || 18) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + AI[n] + '</svg>';
+        const aLoader = () => '<div class="a-loader"><div class="a-spin"></div></div>';
+        const aSkel = n => Array.from({ length: n }, () => '<div class="a-skel"></div>').join('');
+        const AV = ['linear-gradient(135deg,#7c3aed,#db2777)', 'linear-gradient(135deg,#0ea5e9,#6366f1)', 'linear-gradient(135deg,#059669,#84cc16)', 'linear-gradient(135deg,#f59e0b,#ef4444)', 'linear-gradient(135deg,#db2777,#f97316)', 'linear-gradient(135deg,#06b6d4,#2563eb)'];
+        const avBg = s => AV[[...String(s || '?')].reduce((a, c) => a + c.charCodeAt(0), 0) % AV.length];
+        const tzs = n => Number(n || 0).toLocaleString('en-US');
         async function adminApi(path, method, body) {
             const r = await fetch('/api/admin' + path, { method: method || 'GET', headers: authHeaders(body ? { 'Content-Type': 'application/json' } : {}), credentials: 'include', body: body ? JSON.stringify(body) : undefined });
             const d = await r.json().catch(() => ({}));
@@ -2397,76 +2559,183 @@
         }
         function aToast(m, bad) { const t = $a('aToast'); t.textContent = m; t.className = bad ? 'bad' : 'ok'; t.style.display = 'block'; clearTimeout(aToast.t); aToast.t = setTimeout(() => { t.style.display = 'none'; }, 2500); }
         async function aRun(fn) { try { await fn(); } catch (e) { aToast(e.message, 1); } }
-        function aLabel() { document.querySelectorAll('#adminBody table').forEach(t => { const h = [...t.querySelectorAll('thead th')].map(x => x.textContent.trim()); t.querySelectorAll('tbody tr').forEach(tr => [...tr.children].forEach((td, i) => { if (td.colSpan < 2) td.dataset.l = h[i] || ''; })); }); }
-        function adminInit() { if (adminReady) return; adminReady = true; new MutationObserver(aLabel).observe($a('adminBody'), { childList: true, subtree: true }); adminShow('stats'); }
+        function aOpen(html) { $a('aSheet').innerHTML = html; $a('aSheetBg').classList.add('open'); document.body.style.overflow = 'hidden'; }
+        function aClose() { $a('aSheetBg').classList.remove('open'); document.body.style.overflow = ''; }
+        function refreshApp(btn) {
+            document.querySelectorAll('.refresh-btn').forEach(b => b.classList.add('spin'));
+            if (btn) btn.classList.add('spin');
+            setTimeout(() => location.reload(), 450);
+        }
+        function adminInit() { if (adminReady) return; adminReady = true; let t = 'stats'; try { t = sessionStorage.getItem('malimi_admin_tab') || 'stats'; } catch (e) {} adminShow(['stats', 'pay', 'users', 'prices', 'offer'].includes(t) ? t : 'stats'); }
         function adminShow(tab) {
             aCur = tab;
+            try { sessionStorage.setItem('malimi_admin_tab', tab); } catch (e) {}
             document.querySelectorAll('[data-atab]').forEach(b => b.classList.toggle('active', b.dataset.atab === tab));
             ({ stats: aStats, pay: aPay, users: aUsers, prices: aPrices, offer: aOffer })[tab]();
         }
+
+        /* ---------- Muhtasari ---------- */
+        function aStatsDraw(d) {
+            const c = (g, ic, l, v) => '<div class="a-stat ' + g + '"><div class="si">' + aIc(ic, 18) + '</div><span>' + l + '</span><b class="mono">' + v + '</b></div>';
+            $a('adminBody').innerHTML = '<div class="a-hero"><span>Mapato yote (TZS)</span><b class="mono">' + tzs(d.revenue) + '</b><i>' + aIc('cash', 96) + '</i></div><div class="a-grid">'
+                + c('g-blue', 'users', 'Watumiaji', tzs(d.users)) + c('g-red', 'ban', 'Waliozuiwa', tzs(d.blocked))
+                + c('g-green', 'ok', 'Malipo yamekamilika', tzs(d.completed)) + c('g-amber', 'wait', 'Yanasubiri', tzs(d.pending))
+                + c('g-pink', 'fail', 'Yameshindwa', tzs(d.failed)) + c('g-violet', 'doc', 'Hati zilizotengenezwa', tzs(d.documents)) + '</div>';
+        }
         async function aStats() {
-            $a('adminBody').innerHTML = '<p class="a-mute">Inapakia...</p>';
+            if (aCache.stats) aStatsDraw(aCache.stats); else $a('adminBody').innerHTML = aLoader();
             await aRun(async () => {
-                const d = await adminApi('/stats');
-                if (aCur !== 'stats') return;
-                const c = (l, v) => '<div class="a-stat"><span>' + l + '</span><b class="mono">' + v + '</b></div>';
-                $a('adminBody').innerHTML = '<div class="a-grid">' + c('Watumiaji', d.users) + c('Waliozuiwa', d.blocked) + c('Mapato (TZS)', Number(d.revenue).toLocaleString()) + c('Malipo yamekamilika', d.completed) + c('Yanasubiri', d.pending) + c('Yameshindwa', d.failed) + c('Hati zilizotengenezwa', d.documents) + '</div>';
+                const d = await adminApi('/stats'); aCache.stats = d;
+                if (aCur === 'stats') aStatsDraw(d);
             });
         }
+
+        /* ---------- Miamala ---------- */
         function aPay() {
-            $a('adminBody').innerHTML = '<div class="a-bar"><input id="aq" placeholder="Tafuta reference, namba ya simu..." onkeydown="if(event.key===\'Enter\')aPayLoad()"><select id="ast" onchange="aPayLoad()"><option value="">Zote</option><option value="pending">Zinasubiri</option><option value="completed">Zimekamilika</option><option value="failed">Zimeshindwa</option></select><button class="btn-sm teal" onclick="aPayLoad()">Tafuta</button></div><div id="aList" class="table-card"><div class="table-wrap"></div></div>';
+            const chips = [['', 'Zote'], ['pending', 'Zinasubiri'], ['completed', 'Zimekamilika'], ['failed', 'Zimeshindwa']].map(x => '<button class="a-chip' + (aPayF === x[0] ? ' active' : '') + '" onclick="aPayF=\'' + x[0] + '\';aPay()">' + x[1] + '</button>').join('');
+            $a('adminBody').innerHTML = '<div class="a-search">' + aIc('search', 18) + '<input id="aq" placeholder="Tafuta reference au namba ya simu..." oninput="clearTimeout(aT);aT=setTimeout(aPayLoad,300)"></div><div class="a-chips">' + chips + '</div><div id="aList" class="a-list">' + aSkel(5) + '</div>';
             aPayLoad();
+        }
+        function aPayRow(p, i) {
+            const st = PAY_STATUS[p.status] || { label: p.status, cls: 'neutral' }, u = p.user || {};
+            const ic = p.status === 'completed' ? 'ok' : p.status === 'failed' ? 'fail' : 'wait';
+            return '<button class="a-row" onclick="aPayOpen(' + i + ')"><span class="a-ri ' + ic + '">' + aIc(ic, 20) + '</span><span class="a-mid"><div class="a-t">' + esc(p.package_label) + '</div><div class="a-s">' + esc(u.name || localPhone(p.phone_number)) + ' · ' + esc(fmtDate(p.created_at, true)) + '</div></span><span class="a-end"><span class="a-amt mono">' + tzs(p.amount_tzs) + '</span><span class="badge ' + st.cls + '">' + st.label + '</span></span></button>';
         }
         async function aPayLoad() {
             await aRun(async () => {
                 if (!$a('aq')) return;
-                const d = await adminApi('/payments?q=' + encodeURIComponent($a('aq').value) + '&status=' + $a('ast').value);
-                if (!$a('aList')) return;
-                const rows = d.payments.map(p => {
-                    const st = PAY_STATUS[p.status] || { label: p.status, cls: 'neutral' };
-                    const u = p.user || {};
-                    return '<tr><td><div class="mono a-ref">' + esc(p.reference) + '</div><div class="a-mute">' + esc(fmtDate(p.created_at, true)) + '</div></td><td>' + esc(u.name) + '<div class="a-mute">' + esc(localPhone(p.phone_number)) + '</div></td><td>' + esc(p.package_label) + '<div class="mono">' + Number(p.amount_tzs).toLocaleString() + '</div></td><td><span class="badge ' + st.cls + '">' + st.label + '</span></td><td>' + (p.status !== 'completed' ? '<div class="a-act"><button class="grn" onclick="aSettle(\'' + esc(p.reference) + '\')">Thibitisha</button></div>' : '') + '</td></tr>';
-                }).join('');
-                $a('aList').innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr><th>Reference</th><th>Mteja</th><th>Kifurushi / TZS</th><th>Hali</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="5" class="tx-empty">Hakuna miamala.</td></tr>') + '</tbody></table></div>';
+                const d = await adminApi('/payments?q=' + encodeURIComponent($a('aq').value) + '&status=' + aPayF);
+                if (!$a('aList') || aCur !== 'pay') return;
+                aPays = d.payments;
+                $a('aList').innerHTML = aPays.map(aPayRow).join('') || '<div class="a-empty">Hakuna miamala.</div>';
             });
         }
-        async function aSettle(ref) {
-            if (!confirm('Thibitisha malipo haya na umwongezee mteja coin/Unlimited?\n' + ref)) return;
-            await aRun(async () => { await adminApi('/payments/' + encodeURIComponent(ref) + '/settle', 'POST'); aToast('Malipo yamethibitishwa.'); aPayLoad(); });
+        function aPayOpen(i) {
+            const p = aPays[i], u = p.user || {}, st = PAY_STATUS[p.status] || { label: p.status, cls: 'neutral' };
+            const ic = p.status === 'completed' ? 'ok' : p.status === 'failed' ? 'fail' : 'wait';
+            const dd = (l, v) => '<div><dt>' + l + '</dt><dd>' + v + '</dd></div>';
+            aOpen('<div class="a-sh-head"><span class="a-ri ' + ic + '">' + aIc(ic, 24) + '</span><div><h3>TZS ' + tzs(p.amount_tzs) + '</h3><p>' + esc(p.package_label) + '</p></div><button class="a-sh-x" onclick="aClose()">&times;</button></div><div class="a-sh-body"><dl class="a-dl">'
+                + dd('Hali', '<span class="badge ' + st.cls + '">' + st.label + '</span>') + dd('Mteja', esc(u.name || '—')) + dd('Simu ya malipo', esc(localPhone(p.phone_number)))
+                + dd('Reference', '<span class="mono" style="font-size:.7rem">' + esc(p.reference) + '</span>') + (p.provider_ref ? dd('Ref ya mtoa huduma', '<span class="mono" style="font-size:.7rem">' + esc(p.provider_ref) + '</span>') : '')
+                + (p.unlimited_days ? dd('Unlimited', 'Siku ' + Number(p.unlimited_days)) : dd('Coins', '<span class="mcoin"></span>' + tzs(p.coins_awarded || 0)))
+                + dd('Ilianzishwa', esc(fmtDate(p.created_at, true))) + (p.completed_at ? dd('Ilikamilika', esc(fmtDate(p.completed_at, true))) : '') + '</dl>'
+                + '<div class="a-btns">' + (p.status !== 'completed' ? '<button class="a-btn g" onclick="aSettle(' + i + ')">' + aIc('ok', 16) + 'Thibitisha</button>' : '') + '<button class="a-btn s' + (p.status === 'completed' ? ' full' : '') + '" onclick="aClose()">Funga</button></div></div>');
         }
+        async function aSettle(i) {
+            const p = aPays[i];
+            if (!confirm('Thibitisha malipo haya na umwongezee mteja coin/Unlimited?\n' + p.reference)) return;
+            await aRun(async () => { await adminApi('/payments/' + encodeURIComponent(p.reference) + '/settle', 'POST'); aToast('Malipo yamethibitishwa.'); aClose(); aCache.stats = null; aPayLoad(); });
+        }
+
+        /* ---------- Watumiaji ---------- */
         function aUsers() {
-            $a('adminBody').innerHTML = '<div class="a-bar"><input id="auq" placeholder="Tafuta jina, simu au barua pepe..." onkeydown="if(event.key===\'Enter\')aUsersLoad()"><button class="btn-sm teal" onclick="aUsersLoad()">Tafuta</button></div><div id="aList" class="table-card"></div>';
+            $a('adminBody').innerHTML = '<div class="a-search">' + aIc('search', 18) + '<input id="auq" placeholder="Tafuta jina, simu au barua pepe..." oninput="clearTimeout(aT);aT=setTimeout(aUsersLoad,300)"></div><div id="aList" class="a-list">' + (aCache.users ? '' : aSkel(6)) + '</div>';
+            if (aCache.users) { aUsrs = aCache.users; aUsersDraw(); }
             aUsersLoad();
+        }
+        function aUsersDraw() {
+            if (!$a('aList')) return;
+            $a('aList').innerHTML = aUsrs.map((u, i) => {
+                const end = (u.isUnlimited ? '<span class="badge unl">Unlimited</span>' : '<span class="a-amt mono"><span class="mcoin"></span>' + tzs(u.coins) + '</span>') + (u.is_blocked ? '<span class="badge fail">Amezuiwa</span>' : '');
+                return '<button class="a-row" onclick="aUserOpen(' + i + ')"><span class="a-av" style="background:' + avBg(u.full_name) + '">' + esc(String(u.full_name || '?').trim().charAt(0).toUpperCase()) + '</span><span class="a-mid"><div class="a-t">' + esc(u.full_name) + (u.isAdmin ? ' <span class="badge unl" style="font-size:.55rem;padding:1px 6px">Admin</span>' : '') + '</div><div class="a-s">' + esc(localPhone(u.phone) || u.email || '—') + '</div></span><span class="a-end">' + end + '</span></button>';
+            }).join('') || '<div class="a-empty">Hakuna watumiaji.</div>';
         }
         async function aUsersLoad() {
             await aRun(async () => {
                 if (!$a('auq')) return;
-                const d = await adminApi('/users?q=' + encodeURIComponent($a('auq').value));
-                if (!$a('aList')) return;
-                const rows = d.users.map(u => '<tr><td>' + esc(u.full_name) + (u.isAdmin ? ' <span class="badge unl">Admin</span>' : '') + '<div class="a-mute">' + esc(localPhone(u.phone)) + (u.email ? ' · ' + esc(u.email) : '') + '</div></td><td class="mono">' + (u.isUnlimited ? 'Unlimited' : u.coins) + '</td><td>' + (u.is_blocked ? '<span class="badge fail">Amezuiwa</span>' : '<span class="badge ok">Hai</span>') + '</td><td>' + (u.isAdmin ? '' : '<div class="a-act"><button onclick="aCoins(' + Number(u.id) + ')">± Coin</button><button class="' + (u.is_blocked ? 'grn' : 'red') + '" onclick="aBlock(' + Number(u.id) + ',' + (!u.is_blocked) + ')">' + (u.is_blocked ? 'Fungua' : 'Zuia') + '</button><button class="red" onclick="aDel(' + Number(u.id) + ')">Futa</button></div>') + '</td></tr>').join('');
-                $a('aList').innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr><th>Mtumiaji</th><th>Salio</th><th>Hali</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="4" class="tx-empty">Hakuna watumiaji.</td></tr>') + '</tbody></table></div>';
+                const q = $a('auq').value, d = await adminApi('/users?q=' + encodeURIComponent(q));
+                if (aCur !== 'users' || !$a('auq') || $a('auq').value !== q) return;
+                aUsrs = d.users; if (!q) aCache.users = d.users; aUsersDraw();
             });
         }
-        async function aBlock(id, b) { if (!confirm(b ? 'Mzuie mtumiaji huyu?' : 'Mfungulie mtumiaji huyu?')) return; await aRun(async () => { await adminApi('/users/' + id + '/block', 'POST', { blocked: b }); aToast('Imefanyika.'); aUsersLoad(); }); }
-        async function aDel(id) { if (!confirm('Futa akaunti hii kabisa pamoja na historia yake ya malipo na hati? Haiwezi kurudishwa.')) return; await aRun(async () => { await adminApi('/users/' + id, 'DELETE'); aToast('Amefutwa.'); aUsersLoad(); }); }
-        async function aCoins(id) { const v = prompt('Ongeza au punguza coin (mfano 10 au -5):'); if (v === null || v.trim() === '') return; await aRun(async () => { const d = await adminApi('/users/' + id + '/coins', 'POST', { delta: parseInt(v, 10) }); aToast('Salio jipya: ' + d.coins); aUsersLoad(); }); }
-        async function aPrices() { await aRun(async () => { aPk = (await adminApi('/packages')).packages; aPricesDraw(); }); }
+        function aUserOpen(i) {
+            const u = aUsrs[i], dd = (l, v) => '<div><dt>' + l + '</dt><dd>' + v + '</dd></div>';
+            const unl = u.isUnlimited;
+            aOpen('<div class="a-sh-head"><span class="a-av" style="background:rgba(255,255,255,.2)">' + esc(String(u.full_name || '?').trim().charAt(0).toUpperCase()) + '</span><div><h3>' + esc(u.full_name) + '</h3><p>' + (u.is_blocked ? 'Amezuiwa' : 'Akaunti hai') + (u.isAdmin ? ' · Admin' : '') + '</p></div><button class="a-sh-x" onclick="aClose()">&times;</button></div><div class="a-sh-body"><dl class="a-dl">'
+                + dd('Salio', unl ? '<span class="badge unl">Unlimited</span>' : '<span class="mcoin"></span>' + tzs(u.coins)) + (unl ? dd('Unlimited hadi', esc(fmtDate(u.unlimited_until, true))) : '')
+                + dd('Simu', esc(localPhone(u.phone) || '—')) + dd('Barua pepe', esc(u.email || '—')) + dd('Alijiunga', esc(fmtDate(u.created_at, true))) + dd('ID', '#' + Number(u.id)) + '</dl>'
+                + (u.isAdmin ? '' : '<div class="a-field"><span>Ongeza / punguza coins</span><input id="a_coin" type="number" inputmode="numeric" placeholder="Mfano 10 au -5"></div><div class="a-quick"><button onclick="aQ(10)">+10</button><button onclick="aQ(50)">+50</button><button onclick="aQ(100)">+100</button><button onclick="aQ(-10)">-10</button></div>'
+                    + '<div class="a-btns"><button class="a-btn v full" onclick="aCoinSave(' + i + ')">' + aIc('save', 16) + 'Hifadhi Coins</button><button class="a-btn ' + (u.is_blocked ? 'g' : 'o') + '" onclick="aBlock(' + i + ')">' + aIc(u.is_blocked ? 'unlock' : 'ban', 16) + (u.is_blocked ? 'Mfungulie' : 'Mzuie') + '</button><button class="a-btn r" onclick="aDel(' + i + ')">' + aIc('trash', 16) + 'Futa</button></div>')
+                + '</div>');
+        }
+        function aQ(n) { const e = $a('a_coin'); e.value = (parseInt(e.value, 10) || 0) + n; }
+        async function aCoinSave(i) {
+            const v = parseInt($a('a_coin').value, 10);
+            if (!v) { aToast('Weka namba sahihi.', 1); return; }
+            await aRun(async () => { const d = await adminApi('/users/' + aUsrs[i].id + '/coins', 'POST', { delta: v }); aUsrs[i].coins = d.coins; aCache.users = null; aToast('Salio jipya: ' + d.coins); aUsersDraw(); aUserOpen(i); });
+        }
+        async function aBlock(i) {
+            const u = aUsrs[i], b = !u.is_blocked;
+            if (!confirm(b ? 'Mzuie mtumiaji huyu?' : 'Mfungulie mtumiaji huyu?')) return;
+            await aRun(async () => { await adminApi('/users/' + u.id + '/block', 'POST', { blocked: b }); u.is_blocked = b; aCache.users = null; aToast('Imefanyika.'); aUsersDraw(); aUserOpen(i); });
+        }
+        async function aDel(i) {
+            if (!confirm('Futa akaunti hii kabisa pamoja na historia yake ya malipo na hati? Haiwezi kurudishwa.')) return;
+            await aRun(async () => { await adminApi('/users/' + aUsrs[i].id, 'DELETE'); aUsrs.splice(i, 1); aCache = {}; aToast('Amefutwa.'); aClose(); aUsersDraw(); });
+        }
+
+        /* ---------- Bei ---------- */
+        async function aPrices() {
+            if (!aPk.length) $a('adminBody').innerHTML = aLoader(); else aPricesDraw();
+            await aRun(async () => { aPk = (await adminApi('/packages')).packages; aPricesDraw(); });
+        }
         function aPricesDraw() {
             if (aCur !== 'prices') return;
-            const rows = aPk.map((p, i) => '<tr><td><select onchange="aPk[' + i + '].category=this.value;aPricesDraw()"><option value="coins"' + (p.category !== 'unlimited' ? ' selected' : '') + '>Coins</option><option value="unlimited"' + (p.category === 'unlimited' ? ' selected' : '') + '>Unlimited</option></select></td><td><input type="number" min="1" value="' + (p.category === 'unlimited' ? '' : p.coins) + '" ' + (p.category === 'unlimited' ? 'disabled' : '') + ' onchange="aPk[' + i + '].coins=+this.value"></td><td><input type="number" min="1" value="' + (p.category === 'unlimited' ? p.unlimitedDays : '') + '" ' + (p.category !== 'unlimited' ? 'disabled' : '') + ' onchange="aPk[' + i + '].unlimitedDays=+this.value"></td><td><input type="number" min="100" value="' + p.amountTzs + '" onchange="aPk[' + i + '].amountTzs=+this.value"></td><td><input type="checkbox" style="width:auto" ' + (p.active !== false ? 'checked' : '') + ' onchange="aPk[' + i + '].active=this.checked"></td><td><div class="a-act"><button class="red" onclick="aPk.splice(' + i + ',1);aPricesDraw()">Ondoa</button></div></td></tr>').join('');
-            $a('adminBody').innerHTML = '<div class="table-card a-ed"><div class="table-wrap"><table class="data-table"><thead><tr><th>Aina</th><th>Coins</th><th>Siku</th><th>Bei (TZS)</th><th>Hai</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div></div><div class="a-bar" style="margin-top:12px"><button class="btn-sm slate" onclick="aPk.push({category:\'coins\',coins:10,unlimitedDays:0,amountTzs:1000,active:true});aPricesDraw()">+ Kifurushi</button><button class="btn-sm teal" onclick="aSavePrices()">Hifadhi Bei</button><button class="btn-sm slate" onclick="aResetPrices()">Rudisha za awali</button></div>';
+            const card = (p, i) => {
+                const off = p.active === false ? '<span class="a-off">IMEZIMWA</span>' : '';
+                if (p.category === 'unlimited') return '<button class="a-pcard unl' + (p.active === false ? ' off' : '') + '" onclick="aPkOpen(' + i + ')">' + off + '<div class="a-pnum">' + aIc('inf', 26) + 'Unlimited</div><small>Siku ' + Number(p.unlimitedDays) + ' · Hati bila kikomo</small><div class="a-pprice mono">TZS ' + tzs(p.amountTzs) + '</div></button>';
+                return '<button class="a-pcard' + (p.active === false ? ' off' : '') + '" onclick="aPkOpen(' + i + ')">' + off + '<div class="a-pnum mono"><span class="mcoin"></span>' + tzs(p.coins) + '</div><small>Coins · ~Hati ' + Math.floor(p.coins / (genCost || 1)) + '</small><div class="a-pprice mono">TZS ' + tzs(p.amountTzs) + '</div></button>';
+            };
+            const coins = aPk.map((p, i) => p.category !== 'unlimited' ? card(p, i) : '').join(''), unl = aPk.map((p, i) => p.category === 'unlimited' ? card(p, i) : '').join('');
+            $a('adminBody').innerHTML = '<div class="a-pgrid">' + coins + unl + '<button class="a-pcard add" onclick="aPkOpen(-1)"><span style="display:grid;justify-items:center;gap:6px">' + aIc('plus', 26) + 'Kifurushi kipya</span></button></div><div class="a-savebar"><button class="a-btn s" onclick="aResetPrices()">Rudisha bei za awali</button></div>';
         }
-        async function aSavePrices() { await aRun(async () => { const d = await adminApi('/packages', 'PUT', { packages: aPk }); aPk = d.packages; aPricesDraw(); aToast('Bei zimehifadhiwa.'); loadPackages(); }); }
+        function aPkOpen(i) {
+            aEdit = i;
+            const p = i < 0 ? { category: 'coins', coins: 10, unlimitedDays: 30, amountTzs: 1000, active: true } : aPk[i], unl = p.category === 'unlimited';
+            aOpen('<div class="a-sh-head"><span class="a-ri" style="background:rgba(255,255,255,.2)">' + (unl ? aIc('inf', 24) : '<span class="mcoin" style="width:30px;height:30px"></span>') + '</span><div><h3>' + (i < 0 ? 'Kifurushi kipya' : 'Hariri kifurushi') + '</h3><p>' + (unl ? 'Unlimited · Siku ' + p.unlimitedDays : tzs(p.coins) + ' Coins') + ' · TZS ' + tzs(p.amountTzs) + '</p></div><button class="a-sh-x" onclick="aClose()">&times;</button></div><div class="a-sh-body">'
+                + '<div class="a-field"><span>Aina</span><select id="pk_c" onchange="aPkType()"><option value="coins"' + (unl ? '' : ' selected') + '>Coins</option><option value="unlimited"' + (unl ? ' selected' : '') + '>Unlimited</option></select></div>'
+                + '<div class="a-field" id="pk_cw"><span>Idadi ya Coins</span><input id="pk_n" type="number" min="1" value="' + (p.coins || 10) + '"></div>'
+                + '<div class="a-field" id="pk_dw"><span>Siku za Unlimited</span><input id="pk_d" type="number" min="1" max="365" value="' + (p.unlimitedDays || 30) + '"></div>'
+                + '<div class="a-field"><span>Bei (TZS)</span><input id="pk_p" type="number" min="100" value="' + p.amountTzs + '"></div>'
+                + '<div class="a-field"><span>Hali</span><select id="pk_a"><option value="1"' + (p.active !== false ? ' selected' : '') + '>Inaonekana kwa watumiaji</option><option value="0"' + (p.active === false ? ' selected' : '') + '>Imezimwa</option></select></div>'
+                + '<div class="a-btns"><button class="a-btn v full" onclick="aPkSave()">' + aIc('save', 16) + 'Hifadhi</button>' + (i < 0 ? '' : '<button class="a-btn r" onclick="aPkDel()">' + aIc('trash', 16) + 'Ondoa</button>') + '<button class="a-btn s' + (i < 0 ? ' full' : '') + '" onclick="aClose()">Funga</button></div></div>');
+            aPkType();
+        }
+        function aPkType() { const u = $a('pk_c').value === 'unlimited'; $a('pk_cw').style.display = u ? 'none' : 'grid'; $a('pk_dw').style.display = u ? 'grid' : 'none'; }
+        async function aPkPush(list, msg) {
+            await aRun(async () => { const d = await adminApi('/packages', 'PUT', { packages: list }); aPk = d.packages; aClose(); aPricesDraw(); aToast(msg); loadPackages(); });
+        }
+        function aPkSave() {
+            const unl = $a('pk_c').value === 'unlimited';
+            const o = { category: unl ? 'unlimited' : 'coins', coins: unl ? 0 : +$a('pk_n').value, unlimitedDays: unl ? +$a('pk_d').value : 0, amountTzs: +$a('pk_p').value, active: $a('pk_a').value === '1' };
+            const list = aPk.map(x => Object.assign({}, x));
+            if (aEdit < 0) list.push(o); else list[aEdit] = Object.assign(list[aEdit], o);
+            aPkPush(list, 'Kifurushi kimehifadhiwa.');
+        }
+        function aPkDel() {
+            if (!confirm('Ondoa kifurushi hiki?')) return;
+            const list = aPk.filter((_, k) => k !== aEdit);
+            if (!list.length) { aToast('Lazima abaki kifurushi angalau kimoja.', 1); return; }
+            aPkPush(list, 'Kimeondolewa.');
+        }
         async function aResetPrices() { if (!confirm('Rudisha bei za awali?')) return; await aRun(async () => { await adminApi('/packages', 'DELETE'); aToast('Zimerudishwa.'); aPrices(); loadPackages(); }); }
+
+        /* ---------- Offer ---------- */
         async function aOffer() {
+            $a('adminBody').innerHTML = aLoader();
             await aRun(async () => {
                 const o = (await adminApi('/offer')).offer;
                 if (aCur !== 'offer') return;
-                const cur = o ? '<div class="a-stat" style="margin-bottom:12px;max-width:520px"><span>Offer inayoendelea</span><b>' + esc(o.title) + '</b><span>Bonasi ' + (o.bonusPercent || 0) + '% · Punguzo ' + (o.discountPercent || 0) + '% · Inaisha: ' + esc(fmtDate(o.endsAt, true)) + '</span><div class="a-act"><button class="red" onclick="aOfferStop()">Zima sasa</button></div></div>' : '<p class="a-mute" style="margin-bottom:12px">Hakuna offer inayoendelea.</p>';
-                $a('adminBody').innerHTML = cur + '<div class="a-form"><label>Kichwa cha offer<input id="of_t" maxlength="60" placeholder="Mfano: Sikukuu Offer"></label><label>Maelezo (watumiaji wataona)<textarea id="of_d" rows="4" maxlength="800" placeholder="Eleza offer..."></textarea></label><label>Muda<span style="display:flex;gap:6px"><input id="of_m" type="number" min="1" value="24" style="flex:1"><select id="of_u"><option value="1">Dakika</option><option value="60" selected>Masaa</option><option value="1440">Siku</option></select></span></label><label>Coins za ziada (%)<input id="of_b" type="number" min="0" max="500" value="0"></label><label>Punguzo la bei (%)<input id="of_x" type="number" min="0" max="90" value="0"></label><button class="btn btn-gen" onclick="aOfferSave()">Weka Offer</button></div>';
+                const live = o ? '<div class="a-offer-live"><span class="tag">' + aIc('gift', 13) + 'OFFER INAENDELEA</span><h3>' + esc(o.title) + '</h3><div class="big mono">-' + (o.discountPercent || 0) + '%</div><p>Inaisha: ' + esc(fmtDate(o.endsAt, true)) + '</p><button class="a-btn" onclick="aOfferStop()">' + aIc('power', 16) + 'Zima sasa</button></div>' : '';
+                $a('adminBody').innerHTML = live + '<div class="a-offer-form"><h4>' + aIc('gift', 18) + (o ? 'Badilisha offer' : 'Weka offer mpya') + '</h4>'
+                    + '<div class="a-field"><span>Kichwa cha offer</span><input id="of_t" maxlength="60" placeholder="Mfano: Sikukuu Offer"></div>'
+                    + '<div class="a-field"><span>Maelezo (watumiaji wataona)</span><textarea id="of_d" rows="3" maxlength="800" placeholder="Eleza offer..."></textarea></div>'
+                    + '<div class="a-field"><span>Muda</span><div class="a-dur"><input id="of_m" type="number" min="1" value="24"><select id="of_u"><option value="1">Dakika</option><option value="60" selected>Masaa</option><option value="1440">Siku</option></select></div></div>'
+                    + '<div class="a-field"><span>Punguzo la bei</span><div class="a-disc"><input id="of_x" type="range" min="5" max="90" step="5" value="20" oninput="$a(\'of_xo\').value=this.value+\'%\'"><output id="of_xo">20%</output></div></div>'
+                    + '<button class="a-btn v" style="width:100%" onclick="aOfferSave()">' + aIc('gift', 16) + 'Weka Offer</button></div>';
             });
         }
-        async function aOfferSave() { await aRun(async () => { await adminApi('/offer', 'POST', { title: $a('of_t').value, description: $a('of_d').value, durationMinutes: Math.round(+$a('of_m').value * +$a('of_u').value), bonusPercent: +$a('of_b').value, discountPercent: +$a('of_x').value }); aToast('Offer imewekwa.'); aOffer(); loadPackages(); }); }
+        async function aOfferSave() { await aRun(async () => { await adminApi('/offer', 'POST', { title: $a('of_t').value, description: $a('of_d').value, durationMinutes: Math.round(+$a('of_m').value * +$a('of_u').value), discountPercent: +$a('of_x').value }); aToast('Offer imewekwa.'); aOffer(); loadPackages(); }); }
         async function aOfferStop() { if (!confirm('Zima offer sasa?')) return; await aRun(async () => { await adminApi('/offer', 'DELETE'); aToast('Offer imezimwa.'); aOffer(); loadPackages(); }); }
 
 
@@ -2529,7 +2798,8 @@
             out.value = dt.toISOString().slice(0, 10);
         }
 
-        loadPackages();
+        try { const v = sessionStorage.getItem(VIEW_KEY); if (v && currentUser && ['home', 'tin', 'bl', 'wallet', 'profile'].includes(v)) switchView(v); } catch (e) {}
+        loadPackages().catch(() => {});
         updateUserUI();
         refreshProfile();
     </script>

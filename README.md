@@ -30,7 +30,7 @@ Configure your Dalipay Merchant Dashboard Webhook URL to:
 
 ## 3. Coin & Unlimited Pricing
 
-- **Welcome Bonus:** 10 Free Coins on first registration per device/browser (`device_id` + `HttpOnly` cookie check; duplicate accounts on the same device receive 0 coins)
+- **Welcome Bonus:** 5 Free Coins on first registration per device/browser (`device_id` + `HttpOnly` cookie check; duplicate accounts on the same device receive 0 coins)
 - **Generation Cost:** 1 Coin per TIN Certificate or Business License (0 Coins while Unlimited is active)
 - **Packages:** 22 Coins (2,000 TZS) · 55 Coins (5,000 TZS) · 100 Coins (9,000 TZS) · 230 Coins (20,000 TZS) · 600 Coins (50,000 TZS) · 1,200 Coins (100,000 TZS)
 - **Unlimited Plans:** 1 Month / 30 Days (30,000 TZS) · 55 Days (50,000 TZS)
@@ -49,5 +49,5 @@ Configure your Dalipay Merchant Dashboard Webhook URL to:
 
 1. Re-run `supabase_schema.sql` (the migration at the bottom is safe to re-run): adds `is_blocked`, `app_settings`, and makes `email` optional.
 2. Set `ADMIN_EMAILS` (comma-separated). Register that account yourself right away (phone is required, email = the admin email). On login it opens the dashboard directly.
-3. Admin can: see all payments + search by reference/phone, manually confirm a payment, search/block/unblock/delete users, add or remove coins, edit package prices (add/disable packages), and run timed offers (bonus % coins and/or discount %). Offers vanish automatically when time ends.
+3. Admin can: see all payments + search by reference/phone, manually confirm a payment, search/block/unblock/delete users, add or remove coins, edit package prices (add/disable packages), and run timed offers (discount %). Offers vanish automatically when time ends.
 4. Users: phone number is required, email optional. Login works with phone or email.

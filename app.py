@@ -68,7 +68,7 @@ except ValueError:
     _session_days = 30
 SESSION_MAX_AGE_SEC = 60 * 60 * 24 * _session_days
 GENERATION_COIN_COST = 1
-FREE_SIGNUP_COINS = 10
+FREE_SIGNUP_COINS = 5
 
 PACKAGES = {
     'coins_22': {'id': 'coins_22', 'label': '22 Coins', 'amountTzs': 2000, 'coins': 22, 'unlimitedDays': 0, 'category': 'coins'},
@@ -564,7 +564,7 @@ def base_packages(st):
 
 def active_offer(st):
     o = st.get('offer')
-    if isinstance(o, dict) and int(o.get('endsAt') or 0) > now_ms():
+    if isinstance(o, dict) and int(o.get('endsAt') or 0) > now_ms() and int(o.get('discountPercent') or 0) > 0:
         return o
     return None
 
@@ -573,12 +573,12 @@ def public_offer(st):
     o = active_offer(st)
     if not o:
         return None
-    return {k: o.get(k) for k in ('title', 'description', 'endsAt', 'bonusPercent', 'discountPercent')}
+    return {k: o.get(k) for k in ('title', 'description', 'endsAt', 'discountPercent')}
 
 
 def effective_packages(st):
     o = active_offer(st) or {}
-    bonus, disc = int(o.get('bonusPercent') or 0), int(o.get('discountPercent') or 0)
+    disc = int(o.get('discountPercent') or 0)
     out = []
     for p in base_packages(st):
         if not p.get('active', True):
@@ -587,10 +587,6 @@ def effective_packages(st):
         q['originalAmountTzs'], q['originalCoins'], q['bonusCoins'] = p['amountTzs'], p['coins'], 0
         if disc:
             q['amountTzs'] = max(100, round(p['amountTzs'] * (100 - disc) / 100))
-        if bonus and p['category'] == 'coins':
-            q['bonusCoins'] = p['coins'] * bonus // 100
-            q['coins'] = p['coins'] + q['bonusCoins']
-            q['label'] = f"{q['coins']:,} Coins"
         out.append(q)
     return out
 
@@ -780,11 +776,11 @@ def admin_offer():
         d = get_json_dict()
         title = clean_text(d.get('title'), 60)
         desc = ''.join(c for c in str(d.get('description') or '') if c.isprintable() or c == '\n').strip()[:800]
-        mins, bonus, disc = int(d.get('durationMinutes')), int(d.get('bonusPercent') or 0), int(d.get('discountPercent') or 0)
-        if not title or not 1 <= mins <= 525600 or not 0 <= bonus <= 500 or not 0 <= disc <= 90 or not (bonus or disc):
-            return jsonify({'error': 'Jaza kichwa, muda, na angalau bonasi % au punguzo %.'}), 400
+        mins, disc = int(d.get('durationMinutes')), int(d.get('discountPercent') or 0)
+        if not title or not 1 <= mins <= 525600 or not 1 <= disc <= 90:
+            return jsonify({'error': 'Jaza kichwa, muda, na punguzo % (1 hadi 90).'}), 400
         save_setting('offer', {'title': title, 'description': desc, 'endsAt': now_ms() + mins * 60000,
-                               'bonusPercent': bonus, 'discountPercent': disc})
+                               'discountPercent': disc})
         return jsonify({'ok': True})
     except (ValueError, TypeError):
         return jsonify({'error': 'Taarifa si sahihi.'}), 400
@@ -925,7 +921,7 @@ def api_register():
             'message': (
                 'Kifaa hiki au kivinjari hiki tayari kilishapokea coin za bure. Akaunti imeundwa na coin 0.'
                 if already_claimed
-                else 'Karibu! Umepokea coin 10 za bure kwa kuanza.'
+                else 'Karibu! Umepokea coin 5 za bure kwa kuanza.'
             ),
         }
     )
