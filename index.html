@@ -677,6 +677,42 @@
         .icon-btn:active { transform: none; }
         .btn:active, .btn-sm:active, .btn-gold:active, .btn-primary-sm:active { transform: translateY(1px); }
         .bnav-btn.active svg { transform: translateY(-1px); }
+
+        /* ===== Profile compact ===== */
+        .history-grid { gap: 14px; margin-top: 14px; }
+        .history-grid .table-card { border-radius: 16px; box-shadow: var(--sh-s); }
+        .history-grid .table-card-head { padding: 10px 14px; }
+        .history-grid .table-card-head h3 { font-size: 0.82rem; }
+        .history-grid .table-wrap { max-height: 300px; overflow: auto; }
+        table.tx-table { font-size: 0.74rem; }
+        table.tx-table th { padding: 7px 12px; font-size: 0.62rem; position: sticky; top: 0; z-index: 1; }
+        table.tx-table td { padding: 8px 12px; }
+        .tx-ico { width: 26px; height: 26px; border-radius: 8px; }
+        .tx-ico svg { width: 14px; height: 14px; }
+        .tx-cell { gap: 9px; }
+        .tx-title { font-size: 0.76rem; max-width: 170px; }
+        .tx-sub { font-size: 0.64rem; margin-top: 1px; }
+        .tx-amt { font-size: 0.74rem; }
+        .badge { padding: 2px 8px; font-size: 0.64rem; gap: 5px; }
+        .badge::before { width: 5px; height: 5px; }
+        .tx-count { font-size: 0.64rem; padding: 2px 8px; }
+        .tx-go { width: 18px; }
+        .tx-go svg { width: 13px; height: 13px; }
+        @media (min-width: 1000px) { .history-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 640px) { table.tx-table th, table.tx-table td { padding: 8px 8px; } .tx-title { max-width: 120px; } .tx-ico { width: 26px; height: 26px; } }
+
+        /* ===== Maelezo ya muamala (ndogo) ===== */
+        .tx-modal { max-width: 330px; padding: 16px 18px 18px; border-radius: 22px; }
+        .tx-modal h3 { font-size: 0.9rem !important; }
+        .tx-hero { padding: 8px 0 10px; }
+        .tx-hero .tx-ico { width: 40px; height: 40px; border-radius: 13px; margin-bottom: 6px; }
+        .tx-hero .tx-ico svg { width: 20px; height: 20px; }
+        .tx-hero-amt { font-size: 1.1rem; margin-bottom: 6px; }
+        .tx-item { padding: 7px 0; font-size: 0.74rem; gap: 10px; }
+        .tx-note { font-size: 0.7rem; padding: 8px 10px; margin-top: 10px; }
+        .tx-actions { margin-top: 10px; }
+        .tx-actions .btn { min-height: 38px; font-size: 0.76rem; border-radius: 12px; }
+        .tx-modal .mini-btn { font-size: 0.68rem; padding: 5px 10px; }
     </style>
 <script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
 <body>
@@ -770,7 +806,7 @@
                     </div>
                     <div>
                         <h2>Business License</h2>
-                        <p>Auto B.L. NO &amp; QR Code</p>
+                        <p>Jaza taarifa kisha Generate</p>
                     </div>
                     <div class="launcher-foot" style="color:#1e293b;"><span>Fungua Fomu</span><span>&rarr;</span></div>
                 </button>
@@ -780,7 +816,7 @@
                         <div class="launcher-icon amber">
                             <span class="mcoin" style="width:30px;height:30px"></span>
                         </div>
-                        <span class="launcher-cost" style="color:#b45309;">Dalipay</span>
+                        <span class="launcher-cost" style="color:#b45309;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-label="Cart"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.6 12.4a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.5L21 7H6"/></svg></span>
                     </div>
                     <div>
                         <h2>Buy Coins</h2>
@@ -909,7 +945,7 @@
             <div class="wallet-hero">
                 <div>
                     <div style="font-size:0.74rem;color:#94a3b8;">Salio Lako la Sasa</div>
-                    <div id="walletHeroBalance" class="mono" style="font-size:1.35rem;font-weight:700;color:#fcd34d;margin-top:2px;">0 Coins · Guest</div>
+                    <div id="walletHeroBalance" class="mono" style="font-size:1.35rem;font-weight:700;color:#fcd34d;margin-top:2px;">0</div>
                 </div>
                 <div class="wallet-filter">
                     <button class="filter-tab active" data-wtab="all" onclick="setWalletFilter('all')">Vyote</button>
@@ -1283,7 +1319,7 @@
             heroRight.textContent = '';
 
             if (currentUser) {
-                const balLabel = currentUser.isUnlimited ? 'Unlimited' : `${currentUser.coins} Coins`;
+                const balLabel = currentUser.isUnlimited ? 'Unlimited' : String(currentUser.coins);
                 chip.textContent = balLabel;
                 chip.style.display = 'inline-block';
                 authBtn.style.display = 'none';
@@ -1317,6 +1353,7 @@
                 hVal.style.fontWeight = '700';
                 hVal.style.color = '#fcd34d';
                 hVal.textContent = balLabel;
+                if (!currentUser.isUnlimited) { const c = document.createElement('span'); c.className = 'mcoin'; c.style.cssText = 'width:1.1em;height:1.1em;margin-right:6px;vertical-align:-0.2em'; hVal.prepend(c); }
                 heroRight.append(hLabel, hVal);
 
                 profileGuest.style.display = 'none';
@@ -1331,7 +1368,7 @@
                 chip.style.display = 'none';
                 authBtn.style.display = 'inline-block';
                 drawerFoot.style.display = 'none';
-                document.getElementById('walletHeroBalance').textContent = '0 Coins · Guest';
+                document.getElementById('walletHeroBalance').textContent = '0';
 
                 const dBtn = document.createElement('button');
                 dBtn.className = 'btn btn-gen';
@@ -1543,7 +1580,7 @@
                 };
                 const refWrap = mk('span'); refWrap.style.cssText = 'display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;';
                 refWrap.append(ref, cp);
-                addDetail(dl, 'Reference', refWrap);
+                addDetail(dl, 'Namba ya muamala', refWrap);
                 addDetail(dl, 'Kifurushi', String(it.package_label || '—'));
                 const days = Number(it.unlimited_days || 0), coins = Number(it.coins_awarded || 0);
                 addDetail(dl, 'Utapata', days > 0 ? 'Unlimited · Siku ' + days : coins + ' Coins (~Hati ' + Math.floor(coins / 5) + ')');
@@ -1554,8 +1591,8 @@
                 if (Number(it.completed_at)) addDetail(dl, 'Ulikamilika', fmtDate(it.completed_at, true));
                 const notes = {
                     ok: 'Malipo yamethibitishwa na salio lako lilisasishwa.',
-                    wait: 'Ombi limetumwa kwenye simu yako. Thibitisha USSD push (weka PIN) ili kukamilisha malipo.',
-                    fail: 'Malipo haya hayakukamilika na coin hazikuongezwa. Kama pesa ilikatwa, wasiliana nasi ukitutumia Reference hapo juu.'
+                    wait: 'Ombi la malipo limetumwa kwenye simu yako. Weka PIN ili kukamilisha.',
+                    fail: 'Malipo haya hayakukamilika na coin hazikuongezwa. Kama pesa ilikatwa, wasiliana nasi ukitutumia namba ya muamala hapo juu.'
                 };
                 if (notes[st.cls]) { note.className = 'tx-note ' + st.cls; note.textContent = notes[st.cls]; }
                 if (st.cls === 'wait') {
@@ -1600,7 +1637,7 @@
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTxModal(); });
 
         const NETWORKS = [
-            { key: 'auto', value: '', name: 'Otomatiki', sub: 'Mtandao utatambuliwa kutoka kwenye namba' },
+            { key: 'auto', value: '', name: 'Otomatiki', sub: 'Chagua mwenyewe au tuache tuchague' },
             { key: 'mpesa', value: 'Mpesa', name: 'M-Pesa', sub: 'Vodacom', mark: 'M' },
             { key: 'mixx', value: 'Tigo', name: 'Mixx by Yas', sub: 'Tigo Pesa', mark: 'Mx' },
             { key: 'airtel', value: 'Airtel', name: 'Airtel Money', sub: 'Airtel', mark: 'a' },
