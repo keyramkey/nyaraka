@@ -16,7 +16,7 @@ create table if not exists public.device_claims (
   id bigint generated always as identity primary key,
   device_id text,
   cookie_token text,
-  user_id bigint not null references public.users(id) on delete cascade,
+  user_id bigint references public.users(id) on delete set null,
   created_at bigint not null
 );
 
@@ -188,3 +188,17 @@ create table if not exists public.app_settings (
 );
 alter table public.app_settings enable row level security;
 grant select, insert, update, delete on table public.app_settings to service_role;
+
+-- ===== Security questions, password reset lock, account deletion migration (safe to re-run) =====
+-- Hashed answers: {"mother": "salt:hash", "ward": "salt:hash", "year": "salt:hash"}
+alter table public.users add column if not exists security_answers jsonb;
+alter table public.users add column if not exists reset_fails integer not null default 0;
+alter table public.users add column if not exists reset_locked_until bigint not null default 0;
+
+-- When an account is deleted, keep the (anonymous) device record so the same device
+-- cannot delete + re-register to collect the 5 free coins again.
+alter table public.device_claims alter column user_id drop not null;
+alter table public.device_claims drop constraint if exists device_claims_user_id_fkey;
+alter table public.device_claims
+  add constraint device_claims_user_id_fkey
+  foreign key (user_id) references public.users(id) on delete set null;

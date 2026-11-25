@@ -406,6 +406,21 @@
         }
         .modal-backdrop.open { display: flex; }
         .modal-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; max-width: 420px; width: 100%; padding: 24px; }
+        .modal-box { max-height: 92vh; overflow-y: auto; }
+        .acct-view { display: none; }
+        .link-btn { background: none; border: none; padding: 0; color: #0f766e; font-size: 0.78rem; font-weight: 700; cursor: pointer; text-decoration: underline; }
+        .btn-danger { background: #dc2626; color: #fff; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-danger:disabled { opacity: 0.45; cursor: not-allowed; }
+        .sec-block { border-top: 1px dashed #cbd5e1; margin-top: 4px; padding-top: 12px; }
+        .sec-block h4 { font-size: 0.82rem; font-weight: 800; color: #0f172a; margin-bottom: 2px; }
+        .sec-hint { font-size: 0.72rem; color: #64748b; margin-bottom: 10px; line-height: 1.4; }
+        .acct-q { background: #f0fdfa; border: 1px solid #99f6e4; color: #0f172a; border-radius: 12px; padding: 12px 14px; font-weight: 700; font-size: 0.92rem; margin-bottom: 12px; }
+        .acct-info { font-size: 0.8rem; color: #334155; line-height: 1.5; margin-bottom: 12px; }
+        .acct-info ul { margin: 6px 0 0 18px; padding: 0; }
+        .acct-check { display: flex; gap: 8px; align-items: flex-start; font-size: 0.78rem; color: #334155; margin-bottom: 12px; }
+        .acct-check input { margin-top: 2px; }
+        .acct-list { display: flex; flex-direction: column; gap: 10px; }
         .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: #f1f5f9; padding: 4px; border-radius: 10px; margin: 14px 0; }
         .auth-tab { border: none; background: transparent; padding: 7px; font-size: 0.8rem; font-weight: 600; color: #475569; border-radius: 7px; cursor: pointer; }
         .auth-tab.active { background: #fff; color: #0f172a; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
@@ -917,6 +932,24 @@
         #ptr.go { color: #fff; background: linear-gradient(135deg, #7c3aed, #db2777); }
         #ptr.spin svg { animation: spin360 .7s linear infinite; }
         #ptr.snap { transition: transform .25s var(--ease), opacity .25s; }
+
+        /* ===== Admin: kila kitu kinatosha screen (bila kuslide) ===== */
+        html { overflow-x: hidden; } body { overflow-x: clip; max-width: 100vw; }
+        #adminApp { width: 100%; max-width: min(1100px, 100vw); overflow-x: clip; }
+        #adminApp > * { min-width: 0; max-width: 100%; }
+        .a-list { grid-template-columns: minmax(0, 1fr); }
+        .a-row { min-width: 0; max-width: 100%; overflow: hidden; }
+        .a-mid, .a-end { min-width: 0; }
+        .a-end { max-width: 46%; }
+        .a-pgrid, .a-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); }
+        .a-chips { flex-wrap: wrap; overflow: visible; }
+        .a-chip { flex: 1 1 auto; text-align: center; padding: 7px 10px; }
+        @media (max-width: 720px) {
+            .a-pgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .a-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .a-pcard.unl { grid-column: span 2; }
+            .a-ri, .a-av { width: 38px; height: 38px; border-radius: 12px; } .a-row { gap: 10px; padding: 10px; }
+            .a-chip { font-size: .68rem; padding: 7px 6px; }
+        }
     </style>
 <script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
 <body>
@@ -963,6 +996,7 @@
                 <button class="drawer-item" data-view="wallet" onclick="switchView('wallet');toggleDrawer(false)"><span class="di-ico coin"><span class="mcoin" style="width:24px;height:24px"></span></span><span>Buy Coins</span></button>
                 <button class="drawer-item" data-view="profile" onclick="switchView('profile');toggleDrawer(false)"><span class="di-ico "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><span>Profile</span></button>
                 <hr>
+                <button class="drawer-item" onclick="toggleDrawer(false);openAcctModal('delete')"><span class="di-ico red"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span><span>Futa Akaunti / Data</span></button>
                 <button class="drawer-item" onclick="toggleDrawer(false);openContactModal()"><span class="di-ico green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></span><span>Contact</span></button>
                 <button class="drawer-item" onclick="logoutUser();toggleDrawer(false)" id="drawerFoot" style="display:none;color:#b91c1c;"><span class="di-ico red"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><span>Toka (Sign Out)</span></button>
             </div>
@@ -1238,7 +1272,17 @@
                     </div>
                 </div>
 
-                <div class="history-grid">
+                <div class="card" style="margin-top:16px;">
+                    <h3 style="font-size:0.95rem;font-weight:800;margin-bottom:4px;">Usalama wa Akaunti</h3>
+                    <p id="profSecqStatus" class="sec-hint" style="margin-bottom:12px;"></p>
+                    <div class="acct-list">
+                        <button class="btn-sm teal" style="padding:11px 14px;" onclick="openAcctModal('chpw')">Badili Nenosiri</button>
+                        <button class="btn-sm slate" style="padding:11px 14px;" id="profSecqBtn" onclick="openAcctModal('secq')">Maswali ya Usalama</button>
+                        <button class="btn-sm" style="padding:11px 14px;background:#fef2f2;color:#b91c1c;" onclick="openAcctModal('delete')">Futa Akaunti na Data</button>
+                    </div>
+                </div>
+
+                <div class="history-grid" style="margin-top:18px;">
                     <div class="table-card">
                         <div class="table-card-head split"><h3>Historia ya Malipo</h3><span class="tx-count" id="payCount">0 miamala</span></div>
                         <div class="table-wrap">
@@ -1352,8 +1396,96 @@
                 <label>Nenosiri (Angalau herufi 8)</label>
                 <input type="password" id="auth_pass">
             </div>
+            <div id="regSecurityFields" class="sec-block">
+                <h4>Maswali ya Usalama</h4>
+                <p class="sec-hint">Yatatumika ukisahau nenosiri. Kumbuka majibu yako kama ulivyoyaandika (herufi kubwa/ndogo hazijalishi).</p>
+                <div class="form-group">
+                    <label>1. Jina la mama yako</label>
+                    <input type="text" id="auth_sq_mother" autocomplete="off" maxlength="60">
+                </div>
+                <div class="form-group">
+                    <label>2. Kata unayoishi</label>
+                    <input type="text" id="auth_sq_ward" autocomplete="off" maxlength="60">
+                </div>
+                <div class="form-group">
+                    <label>3. Mwaka uliomaliza darasa la saba</label>
+                    <input type="tel" inputmode="numeric" id="auth_sq_year" class="mono" autocomplete="off" maxlength="4" placeholder="mfano 2008">
+                </div>
+            </div>
+            <div id="loginForgotRow" style="display:none;margin:-2px 0 12px;text-align:right;">
+                <button type="button" class="link-btn" onclick="openAcctModal('forgot1')">Umesahau nenosiri?</button>
+            </div>
             <p id="authErrorMsg" style="color:#b91c1c;font-size:0.78rem;margin-bottom:8px;display:none;"></p>
             <button class="btn btn-gen" onclick="submitAuth()">Endelea</button>
+        </div>
+    </div>
+
+    <!-- ACCOUNT MODAL: forgot password / change password / security questions / delete account -->
+    <div id="acctModal" class="modal-backdrop">
+        <div class="modal-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;">
+                <h3 id="acctTitle" style="font-size:1.05rem;font-weight:700;"></h3>
+                <button class="mini-btn" onclick="closeAcctModal()">Funga</button>
+            </div>
+
+            <div id="acct-forgot1" class="acct-view">
+                <p class="acct-info">Weka namba ya simu au barua pepe uliyotumia kujisajili. Tutakuuliza swali moja la usalama.</p>
+                <div class="form-group"><label>Namba ya Simu au Barua Pepe</label><input type="text" id="fg_identifier" autocomplete="username"></div>
+                <button class="btn btn-gen" id="fg1Btn" onclick="acctForgotStart()">Endelea</button>
+            </div>
+
+            <div id="acct-forgot2" class="acct-view">
+                <div class="acct-q" id="fgQuestion"></div>
+                <div class="form-group"><label>Jibu lako</label><input type="text" id="fg_answer" autocomplete="off"></div>
+                <button class="btn btn-gen" id="fg2Btn" onclick="acctForgotAnswer()">Thibitisha</button>
+                <p class="sec-hint" style="margin-top:10px;">Ukikosea utapewa swali jingine. Ukikosea mara nyingi akaunti itafungwa kwa muda kwa usalama.</p>
+            </div>
+
+            <div id="acct-forgot3" class="acct-view">
+                <p class="acct-info">Jibu ni sahihi. Weka nenosiri jipya.</p>
+                <div class="form-group"><label>Nenosiri Jipya (Angalau herufi 8)</label><input type="password" id="fg_new" autocomplete="new-password"></div>
+                <div class="form-group"><label>Rudia Nenosiri Jipya</label><input type="password" id="fg_new2" autocomplete="new-password"></div>
+                <button class="btn btn-gen" id="fg3Btn" onclick="acctForgotReset()">Badili Nenosiri</button>
+            </div>
+
+            <div id="acct-chpw" class="acct-view">
+                <div class="form-group"><label>Nenosiri la Sasa</label><input type="password" id="cp_old" autocomplete="current-password"></div>
+                <div class="form-group"><label>Nenosiri Jipya (Angalau herufi 8)</label><input type="password" id="cp_new" autocomplete="new-password"></div>
+                <div class="form-group"><label>Rudia Nenosiri Jipya</label><input type="password" id="cp_new2" autocomplete="new-password"></div>
+                <button class="btn btn-gen" id="cpBtn" onclick="acctChangePassword()">Badili Nenosiri</button>
+            </div>
+
+            <div id="acct-secq" class="acct-view">
+                <p class="acct-info">Majibu haya yatatumika kurejesha nenosiri ukilisahau. Yakihifadhiwa tena, majibu ya zamani yanabadilishwa.</p>
+                <div class="form-group"><label>1. Jina la mama yako</label><input type="text" id="acct_sq_mother" autocomplete="off" maxlength="60"></div>
+                <div class="form-group"><label>2. Kata unayoishi</label><input type="text" id="acct_sq_ward" autocomplete="off" maxlength="60"></div>
+                <div class="form-group"><label>3. Mwaka uliomaliza darasa la saba</label><input type="tel" inputmode="numeric" id="acct_sq_year" class="mono" autocomplete="off" maxlength="4" placeholder="mfano 2008"></div>
+                <div class="form-group"><label>Nenosiri Lako (kuthibitisha)</label><input type="password" id="sq_pass" autocomplete="current-password"></div>
+                <button class="btn btn-gen" id="sqBtn" onclick="acctSaveSecurity()">Hifadhi</button>
+            </div>
+
+            <div id="acct-delete" class="acct-view">
+                <div class="acct-info">
+                    <b>Kufuta akaunti na data zako (haiwezi kurudishwa).</b>
+                    <ul>
+                        <li>Zinafutwa: jina, namba ya simu, barua pepe, nenosiri, maswali ya usalama, salio la coin / Unlimited, historia ya malipo na historia ya hati.</li>
+                        <li>Hati ulizopakua kwenye simu yako hazihusiki.</li>
+                        <li>Kumbukumbu isiyo na jina lako ya kifaa inabaki ili kuzuia matumizi mabaya ya coin za bure.</li>
+                    </ul>
+                </div>
+                <div class="form-group" id="delIdentifierGroup"><label>Namba ya Simu au Barua Pepe</label><input type="text" id="del_identifier" autocomplete="username"></div>
+                <div class="form-group"><label>Nenosiri Lako</label><input type="password" id="del_pass" autocomplete="current-password"></div>
+                <label class="acct-check"><input type="checkbox" id="del_confirm"><span>Naelewa kuwa akaunti yangu na data zote zitafutwa kabisa.</span></label>
+                <button class="btn btn-danger" id="delBtn" onclick="acctDeleteAccount()">Futa Akaunti Yangu</button>
+                <p class="sec-hint" style="margin-top:10px;">Umesahau nenosiri? <button type="button" class="link-btn" onclick="openAcctModal('forgot1')">Lirejeshe kwanza</button> au tuma ombi kupitia <button type="button" class="link-btn" onclick="closeAcctModal();openContactModal()">Mawasiliano</button>.</p>
+            </div>
+
+            <div id="acct-done" class="acct-view">
+                <p class="acct-info" id="acctDoneText"></p>
+                <button class="btn btn-gen" onclick="closeAcctModal()">Sawa</button>
+            </div>
+
+            <p id="acctErr" style="color:#b91c1c;font-size:0.78rem;margin-top:10px;display:none;"></p>
         </div>
     </div>
 
@@ -1553,6 +1685,8 @@
             document.getElementById('authErrorMsg').style.display = 'none';
             document.getElementById('auth_email_lbl').textContent = mode === 'register' ? 'Barua Pepe (Hiari)' : 'Namba ya Simu au Barua Pepe';
             document.getElementById('auth_email').type = mode === 'register' ? 'email' : 'text';
+            document.getElementById('regSecurityFields').style.display = mode === 'register' ? 'block' : 'none';
+            document.getElementById('loginForgotRow').style.display = mode === 'login' ? 'block' : 'none';
         }
 
         function updateUserUI() {
@@ -1612,6 +1746,10 @@
                 document.getElementById('profName').textContent = currentUser.fullName;
                 document.getElementById('profEmail').textContent = [currentUser.email, currentUser.phone].filter(Boolean).join(' · ');
                 document.getElementById('profBalance').textContent = balLabel;
+                document.getElementById('profSecqStatus').textContent = currentUser.hasSecurityQuestions
+                    ? 'Maswali ya usalama yamewekwa. Unaweza kurejesha nenosiri ukilisahau.'
+                    : 'Bado hujaweka maswali ya usalama. Yaweke ili uweze kurejesha nenosiri ukilisahau.';
+                document.getElementById('profSecqBtn').textContent = currentUser.hasSecurityQuestions ? 'Badili Maswali ya Usalama' : 'Weka Maswali ya Usalama';
 
                 document.getElementById('tin_gen_btn').textContent = currentUser.isUnlimited ? 'Generate TIN (Unlimited)' : 'Generate TIN (-1 Coin)';
                 document.getElementById('bl_gen_btn').textContent = currentUser.isUnlimited ? 'Generate License (Unlimited)' : 'Generate License (-1 Coin)';
@@ -1658,6 +1796,12 @@
             const errEl = document.getElementById('authErrorMsg');
             errEl.style.display = 'none';
             if (authMode === 'register' && document.getElementById('auth_phone').value.replace(/\D/g, '').length < 9) { errEl.textContent = 'Weka namba ya simu (lazima).'; errEl.style.display = 'block'; return; }
+            let secAnswers = null;
+            if (authMode === 'register') {
+                secAnswers = readSecAnswers('auth_sq_');
+                const secErr = validateSecAnswers(secAnswers);
+                if (secErr) { errEl.textContent = secErr; errEl.style.display = 'block'; return; }
+            }
             const devId = await getDeviceId();
             const endpoint = authMode === 'register' ? '/api/auth/register' : '/api/auth/login';
             const body = authMode === 'register'
@@ -1666,6 +1810,7 @@
                     phone: document.getElementById('auth_phone').value,
                     email: document.getElementById('auth_email').value,
                     password: document.getElementById('auth_pass').value,
+                    securityAnswers: secAnswers,
                     deviceId: devId
                 }
                 : {
@@ -1694,6 +1839,161 @@
             updateUserUI();
             if (data.message) showNotice(data.message, data.bonusAwarded ? 'success' : 'info');
             refreshProfile();
+        }
+
+        /* ---------- Akaunti: forgot / change password / maswali ya usalama / futa akaunti ---------- */
+        const ACCT_TITLES = {
+            forgot1: 'Umesahau Nenosiri', forgot2: 'Swali la Usalama', forgot3: 'Nenosiri Jipya',
+            chpw: 'Badili Nenosiri', secq: 'Maswali ya Usalama', delete: 'Futa Akaunti na Data', done: 'Imekamilika'
+        };
+        let fgChallenge = '', fgResetToken = '', fgIdentifier = '', acctBusy = false;
+
+        function readSecAnswers(prefix) {
+            const v = id => document.getElementById(prefix + id).value.trim();
+            return { mother: v('mother'), ward: v('ward'), year: v('year') };
+        }
+        function validateSecAnswers(a) {
+            if (a.mother.length < 2 || a.ward.length < 2 || !a.year) return 'Jibu maswali yote matatu ya usalama.';
+            const y = parseInt(a.year, 10);
+            if (!/^\d{4}$/.test(a.year) || y < 1950 || y > new Date().getFullYear()) return 'Weka mwaka sahihi wa kumaliza darasa la saba (mfano 2008).';
+            return '';
+        }
+        function acctError(msg) {
+            const el = document.getElementById('acctErr');
+            el.textContent = msg || '';
+            el.style.display = msg ? 'block' : 'none';
+        }
+        function setAcctView(view) {
+            document.querySelectorAll('#acctModal .acct-view').forEach(el => { el.style.display = el.id === 'acct-' + view ? 'block' : 'none'; });
+            document.getElementById('acctTitle').textContent = ACCT_TITLES[view] || '';
+            acctError('');
+        }
+        function resetAcctInputs() {
+            document.querySelectorAll('#acctModal input').forEach(el => { if (el.type === 'checkbox') el.checked = false; else el.value = ''; });
+            fgChallenge = ''; fgResetToken = '';
+        }
+        function openAcctModal(view) {
+            if ((view === 'chpw' || view === 'secq') && !currentUser) { openAuthModal('login'); return; }
+            const prefill = document.getElementById('auth_email').value.trim();
+            closeAuthModal();
+            resetAcctInputs();
+            setAcctView(view);
+            if (view === 'forgot1' && prefill && authMode === 'login') document.getElementById('fg_identifier').value = prefill;
+            if (view === 'delete') document.getElementById('delIdentifierGroup').style.display = currentUser ? 'none' : 'block';
+            document.getElementById('acctModal').classList.add('open');
+        }
+        function closeAcctModal() {
+            document.getElementById('acctModal').classList.remove('open');
+            resetAcctInputs();
+        }
+        async function acctPost(url, body, btnId) {
+            if (acctBusy) return null;
+            acctBusy = true;
+            const btn = document.getElementById(btnId);
+            if (btn) btn.disabled = true;
+            acctError('');
+            try {
+                const res = await fetch(url, { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), credentials: 'include', body: JSON.stringify(body) });
+                let data = {};
+                try { data = await res.json(); } catch (e) {}
+                return { ok: res.ok, status: res.status, data };
+            } catch (e) {
+                acctError('Hakuna mtandao. Tafadhali jaribu tena.');
+                return null;
+            } finally {
+                acctBusy = false;
+                if (btn) btn.disabled = false;
+            }
+        }
+        function acctRestartIfNeeded(r) {
+            if (r.data && r.data.restart) { setAcctView('forgot1'); acctError(r.data.error); return true; }
+            return false;
+        }
+
+        async function acctForgotStart() {
+            fgIdentifier = document.getElementById('fg_identifier').value.trim();
+            if (!fgIdentifier) { acctError('Weka namba ya simu au barua pepe.'); return; }
+            const r = await acctPost('/api/auth/forgot/start', { identifier: fgIdentifier }, 'fg1Btn');
+            if (!r) return;
+            if (!r.ok) { acctError(r.data.error || 'Imeshindwa.'); return; }
+            fgChallenge = r.data.challenge;
+            document.getElementById('fgQuestion').textContent = r.data.question;
+            document.getElementById('fg_answer').value = '';
+            setAcctView('forgot2');
+        }
+        async function acctForgotAnswer() {
+            const answer = document.getElementById('fg_answer').value.trim();
+            if (!answer) { acctError('Andika jibu lako.'); return; }
+            const r = await acctPost('/api/auth/forgot/answer', { challenge: fgChallenge, answer }, 'fg2Btn');
+            if (!r) return;
+            if (r.ok) { fgResetToken = r.data.resetToken; setAcctView('forgot3'); return; }
+            if (acctRestartIfNeeded(r)) return;
+            if (r.data.challenge) {   // jibu si sahihi: swali jingine
+                fgChallenge = r.data.challenge;
+                document.getElementById('fgQuestion').textContent = r.data.question;
+                document.getElementById('fg_answer').value = '';
+                acctError((r.data.error || 'Jibu si sahihi.') + (r.data.attemptsLeft ? ' (Nafasi zilizobaki: ' + r.data.attemptsLeft + ')' : ''));
+                return;
+            }
+            acctError(r.data.error || 'Imeshindwa.');
+            if (r.status === 429) { setAcctView('forgot1'); acctError(r.data.error); }
+        }
+        async function acctForgotReset() {
+            const p1 = document.getElementById('fg_new').value, p2 = document.getElementById('fg_new2').value;
+            if (p1.length < 8) { acctError('Nenosiri jipya liwe na angalau herufi 8.'); return; }
+            if (p1 !== p2) { acctError('Manenosiri hayafanani.'); return; }
+            const r = await acctPost('/api/auth/forgot/reset', { resetToken: fgResetToken, newPassword: p1 }, 'fg3Btn');
+            if (!r) return;
+            if (acctRestartIfNeeded(r)) return;
+            if (!r.ok) { acctError(r.data.error || 'Imeshindwa.'); return; }
+            const id = fgIdentifier;
+            closeAcctModal();
+            openAuthModal('login');
+            document.getElementById('auth_email').value = id;
+            showNotice('Nenosiri limebadilishwa. Ingia kwa nenosiri jipya.', 'success');
+        }
+        async function acctChangePassword() {
+            const o = document.getElementById('cp_old').value, n1 = document.getElementById('cp_new').value, n2 = document.getElementById('cp_new2').value;
+            if (!o) { acctError('Weka nenosiri la sasa.'); return; }
+            if (n1.length < 8) { acctError('Nenosiri jipya liwe na angalau herufi 8.'); return; }
+            if (n1 !== n2) { acctError('Manenosiri mapya hayafanani.'); return; }
+            const r = await acctPost('/api/auth/change-password', { currentPassword: o, newPassword: n1 }, 'cpBtn');
+            if (!r) return;
+            if (!r.ok) { acctError(r.data.error || 'Imeshindwa.'); return; }
+            closeAcctModal();
+            showNotice('Nenosiri limebadilishwa.', 'success');
+        }
+        async function acctSaveSecurity() {
+            const answers = readSecAnswers('acct_sq_');
+            const err = validateSecAnswers(answers);
+            if (err) { acctError(err); return; }
+            const pw = document.getElementById('sq_pass').value;
+            if (!pw) { acctError('Weka nenosiri lako kuthibitisha.'); return; }
+            const r = await acctPost('/api/auth/security-questions', { password: pw, answers }, 'sqBtn');
+            if (!r) return;
+            if (!r.ok) { acctError(r.data.error || 'Imeshindwa.'); return; }
+            closeAcctModal();
+            showNotice('Maswali ya usalama yamehifadhiwa.', 'success');
+            refreshProfile();
+        }
+        async function acctDeleteAccount() {
+            const identifier = currentUser ? (currentUser.phone || currentUser.email) : document.getElementById('del_identifier').value.trim();
+            const password = document.getElementById('del_pass').value;
+            if (!identifier) { acctError('Weka namba ya simu au barua pepe.'); return; }
+            if (!password) { acctError('Weka nenosiri lako.'); return; }
+            if (!document.getElementById('del_confirm').checked) { acctError('Tiki kisanduku kuthibitisha kufuta akaunti.'); return; }
+            const r = await acctPost('/api/auth/delete-account', { identifier, password, confirm: true }, 'delBtn');
+            if (!r) return;
+            if (!r.ok) { acctError(r.data.error || 'Imeshindwa.'); return; }
+            saveSessionToken(null);
+            currentUser = null;
+            startFreshDocument('tin');
+            startFreshDocument('bl');
+            updateUserUI();
+            resetAcctInputs();
+            document.getElementById('acctDoneText').textContent = 'Akaunti yako na data zako zimefutwa kabisa. Asante kwa kutumia Malimi Copy.';
+            setAcctView('done');
+            switchView('home');
         }
 
         async function refreshProfile() {
@@ -2840,6 +3140,8 @@
         loadPackages().catch(() => {});
         updateUserUI();
         refreshProfile();
+        setAuthMode('register');
+        if (/^\/(delete-account|futa-akaunti)\/?$/.test(location.pathname)) openAcctModal('delete');
     </script>
 </body>
 </html>

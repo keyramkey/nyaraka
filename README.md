@@ -51,3 +51,13 @@ Configure your Dalipay Merchant Dashboard Webhook URL to:
 2. Set `ADMIN_EMAILS` (comma-separated). Register that account yourself right away (phone is required, email = the admin email). On login it opens the dashboard directly.
 3. Admin can: see all payments + search by reference/phone, manually confirm a payment, search/block/unblock/delete users, add or remove coins, edit package prices (add/disable packages), and run timed offers (discount %). Offers vanish automatically when time ends.
 4. Users: phone number is required, email optional. Login works with phone or email.
+
+## 6. Security Questions, Password Reset & Account Deletion
+
+**Re-run `supabase_schema.sql`** (new migration at the bottom, safe to re-run): adds `security_answers`, `reset_fails`, `reset_locked_until` and changes `device_claims.user_id` to `ON DELETE SET NULL`.
+
+- **Register:** user answers 3 security questions (mother's name, ward/kata, year of finishing Standard 7). Answers are stored as salted scrypt hashes (case/spaces ignored).
+- **Forgot password** (link "Umesahau nenosiri?" on the Login tab): phone/email → one random question → wrong answer gives a *different* question → correct answer → set new password. 5 wrong answers lock the account for 30 min; each further wrong answer doubles the lock (max 24h). Reset tokens expire in 10 min and work once.
+- **Existing users** (no questions yet): Profile → *Weka Maswali ya Usalama* (needs password). Until then forgot password tells them to contact support.
+- **Change password:** Profile → *Badili Nenosiri*.
+- **Delete account / data (Google Play):** in-app Profile → *Futa Akaunti na Data* (and drawer menu), plus public page **`https://your-domain/delete-account`** (also `/futa-akaunti`) — put this URL in Play Console → App content → Data safety → *Account deletion*. Deletes user, payments, generations. The anonymous device record stays (user link set to NULL) so deleting + re-registering cannot give free coins again. Admin accounts cannot be deleted from this form.

@@ -7,6 +7,7 @@ import re
 import secrets
 import threading
 import time
+import unicodedata
 from functools import wraps
 from urllib.parse import urlparse
 
@@ -306,6 +307,111 @@ def verify_token(token: str):
         return None
 
 
+# ----------------------------------------------------------------------------
+# Security questions + short-lived signed tokens (forgot password)
+# ----------------------------------------------------------------------------
+SECURITY_QUESTIONS = {
+    'mother': 'Jina la mama yako ni nani?',
+    'ward': 'Unaishi kata gani?',
+    'year': 'Ulimaliza darasa la saba mwaka gani?',
+}
+RESET_FREE_FAILS = 5          # wrong answers allowed before the account is locked
+RESET_BASE_LOCK_SEC = 30 * 60  # first lock = 30 min, doubles on each further wrong answer (max 24h)
+RESET_MAX_LOCK_SEC = 24 * 60 * 60
+RESET_TOKEN_TTL_SEC = 10 * 60
+
+
+def _b64(raw: bytes) -> str:
+    return base64.urlsafe_b64encode(raw).decode('ascii').rstrip('=')
+
+
+def _purpose_sig(purpose: str, payload: str) -> str:
+    # Each purpose has its own key, so a challenge/reset token can never be used as a session token.
+    key = f'{SESSION_SECRET}:{purpose}'.encode('utf-8')
+    return _b64(hmac.new(key, payload.encode('utf-8'), hashlib.sha256).digest())
+
+
+def sign_payload(purpose: str, data: dict, ttl_sec: int) -> str:
+    body = dict(data)
+    body['exp'] = now_ms() + ttl_sec * 1000
+    payload = _b64(json.dumps(body, separators=(',', ':')).encode('utf-8'))
+    return f'{payload}.{_purpose_sig(purpose, payload)}'
+
+
+def verify_payload(purpose: str, token):
+    if not isinstance(token, str) or token.count('.') != 1 or len(token) > 1024:
+        return None
+    payload, sig = token.split('.')
+    if not hmac.compare_digest(sig, _purpose_sig(purpose, payload)):
+        return None
+    try:
+        data = json.loads(base64.urlsafe_b64decode(payload + '=' * (-len(payload) % 4)).decode('utf-8'))
+    except Exception:
+        return None
+    if not isinstance(data, dict) or int(data.get('exp') or 0) < now_ms():
+        return None
+    return data
+
+
+def password_fingerprint(password_hash: str) -> str:
+    # Changes whenever the password changes, so a reset token can be used only once.
+    return hashlib.sha256(f'fp:{password_hash}'.encode('utf-8')).hexdigest()[:20]
+
+
+def normalize_answer(key: str, raw) -> str:
+    text = unicodedata.normalize('NFKD', str(raw or '')[:100]).lower()
+    text = ''.join(ch for ch in text if not unicodedata.combining(ch))
+    if key == 'year':
+        return ''.join(ch for ch in text if ch.isdigit())
+    return re.sub(r'[^a-z0-9]+', ' ', text).strip()
+
+
+def build_security_answers(raw):
+    """Validate the 3 answers and return ({key: scrypt hash}, error_message)."""
+    if not isinstance(raw, dict):
+        return None, 'Jibu maswali yote matatu ya usalama.'
+    hashed = {}
+    for key in SECURITY_QUESTIONS:
+        norm = normalize_answer(key, raw.get(key))
+        if key == 'year':
+            if len(norm) != 4 or not 1950 <= int(norm) <= time.gmtime().tm_year:
+                return None, 'Mwaka wa kumaliza darasa la saba si sahihi (mfano 2008).'
+        elif len(norm) < 2:
+            return None, 'Jibu maswali yote matatu ya usalama.'
+        hashed[key] = hash_password(norm)
+    return hashed, None
+
+
+def has_security_answers(row) -> bool:
+    ans = (row or {}).get('security_answers')
+    return isinstance(ans, dict) and all(isinstance(ans.get(k), str) and ans.get(k) for k in SECURITY_QUESTIONS)
+
+
+def find_user_by_identifier(identifier: str):
+    identifier = (identifier or '').strip().lower()[:254]
+    if not identifier:
+        return None
+    if '@' in identifier:
+        params = {'select': '*', 'email': f'eq.{identifier}', 'limit': '1'}
+    else:
+        pn = normalize_phone_tz(identifier)
+        if not pn:
+            return None
+        params = {'select': '*', 'phone': f'in.({",".join(phone_variants(pn))})', 'limit': '1'}
+    rows = sb_select('users', params)
+    return rows[0] if rows else None
+
+
+def reset_lock_minutes(row) -> int:
+    left_ms = int(row.get('reset_locked_until') or 0) - now_ms()
+    return max(1, -(-left_ms // 60000)) if left_ms > 0 else 0
+
+
+def next_question_key(exclude=None) -> str:
+    keys = [k for k in SECURITY_QUESTIONS if k != exclude]
+    return secrets.choice(keys)
+
+
 def sanitize_identifier(raw) -> str:
     if not isinstance(raw, str):
         return ''
@@ -438,6 +544,7 @@ def sanitize_user(row: dict):
         'freeBonusGranted': bool(row.get('free_bonus_granted')),
         'isAdmin': is_admin_row(row),
         'isBlocked': bool(row.get('is_blocked')),
+        'hasSecurityQuestions': has_security_answers(row),
     }
 
 
@@ -788,6 +895,213 @@ def admin_offer():
         return service_unavailable(e)
 
 
+# ----------------------------------------------------------------------------
+# Forgot password (security questions), change password, security questions, delete account
+# ----------------------------------------------------------------------------
+def _question_payload(uid: int, key: str):
+    return {
+        'challenge': sign_payload('fq', {'u': uid, 'q': key}, RESET_TOKEN_TTL_SEC),
+        'question': SECURITY_QUESTIONS[key],
+    }
+
+
+def _validate_new_password(pw: str):
+    if len(pw) < MIN_PASSWORD_LEN or len(pw) > MAX_PASSWORD_LEN:
+        return f'Nenosiri jipya liwe na herufi {MIN_PASSWORD_LEN} hadi {MAX_PASSWORD_LEN}.'
+    return None
+
+
+@app.route('/api/auth/forgot/start', methods=['POST'])
+def api_forgot_start():
+    if rate_limited(f'forgot:ip:{client_ip()}', 20, 60 * 60):
+        return too_many_requests()
+    identifier = str(get_json_dict().get('identifier') or '')
+    try:
+        row = find_user_by_identifier(identifier)
+    except RuntimeError as e:
+        return service_unavailable(e)
+    if not row:
+        return jsonify({'error': 'Akaunti haijapatikana. Hakiki namba ya simu au barua pepe.'}), 404
+    if row.get('is_blocked'):
+        return jsonify({'error': 'Akaunti yako imezuiwa. Tafadhali wasiliana na msaada.'}), 403
+    mins = reset_lock_minutes(row)
+    if mins:
+        return too_many_requests(f'Umekosea mara nyingi. Jaribu tena baada ya dakika {mins}.')
+    if not has_security_answers(row):
+        return jsonify({
+            'error': 'Akaunti hii haina maswali ya usalama. Tafadhali wasiliana na msaada kurejesha nenosiri.',
+            'noQuestions': True,
+        }), 409
+    return jsonify(_question_payload(int(row['id']), next_question_key()))
+
+
+@app.route('/api/auth/forgot/answer', methods=['POST'])
+def api_forgot_answer():
+    if rate_limited(f'forgot-answer:ip:{client_ip()}', 40, 60 * 60):
+        return too_many_requests()
+    data = get_json_dict()
+    ch = verify_payload('fq', data.get('challenge'))
+    if not ch or ch.get('q') not in SECURITY_QUESTIONS or not isinstance(ch.get('u'), int):
+        return jsonify({'error': 'Muda umeisha. Tafadhali anza upya.', 'restart': True}), 401
+    uid, key = ch['u'], ch['q']
+    try:
+        rows = sb_select('users', {'select': '*', 'id': f'eq.{uid}', 'limit': '1'})
+        row = rows[0] if rows else None
+        if not row or row.get('is_blocked') or not has_security_answers(row):
+            return jsonify({'error': 'Muda umeisha. Tafadhali anza upya.', 'restart': True}), 401
+        mins = reset_lock_minutes(row)
+        if mins:
+            return too_many_requests(f'Umekosea mara nyingi. Jaribu tena baada ya dakika {mins}.')
+
+        if not str(data.get('answer') or '').strip():
+            return jsonify({'error': 'Andika jibu lako.'}), 400
+        answer = normalize_answer(key, data.get('answer'))  # may be '' (e.g. letters for the year): counts as wrong
+        if verify_password(answer, row['security_answers'][key]):
+            if int(row.get('reset_fails') or 0):
+                sb_update('users', {'id': f'eq.{uid}'}, {'reset_fails': 0, 'reset_locked_until': 0})
+            token = sign_payload('fr', {'u': uid, 'f': password_fingerprint(row['password_hash'])}, RESET_TOKEN_TTL_SEC)
+            return jsonify({'ok': True, 'resetToken': token})
+
+        fails = int(row.get('reset_fails') or 0) + 1
+        update = {'reset_fails': fails}
+        if fails >= RESET_FREE_FAILS:
+            lock_sec = min(RESET_MAX_LOCK_SEC, RESET_BASE_LOCK_SEC * (2 ** (fails - RESET_FREE_FAILS)))
+            update['reset_locked_until'] = now_ms() + lock_sec * 1000
+        sb_update('users', {'id': f'eq.{uid}'}, update)
+        if fails >= RESET_FREE_FAILS:
+            return too_many_requests(
+                f'Umekosea mara nyingi. Kwa usalama akaunti imefungwa kwa dakika {lock_sec // 60}.'
+            )
+        out = _question_payload(uid, next_question_key(exclude=key))  # a different question every time
+        out['error'] = 'Jibu si sahihi. Jaribu swali hili jingine.'
+        out['attemptsLeft'] = RESET_FREE_FAILS - fails
+        return jsonify(out), 400
+    except RuntimeError as e:
+        return service_unavailable(e)
+
+
+@app.route('/api/auth/forgot/reset', methods=['POST'])
+def api_forgot_reset():
+    if rate_limited(f'forgot-reset:ip:{client_ip()}', 20, 60 * 60):
+        return too_many_requests()
+    data = get_json_dict()
+    tok = verify_payload('fr', data.get('resetToken'))
+    if not tok or not isinstance(tok.get('u'), int):
+        return jsonify({'error': 'Muda umeisha. Tafadhali anza upya.', 'restart': True}), 401
+    new_pw = str(data.get('newPassword', ''))
+    err = _validate_new_password(new_pw)
+    if err:
+        return jsonify({'error': err}), 400
+    try:
+        rows = sb_select('users', {'select': 'id,password_hash,is_blocked', 'id': f'eq.{tok["u"]}', 'limit': '1'})
+        row = rows[0] if rows else None
+        if not row or row.get('is_blocked') or password_fingerprint(row['password_hash']) != tok.get('f'):
+            return jsonify({'error': 'Muda umeisha. Tafadhali anza upya.', 'restart': True}), 401
+        sb_update('users', {'id': f'eq.{tok["u"]}'},
+                  {'password_hash': hash_password(new_pw), 'reset_fails': 0, 'reset_locked_until': 0})
+    except RuntimeError as e:
+        return service_unavailable(e)
+    return jsonify({'ok': True, 'message': 'Nenosiri limebadilishwa. Sasa unaweza kuingia.'})
+
+
+@app.route('/api/auth/change-password', methods=['POST'])
+@require_auth
+def api_change_password():
+    data = get_json_dict()
+    current_pw = str(data.get('currentPassword', ''))
+    new_pw = str(data.get('newPassword', ''))
+    key = f'chpw:{g.user_id}'
+    if rl_count(key, LOGIN_WINDOW_SEC) >= LOGIN_MAX_FAILS_PER_EMAIL:
+        return too_many_requests('Majaribio mengi yasiyo sahihi. Subiri dakika 15 kisha ujaribu tena.')
+    err = _validate_new_password(new_pw)
+    if err:
+        return jsonify({'error': err}), 400
+    try:
+        rows = sb_select('users', {'select': 'id,password_hash', 'id': f'eq.{g.user_id}', 'limit': '1'})
+        if not rows:
+            return jsonify({'error': 'Akaunti haipatikani.'}), 404
+        if len(current_pw) > MAX_PASSWORD_LEN or not verify_password(current_pw, rows[0]['password_hash']):
+            rl_record(key)
+            return jsonify({'error': 'Nenosiri la sasa si sahihi.'}), 401
+        if current_pw == new_pw:
+            return jsonify({'error': 'Nenosiri jipya lazima liwe tofauti na la sasa.'}), 400
+        sb_update('users', {'id': f'eq.{g.user_id}'}, {'password_hash': hash_password(new_pw)})
+    except RuntimeError as e:
+        return service_unavailable(e)
+    rl_reset(key)
+    return jsonify({'ok': True, 'message': 'Nenosiri limebadilishwa.'})
+
+
+@app.route('/api/auth/security-questions', methods=['POST'])
+@require_auth
+def api_set_security_questions():
+    """For accounts created before security questions existed (or to change the answers)."""
+    data = get_json_dict()
+    password = str(data.get('password', ''))
+    key = f'secq:{g.user_id}'
+    if rl_count(key, LOGIN_WINDOW_SEC) >= LOGIN_MAX_FAILS_PER_EMAIL:
+        return too_many_requests('Majaribio mengi yasiyo sahihi. Subiri dakika 15 kisha ujaribu tena.')
+    hashed, err = build_security_answers(data.get('answers'))
+    if err:
+        return jsonify({'error': err}), 400
+    try:
+        rows = sb_select('users', {'select': 'id,password_hash', 'id': f'eq.{g.user_id}', 'limit': '1'})
+        if not rows:
+            return jsonify({'error': 'Akaunti haipatikani.'}), 404
+        if len(password) > MAX_PASSWORD_LEN or not verify_password(password, rows[0]['password_hash']):
+            rl_record(key)
+            return jsonify({'error': 'Nenosiri si sahihi.'}), 401
+        sb_update('users', {'id': f'eq.{g.user_id}'}, {'security_answers': hashed, 'reset_fails': 0, 'reset_locked_until': 0})
+    except RuntimeError as e:
+        return service_unavailable(e)
+    rl_reset(key)
+    return jsonify({'ok': True, 'message': 'Maswali ya usalama yamehifadhiwa.'})
+
+
+@app.route('/api/auth/delete-account', methods=['POST'])
+def api_delete_account():
+    """Permanent account + data deletion. Works logged in (in-app) or logged out (public
+    /delete-account page required by Google Play): identifier + password prove ownership."""
+    data = get_json_dict()
+    identifier = str(data.get('identifier') or '').strip().lower()[:254]
+    password = str(data.get('password', ''))
+    if data.get('confirm') is not True:
+        return jsonify({'error': 'Thibitisha kwanza kuwa unataka kufuta akaunti.'}), 400
+    if len(password) > MAX_PASSWORD_LEN:
+        password = ''
+    id_key, ip_key = f'delete:id:{identifier}', f'delete:ip:{client_ip()}'
+    if rl_count(id_key, LOGIN_WINDOW_SEC) >= LOGIN_MAX_FAILS_PER_EMAIL or rl_count(ip_key, LOGIN_WINDOW_SEC) >= LOGIN_MAX_FAILS_PER_IP:
+        return too_many_requests('Majaribio mengi yasiyo sahihi. Subiri dakika 15 kisha ujaribu tena.')
+    try:
+        row = find_user_by_identifier(identifier)
+        ok = verify_password(password, row['password_hash'] if row else DUMMY_PASSWORD_HASH)
+        if not row or not ok:
+            rl_record(id_key)
+            rl_record(ip_key)
+            return jsonify({'error': 'Namba/barua pepe au nenosiri si sahihi.'}), 401
+        if is_admin_row(row):
+            return jsonify({'error': 'Akaunti ya admin haiwezi kufutwa hapa.'}), 403
+        # payments, generations are removed with the user (ON DELETE CASCADE);
+        # device_claims keep only an anonymous record (user_id -> NULL) to stop free-coin abuse.
+        sb_delete('users', {'id': f'eq.{int(row["id"])}'})
+    except RuntimeError as e:
+        return service_unavailable(e)
+    except requests.HTTPError as e:
+        print(f'[Delete Account Error] {e}', flush=True)
+        return jsonify({'error': 'Imeshindwa kufuta akaunti. Tafadhali jaribu tena au wasiliana na msaada.'}), 500
+    rl_reset(id_key)
+    resp = jsonify({'ok': True, 'message': 'Akaunti yako na data zimefutwa.'})
+    clear_session_cookie(resp)
+    return resp
+
+
+@app.route('/delete-account')
+@app.route('/futa-akaunti')
+def delete_account_page():
+    # Public URL for Google Play "Data safety -> account deletion" (same app, opens the deletion form).
+    return send_from_directory('.', 'index.html')
+
+
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
@@ -845,6 +1159,9 @@ def api_register():
         return jsonify({'error': 'Barua pepe si sahihi.'}), 400
     if len(password) < MIN_PASSWORD_LEN or len(password) > MAX_PASSWORD_LEN:
         return jsonify({'error': f'Nenosiri liwe na herufi {MIN_PASSWORD_LEN} hadi {MAX_PASSWORD_LEN}.'}), 400
+    security_hashed, sec_err = build_security_answers(data.get('securityAnswers'))
+    if sec_err:
+        return jsonify({'error': sec_err}), 400
 
     try:
         if sb_select('users', {'select': 'id', 'phone': f'in.({",".join(phone_variants(phone_n))})', 'limit': '1'}):
@@ -878,6 +1195,7 @@ def api_register():
                 'coins': starting_coins,
                 'unlimited_until': 0,
                 'free_bonus_granted': not already_claimed,
+                'security_answers': security_hashed,
                 'created_at': ts,
             },
         )
