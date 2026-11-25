@@ -1836,6 +1836,24 @@ BLOCKED_STATIC_NAMES = {
 }
 
 
+APK_FILE = 'malimi-copy.apk'
+
+
+@app.route('/app/malimi-copy.apk')
+@app.route('/download-app')
+def download_apk():
+    # APK ya app: inatolewa kama attachment ili simu ipakue moja kwa moja (si kuifungua kwenye tab)
+    if not os.path.isfile(os.path.join(app.root_path, 'downloads', APK_FILE)):
+        abort(404)
+    resp = send_from_directory(
+        'downloads', APK_FILE,
+        mimetype='application/vnd.android.package-archive',
+        as_attachment=True, download_name='MALIMI-COPY.apk',
+    )
+    resp.headers['Cache-Control'] = 'public, max-age=300'
+    return resp
+
+
 @app.route('/<path:path>')
 def static_files(path):
     # Only serve public front-end assets. Never source code, .env, .sql, dotfiles or config.

@@ -1072,8 +1072,12 @@
         .dl-note { margin-top: 8px; font-size: .74rem; color: #64748b; min-height: 1em; }
         .dl-close { display: none; margin-top: 14px; width: 100%; min-height: 40px; border: none; border-radius: 12px; background: var(--t3); color: #fff; font-weight: 700; cursor: pointer; }
         .dl-bg.done .dl-close, .dl-bg.fail .dl-close { display: block; }
-        .dl-retry { background: transparent !important; color: var(--t3) !important; border: 1.5px solid var(--t3) !important; margin-top: 12px; }
         .dl-ok { margin-top: 8px; }
+        .dl-box { max-height: 92vh; overflow-y: auto; }
+        .dl-preview { display: block; width: 100%; max-height: 210px; object-fit: contain; margin-top: 12px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; -webkit-touch-callout: default; }
+        .dl-actions { display: none; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .dl-bg.done .dl-actions, .dl-bg.fail .dl-actions { display: flex; }
+        .dl-act { flex: 1 1 88px; min-height: 40px; border-radius: 12px; border: 1.5px solid var(--t3); background: transparent; color: var(--t3); font-weight: 700; cursor: pointer; }
     </style>
 
     <style id="themeVars">
@@ -1166,7 +1170,7 @@
                 <button class="drawer-item" data-view="notif" onclick="switchView('notif');toggleDrawer(false)"><span class="di-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span><span>Arifa</span><span id="drawerNotifBadge" class="n-badge" style="display:none">0</span></button>
                 <button class="drawer-item" onclick="openThemeModal()"><span class="di-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span><span>Theme</span></button>
                 <hr>
-                <button class="drawer-item" id="drawerInstallBtn" onclick="toggleDrawer(false);pwaInstall()"><span class="di-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span><span>Weka App (PWA)</span></button>
+                <button class="drawer-item" id="drawerInstallBtn" onclick="toggleDrawer(false);appGet()"><span class="di-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span><span id="drawerInstallLbl">Weka App (PWA)</span></button>
                 <button class="drawer-item" id="drawerPushBtn" onclick="toggleDrawer(false);pushToggle()"><span class="di-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span><span id="drawerPushLbl">Washa Arifa</span></button>
                 <button class="drawer-item" onclick="toggleDrawer(false);openContactModal()"><span class="di-ico green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></span><span>Contact</span></button>
                 </div></div>
@@ -1248,9 +1252,13 @@
             <section class="contact-card" id="pwaHomeCard" style="margin-top:18px;">
                 <div>
                     <h2 style="font-size:0.95rem;font-weight:700;color:#0f172a;">Weka App kwenye Simu</h2>
-                    <p style="font-size:0.78rem;color:#64748b;margin-top:2px;">Pakua MALIMI COPY kama app (PWA) — fungua haraka kutoka Home Screen, hata bila browser.</p>
+                    <p id="pwaHomeText" style="font-size:0.78rem;color:#64748b;margin-top:2px;">Pakua MALIMI COPY kama app (PWA) — fungua haraka kutoka Home Screen, hata bila browser.</p>
                 </div>
                 <div class="contact-actions">
+                    <button type="button" class="contact-btn wa" id="apkHomeBtn" onclick="apkDownload()" style="display:none">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+                        Pakua App (APK)
+                    </button>
                     <button type="button" class="contact-btn wa" id="pwaHomeInstallBtn" onclick="pwaInstall()">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
                         Download / Weka App
@@ -1490,7 +1498,7 @@
                     </div>
                     <div class="pc-actions">
                         <button class="btn-sm teal" id="pushCardBtn" type="button">Washa Arifa</button>
-                        <button class="btn-sm" id="pushCardInstall" type="button" onclick="pwaInstall()">Weka App kwenye Simu</button>
+                        <button class="btn-sm" id="pushCardInstall" type="button" onclick="appGet()">Weka App kwenye Simu</button>
                     </div>
                 </div>
 
@@ -3497,6 +3505,8 @@ Minimum version required to store current data is: `+i+`.
         'use strict';
         const ua = navigator.userAgent || '';
         const isIOS = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const isAndroid = /android/i.test(ua);
+        const APK_URL = '/app/malimi-copy.apk';
         const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
         const swOK = 'serviceWorker' in navigator;
         const pushOK = swOK && 'PushManager' in window && 'Notification' in window;
@@ -3554,10 +3564,21 @@ Minimum version required to store current data is: `+i+`.
             if (isIOS) say('Kwenye iPhone: bonyeza kitufe cha Share (mraba wenye mshale wa juu), kisha chagua "Add to Home Screen".');
             else say('Fungua menu ya browser (\u22EE) kisha chagua "Install app" au "Add to Home screen".');
         };
+        // Pakua APK moja kwa moja (Android) — ni download ya kawaida ya faili, haihitaji Share
+        window.apkDownload = function () {
+            if (isStandalone()) { say('App tayari imewekwa kwenye simu yako.'); return; }
+            const a = document.createElement('a');
+            a.href = APK_URL; a.download = 'MALIMI-COPY.apk'; a.rel = 'noopener'; a.style.display = 'none';
+            document.body.appendChild(a); a.click();
+            setTimeout(() => a.remove(), 2000);
+            say('Inapakua MALIMI-COPY.apk...\nIkimaliza, fungua faili (kwenye arifa ya download au folda ya Downloads) kisha bonyeza Install.\nSimu ikiuliza, ruhusu \"Install unknown apps\" kwa browser hii.');
+        };
+        window.appGet = function () { return isAndroid && !isStandalone() ? window.apkDownload() : window.pwaInstall(); };
         window.pwaInstallHelp = function () {
             if (isStandalone()) { say('App tayari imewekwa kwenye simu yako.'); return; }
             if (isIOS) say('Jinsi ya kuweka kwenye iPhone/iPad:\n1) Bonyeza Share (mraba + mshale juu)\n2) Chagua "Add to Home Screen"\n3) Bonyeza Add');
-            else say('Jinsi ya kuweka kwenye Android/Chrome:\n1) Fungua menu ya browser (\u22EE)\n2) Chagua "Install app" au "Add to Home screen"\n3) Thibitisha uwekaji');
+            else if (isAndroid) say('Jinsi ya kuweka kwenye Android:\n1) Bonyeza "Pakua App (APK)"\n2) Fungua faili lililopakuliwa (Downloads)\n3) Bonyeza Install — ukiulizwa, ruhusu "Install unknown apps"\n\nUkishindwa: menu ya browser (\u22EE) \u2192 "Install app".');
+            else say('Jinsi ya kuweka kwenye kompyuta/browser:\n1) Fungua menu ya browser\n2) Chagua "Install app" au "Add to Home screen"\n3) Thibitisha uwekaji');
         };
 
         /* ---- Arifa (push) ---- */
@@ -3622,7 +3643,12 @@ Minimum version required to store current data is: `+i+`.
             LS.set('malimi_push_off', '1'); syncedFor = null;
             refresh(); say('Arifa zimezimwa.');
         };
-        window.pushToggle = async function () { (await state()) === 'on' ? window.pushDisable() : window.pushEnable(); };
+        window.pushHelp = function () {
+            if (isIOS) say('Kuruhusu arifa kwenye iPhone:\nSettings \u2192 Notifications \u2192 MALIMI COPY \u2192 washa Allow Notifications.');
+            else if (isStandalone()) say('Kuruhusu arifa:\n1) Shikilia icon ya MALIMI COPY kwenye Home Screen\n2) Bonyeza App info \u2192 Notifications\n3) Washa Allow\nKisha rudi kwenye app — zitawashwa zenyewe.');
+            else say('Kuruhusu arifa:\n1) Bonyeza alama ya kufuli (au \u22EE) kwenye address bar\n2) Permissions / Site settings \u2192 Notifications \u2192 Allow\nKisha rudi hapa — zitawashwa zenyewe.');
+        };
+        window.pushToggle = async function () { const st = await state(); st === 'on' ? window.pushDisable() : st === 'denied' ? window.pushHelp() : window.pushEnable(); };
 
         // Mtumiaji akishawasha arifa: unganisha simu na akaunti (baada ya kuingia) na jisajili upya kimya kimya ikihitajika
         async function sync() {
@@ -3650,17 +3676,21 @@ Minimum version required to store current data is: `+i+`.
             const t = $('pushCardText'), b = $('pushCardBtn'), ib = $('pushCardInstall'), dl = $('drawerPushLbl'), di = $('drawerInstallBtn'), dp = $('drawerPushBtn');
             if (t) t.textContent = TEXT[st];
             if (b) {
-                b.style.display = st === 'unsupported' || st === 'denied' ? 'none' : '';
-                b.textContent = st === 'on' ? 'Zima Arifa' : st === 'ios-install' ? 'Jinsi ya kuweka app' : 'Washa Arifa';
-                b.onclick = st === 'on' ? window.pushDisable : st === 'ios-install' ? window.pwaInstall : window.pushEnable;
+                b.style.display = st === 'unsupported' ? 'none' : '';
+                b.textContent = st === 'on' ? 'Zima Arifa' : st === 'ios-install' ? 'Jinsi ya kuweka app' : st === 'denied' ? 'Jinsi ya kuruhusu' : 'Washa Arifa';
+                b.onclick = st === 'on' ? window.pushDisable : st === 'ios-install' ? window.pwaInstall : st === 'denied' ? window.pushHelp : window.pushEnable;
             }
             const standalone = isStandalone();
             if (ib) ib.style.display = standalone || st === 'ios-install' ? 'none' : '';
             if (di) di.style.display = standalone ? 'none' : '';
             const ph = $('pwaHomeCard');
             if (ph) ph.style.display = standalone ? 'none' : '';
-            const phb = $('pwaHomeInstallBtn');
-            if (phb) phb.onclick = () => window.pwaInstall();
+            const phb = $('pwaHomeInstallBtn'), apkb = $('apkHomeBtn'), pht = $('pwaHomeText'), dil = $('drawerInstallLbl');
+            if (phb) { phb.onclick = () => window.pwaInstall(); phb.style.display = isAndroid ? 'none' : ''; }
+            if (apkb) apkb.style.display = isAndroid ? '' : 'none';
+            if (pht && isAndroid) pht.textContent = 'Pakua MALIMI COPY (APK) na uiweke kwenye simu yako — fungua haraka kutoka Home Screen, hata bila browser.';
+            if (dil) dil.textContent = isAndroid ? 'Pakua App (APK)' : 'Weka App (PWA)';
+            if (ib && isAndroid) ib.textContent = 'Pakua App (APK)';
             if (dp) dp.style.display = st === 'unsupported' ? 'none' : '';
             if (dl) dl.textContent = st === 'on' ? 'Arifa: Zimewashwa' : st === 'denied' ? 'Arifa zimezuiwa' : 'Washa Arifa';
             const nb = $('notifPushBox'), nt = $('notifPushText'), nbtn = $('notifPushBtn');
@@ -3668,9 +3698,9 @@ Minimum version required to store current data is: `+i+`.
                 nb.style.display = st === 'on' || st === 'unsupported' ? 'none' : '';
                 if (nt) nt.textContent = st === 'off' ? 'Usipitwe na offer na taarifa muhimu, hata app ikiwa imefungwa.' : TEXT[st];
                 if (nbtn) {
-                    nbtn.style.display = st === 'denied' ? 'none' : '';
-                    nbtn.textContent = st === 'ios-install' ? 'Jinsi ya kuweka app' : 'Washa Arifa';
-                    nbtn.onclick = st === 'ios-install' ? window.pwaInstall : window.pushEnable;
+                    nbtn.style.display = '';
+                    nbtn.textContent = st === 'ios-install' ? 'Jinsi ya kuweka app' : st === 'denied' ? 'Jinsi ya kuruhusu' : 'Washa Arifa';
+                    nbtn.onclick = st === 'ios-install' ? window.pwaInstall : st === 'denied' ? window.pushHelp : window.pushEnable;
                 }
             }
         }
@@ -3693,7 +3723,7 @@ Minimum version required to store current data is: `+i+`.
             if (Date.now() - (+LS.get('malimi_bar_dismiss') || 0) < 864e5) return;
             const st = await state();
             if (st === 'off' && pushOK && Notification.permission === 'default') showBar('Washa arifa', 'Pata taarifa za offer na punguzo bila kufungua app.', 'Washa', () => window.pushEnable());
-            else if (deferredInstall && !isStandalone()) showBar('Weka app kwenye simu', 'Fungua haraka kama WhatsApp, moja kwa moja kutoka Home Screen.', 'Weka', () => window.pwaInstall());
+            else if ((deferredInstall || isAndroid) && !isStandalone()) showBar(isAndroid ? 'Pakua app ya MALIMI COPY' : 'Weka app kwenye simu', 'Fungua haraka kama WhatsApp, moja kwa moja kutoka Home Screen.', isAndroid ? 'Pakua' : 'Weka', () => window.appGet());
         }
         let barTimer = null;
         function scheduleBar() { if (barShown || barTimer) return; barTimer = setTimeout(() => { barTimer = null; maybeBar(); }, 3000); }
@@ -3753,21 +3783,24 @@ Minimum version required to store current data is: `+i+`.
 
         /* Omba ruhusa ya arifa moja kwa moja app inapofunguliwa (mtumiaji anaona "Allow / Don't allow" ya browser) */
         let autoAsked = false;
-        async function autoEnable() {
+        const ASK_KEY = 'malimi_push_ask';
+        async function autoEnable(viaTap) {
             if (autoAsked || !pushOK || Notification.permission !== 'default' || LS.get('malimi_push_off') === '1') return;
+            // Mtumiaji akifunga ombi bila kuchagua, usimsumbue tena kwa siku 2 (kitufe cha "Washa Arifa" kinabaki)
+            if (viaTap !== true && Date.now() - (+LS.get(ASK_KEY) || 0) < 2 * 864e5) return;
             autoAsked = true;
             const t0 = Date.now();
             try {
                 const k = keyInfo || await loadKey();
                 if (!k.configured) return;
                 const perm = await Notification.requestPermission();
-                if (perm === 'granted') { await ensureSub(k); syncedFor = who(); LS.del('malimi_push_off'); }
+                if (perm === 'granted') { await ensureSub(k); syncedFor = who(); LS.del('malimi_push_off'); LS.del(ASK_KEY); }
                 else if (perm === 'default' && Date.now() - t0 < 400) {
-                    // Browser imekataa kuuliza bila mguso (mfano Safari): jaribu tena mguso wa kwanza
-                    const onTap = () => { document.removeEventListener('pointerdown', onTap, true); autoAsked = false; autoEnable(); };
+                    // Browser imekataa kuuliza bila mguso: uliza kwenye mguso wa kwanza wa mtumiaji
+                    const onTap = () => { document.removeEventListener('pointerdown', onTap, true); autoAsked = false; autoEnable(true); };
                     document.addEventListener('pointerdown', onTap, true);
-                }
-            } catch (e) {}
+                } else LS.set(ASK_KEY, String(Date.now()));
+            } catch (e) { autoAsked = false; }
             refresh();
         }
         setTimeout(autoEnable, 1500);
@@ -3796,7 +3829,12 @@ Minimum version required to store current data is: `+i+`.
             <div id="dlBar" class="dl-bar busy"><i id="dlFill"></i></div>
             <div class="dl-row"><span id="dlMb" class="mono">0.00 MB</span><span id="dlPct" class="mono">0%</span></div>
             <div id="dlNote" class="dl-note"></div>
-            <button class="dl-close dl-retry" onclick="retryDl()">Pakua tena</button>
+            <img id="dlPreview" class="dl-preview" alt="Picha iliyoandaliwa" style="display:none">
+            <div class="dl-actions">
+                <button type="button" class="dl-act" onclick="retryDl()">Pakua tena</button>
+                <button type="button" class="dl-act" id="dlOpen" onclick="openDlFile()" style="display:none">Fungua</button>
+                <button type="button" class="dl-act" id="dlShare" onclick="shareDl()" style="display:none">Shiriki</button>
+            </div>
             <button class="dl-close dl-ok" onclick="closeDl()">Sawa</button>
         </div>
     </div>
@@ -3845,6 +3883,7 @@ Minimum version required to store current data is: `+i+`.
     const mbText = b => (b / 1048576).toFixed(2) + ' MB';
     function openDl() {
         const bg = document.getElementById('dlBackdrop');
+        dlClearPreview();
         bg.classList.remove('done', 'fail'); bg.classList.add('open');
         document.getElementById('dlTitle').textContent = 'Inaandaa faili...';
         document.getElementById('dlBar').classList.add('busy');
@@ -3853,7 +3892,32 @@ Minimum version required to store current data is: `+i+`.
         document.getElementById('dlPct').textContent = '0%';
         document.getElementById('dlNote').textContent = '';
     }
-    function closeDl() { document.getElementById('dlBackdrop').classList.remove('open'); }
+    let dlPrevUrl = null;
+    function dlClearPreview() {
+        const im = document.getElementById('dlPreview');
+        if (im) { im.style.display = 'none'; im.removeAttribute('src'); }
+        if (dlPrevUrl) { try { URL.revokeObjectURL(dlPrevUrl); } catch (e) {} dlPrevUrl = null; }
+    }
+    function dlShowActions(blob, fname) {
+        const isImg = /^image\//.test(blob.type || '');
+        dlClearPreview();
+        if (isImg) {
+            const im = document.getElementById('dlPreview');
+            dlPrevUrl = URL.createObjectURL(blob); im.src = dlPrevUrl; im.style.display = 'block';
+        }
+        document.getElementById('dlOpen').style.display = isImg ? 'none' : '';
+        let canShare = false;
+        try { const f = new File([blob], fname, { type: blob.type }); canShare = !!(navigator.canShare && navigator.canShare({ files: [f] })); } catch (e) {}
+        document.getElementById('dlShare').style.display = canShare ? '' : 'none';
+    }
+    function openDlFile() {
+        if (!lastDl.blob) return;
+        const url = URL.createObjectURL(lastDl.blob);
+        if (!window.open(url, '_blank')) location.href = url;
+        setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e) {} }, 120000);
+    }
+    function shareDl() { if (lastDl.blob) shareFile(lastDl.blob, lastDl.fname); }
+    function closeDl() { dlClearPreview(); document.getElementById('dlBackdrop').classList.remove('open'); }
     function animateDl(total) {
         return new Promise(resolve => {
             const bar = document.getElementById('dlBar'), fill = document.getElementById('dlFill');
@@ -3963,6 +4027,7 @@ Minimum version required to store current data is: `+i+`.
             animateDl(blob.size).then(() => {
                 const bg = document.getElementById('dlBackdrop');
                 if (how === 'cancelled') {
+                    dlShowActions(blob, fname);
                     bg.classList.add('fail');
                     document.getElementById('dlBar').classList.remove('busy');
                     document.getElementById('dlTitle').textContent = 'Imeghairiwa';
@@ -3976,12 +4041,12 @@ Minimum version required to store current data is: `+i+`.
                     document.getElementById('dlNote').textContent = 'Jaribu browser nyingine au Share.';
                     return;
                 }
+                dlShowActions(blob, fname);
                 bg.classList.add('done');
                 document.getElementById('dlTitle').textContent = how === 'shared' ? 'Imehifadhiwa \u2713' : 'Imepakuliwa \u2713';
                 document.getElementById('dlNote').textContent = fname + ' (' + mbText(blob.size) + ')' +
-                    (how === 'download' ? ' — imehifadhiwa kwenye Downloads ya simu yako.' : '') +
+                    (how === 'download' ? ' — angalia folda ya Downloads. Isipoonekana, bonyeza "Pakua tena"' + (blob.type.indexOf('image') === 0 ? ' au shikilia picha kisha chagua Save/Download image.' : '.') : '') +
                     (how === 'open' ? ' — bonyeza Share → Save Image/File' : '');
-                if (how !== 'open') setTimeout(() => { if (bg.classList.contains('done')) closeDl(); }, 3500);
             });
         } catch (e) {
             const bg = document.getElementById('dlBackdrop');
