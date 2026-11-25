@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#0b1324">
-    <script>(function(){try{var t=localStorage.getItem("malimi_theme"),c=document.documentElement.classList;if(t==="dark"||t==="violet"||t==="forest")c.add("theme-dark");var a={ocean:"acc-ocean",violet:"acc-violet",sunset:"acc-sunset",rose:"acc-rose",forest:"acc-forest"}[t];if(a)c.add(a);}catch(e){}})();</script>
+    <script>(function(){try{var t=localStorage.getItem("malimi_theme"),c=document.documentElement.classList;if(t==="dark"||t==="violet"||t==="forest")c.add("theme-dark");var a={ocean:"acc-ocean",violet:"acc-violet",sunset:"acc-sunset",rose:"acc-rose",forest:"acc-forest",emerald:"acc-emerald",lilac:"acc-lilac"}[t];if(a)c.add(a);}catch(e){}})();</script>
     <meta name="application-name" content="MALIMI COPY">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1006,6 +1006,20 @@
         .a-push-hist .h { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 11px 13px; display: grid; gap: 3px; }
         .a-push-hist .h b { font-size: .82rem; word-break: break-word; }
         .a-push-hist .h span { font-size: .72rem; color: #64748b; }
+
+        /* ===== Sehemu ya Arifa (inbox) ===== */
+        .bell-btn { position: relative; margin-left: 0; }
+        .n-badge { position: absolute; top: 3px; right: 2px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: #ef4444; color: #fff; font-size: .62rem; font-weight: 800; display: grid; place-items: center; line-height: 1; box-shadow: 0 0 0 2px #fff; }
+        .drawer-item .n-badge { position: static; margin-left: auto; box-shadow: none; }
+        .notif-item { display: flex; gap: 12px; align-items: flex-start; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; padding: 14px; margin-bottom: 10px; border: 1px solid transparent; }
+        .notif-item .ni-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; background: transparent; }
+        .notif-item.unread { border-color: var(--t2, #14b8a6); }
+        .notif-item.unread .ni-dot { background: var(--t2, #14b8a6); }
+        .notif-item .ni-main { display: grid; gap: 3px; min-width: 0; }
+        .notif-item .ni-main b { font-size: .92rem; word-break: break-word; }
+        .notif-item .ni-main span { font-size: .82rem; color: #64748b; line-height: 1.45; word-break: break-word; white-space: pre-line; }
+        .notif-item .ni-main small { font-size: .7rem; color: #94a3b8; font-weight: 600; }
+        .notif-empty { text-align: center; color: #64748b; font-size: .88rem; padding: 28px 16px; }
         .a-check { display: flex; align-items: center; gap: 9px; font-size: .8rem; font-weight: 700; color: #334155; margin: 2px 0 12px; cursor: pointer; }
         .a-check input { width: 18px; height: 18px; accent-color: #7c3aed; flex: none; }
     </style>
@@ -1061,6 +1075,13 @@
             html.acc-sunset { --t1: #b85614; --t2: #94430d; --t3: #76380f; --t4: #5e3011; --t5: #4e2b13; --t6: #2f1504; --tl1: #fdf5f0; --tl2: #fbdfcc; --tl3: #f6be99; --tl4: #ea965e; --t1-rgb: 184,86,20; --t2-rgb: 148,67,13; }
         html.acc-rose { --t1: #b81450; --t2: #940d3e; --t3: #760f35; --t4: #5e112d; --t5: #4e1329; --t6: #2f0414; --tl1: #fdf0f5; --tl2: #fbccdd; --tl3: #f699bb; --tl4: #ea5e91; --t1-rgb: 184,20,80; --t2-rgb: 148,13,62; }
         html.acc-forest { --t1: #14b858; --t2: #0d9445; --t3: #0f763a; --t4: #115e31; --t5: #134e2c; --t6: #042f16; --tl1: #f0fdf5; --tl2: #ccfbe0; --tl3: #99f6c0; --tl4: #5eea98; --t1-rgb: 20,184,88; --t2-rgb: 13,148,69; }
+        html.acc-emerald { --t1: #10b981; --t2: #059669; --t3: #047857; --t4: #065f46; --t5: #064e3b; --t6: #022c22; --tl1: #ecfdf5; --tl2: #d1fae5; --tl3: #a7f3d0; --tl4: #6ee7b7; --t1-rgb: 16,185,129; --t2-rgb: 5,150,105; }
+        html.acc-lilac { --t1: #8b5cf6; --t2: #7c3aed; --t3: #6d28d9; --t4: #5b21b6; --t5: #4c1d95; --t6: #2e1065; --tl1: #f5f3ff; --tl2: #ede9fe; --tl3: #ddd6fe; --tl4: #c4b5fd; --t1-rgb: 139,92,246; --t2-rgb: 124,58,237; }
+        html.acc-emerald body { background: #ecf9f3; }
+        html.acc-lilac body { background: #f6f3ff; }
+        html.acc-emerald .thm-opt.active, html.acc-lilac .thm-opt.active { border-color: var(--t3); }
+        .sw-emerald { background: #ecf9f3; } .sw-emerald i { background: #fff; border-bottom: 1px solid #cdeedd; } .sw-emerald b { --c1: #10b981; --c2: #b4e6cf; }
+        .sw-lilac { background: #f6f3ff; } .sw-lilac i { background: #fff; border-bottom: 1px solid #e3dcf7; } .sw-lilac b { --c1: #8b5cf6; --c2: #d4c8f5; }
         html.acc-sunset body { background: #fdf5ec; }
         html.acc-rose body { background: #fdf1f5; }
         html.acc-forest body { background: #f0f8f2; }
@@ -1100,6 +1121,7 @@
                 <button class="tab-btn" data-view="profile" onclick="switchView('profile')">Profile</button>
             </nav>
             <div style="display:flex;align-items:center;gap:8px;">
+                <button id="notifBell" class="icon-btn bell-btn" type="button" aria-label="Arifa" onclick="switchView('notif')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span id="notifBadge" class="n-badge" style="display:none">0</span></button>
                 <button id="walletChip" class="coin-chip mono" style="display:none;" onclick="switchView('wallet')">0 Coins</button>
                 <button id="authActionBtn" class="btn-primary-sm" onclick="openAuthModal('register')">Ingia / Jisajili</button>
             </div>
@@ -1125,6 +1147,7 @@
                 <button class="drawer-item" data-view="bl" onclick="switchView('bl');toggleDrawer(false)"><span class="di-ico "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 21v-4h6v4"/><path d="M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01"/></svg></span><span>Business License</span></button>
                 <button class="drawer-item" data-view="wallet" onclick="switchView('wallet');toggleDrawer(false)"><span class="di-ico coin"><span class="mcoin" style="width:24px;height:24px"></span></span><span>Buy Coins</span></button>
                 <button class="drawer-item" data-view="profile" onclick="switchView('profile');toggleDrawer(false)"><span class="di-ico "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><span>Profile</span></button>
+                <button class="drawer-item" data-view="notif" onclick="switchView('notif');toggleDrawer(false)"><span class="di-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span><span>Arifa</span><span id="drawerNotifBadge" class="n-badge" style="display:none">0</span></button>
                 <button class="drawer-item" onclick="openThemeModal()"><span class="di-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span><span>Theme</span></button>
                 <hr>
                 <button class="drawer-item" onclick="toggleDrawer(false);openContactModal()"><span class="di-ico green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></span><span>Contact</span></button>
@@ -1376,6 +1399,26 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- NOTIFICATIONS PANEL -->
+        <div id="notif-panel" class="panel">
+            <div class="sub-header">
+                <button class="back-btn" onclick="switchView('home')">&larr; Rudi</button>
+                <button class="btn-sm" type="button" onclick="notifMarkAll()">Weka zote zimesomwa</button>
+            </div>
+            <h2 style="font-size:1.1rem;font-weight:700;margin:6px 2px 12px;">Arifa</h2>
+            <div class="card push-card" id="notifPushBox" style="margin-bottom:14px;display:none;">
+                <div class="pc-row">
+                    <span class="pc-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span>
+                    <div>
+                        <h3>Washa arifa za simu</h3>
+                        <p id="notifPushText">Usipitwe na offer na taarifa muhimu, hata app ikiwa imefungwa.</p>
+                    </div>
+                </div>
+                <div class="pc-actions"><button class="btn-sm teal" id="notifPushBtn" type="button">Washa Arifa</button></div>
+            </div>
+            <div id="notifList"></div>
         </div>
 
         <!-- 5. PROFILE PANEL -->
@@ -1724,13 +1767,14 @@ Minimum version required to store current data is: `+i+`.
         }
 
         function switchView(view) {
-            ['home', 'tin', 'bl', 'wallet', 'profile'].forEach(v => {
+            ['home', 'tin', 'bl', 'wallet', 'profile', 'notif'].forEach(v => {
                 document.getElementById(v + '-panel').classList.toggle('active', v === view);
             });
             document.querySelectorAll('[data-view]').forEach(el => {
                 el.classList.toggle('active', el.getAttribute('data-view') === view);
             });
             try { sessionStorage.setItem(VIEW_KEY, view); } catch (e) {}
+            if (view === 'notif' && window.notifOpened) window.notifOpened();
         }
 
         function startFreshDocument(docType) {
@@ -3283,7 +3327,7 @@ Minimum version required to store current data is: `+i+`.
             if (aPushBusy) return;
             const body = { title: $a('pu_t').value.trim(), body: $a('pu_b').value.trim(), url: $a('pu_u').value };
             if (!body.title || !body.body) { aToast('Jaza kichwa na ujumbe.', 1); return; }
-            if (!test && !await aConfirm({ title: 'Tuma kwa wote?', msg: 'Ujumbe huu utatumwa kwa watumiaji wote wenye arifa.\n\n' + body.title + '\n' + body.body, ok: 'Tuma', tone: 'purple', icon: 'send' })) return;
+            if (!test && !await aConfirm({ title: 'Tuma kwa wote?', msg: 'Ujumbe huu utatumwa kwa watumiaji wote wenye arifa, na pia utaonekana kwenye sehemu ya Arifa ndani ya app.\n\n' + body.title + '\n' + body.body, ok: 'Tuma', tone: 'purple', icon: 'send' })) return;
             aPushBusy = true;
             const btn = $a(test ? 'pu_test' : 'pu_all'), old = btn.innerHTML;
             btn.disabled = true;
@@ -3354,7 +3398,7 @@ Minimum version required to store current data is: `+i+`.
             out.value = dt.toISOString().slice(0, 10);
         }
 
-        try { const v = sessionStorage.getItem(VIEW_KEY); if (v && currentUser && ['home', 'tin', 'bl', 'wallet', 'profile'].includes(v)) switchView(v); } catch (e) {}
+        try { const v = sessionStorage.getItem(VIEW_KEY); if (v && currentUser && ['home', 'tin', 'bl', 'wallet', 'profile', 'notif'].includes(v)) switchView(v); } catch (e) {}
         loadPackages().catch(() => {});
         updateUserUI();
         refreshProfile();
@@ -3378,7 +3422,7 @@ Minimum version required to store current data is: `+i+`.
         };
         const $ = id => document.getElementById(id);
         const say = m => { if (typeof showNotice === 'function') showNotice(m); else alert(m); };
-        const VIEWS = ['home', 'tin', 'bl', 'wallet', 'profile'];
+        const VIEWS = ['home', 'tin', 'bl', 'wallet', 'profile', 'notif'];
         let deferredInstall = null, syncedFor = null, keyInfo = null, barShown = false;
 
         /* ---- Service worker ---- */
@@ -3387,7 +3431,11 @@ Minimum version required to store current data is: `+i+`.
                 navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(() => refresh()).catch(() => {});
             });
             // Mtumiaji akibonyeza arifa app ikiwa wazi: nenda kwenye ukurasa husika bila kureload (fomu hazipotei)
-            navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'push-nav') goTo(e.data.url); });
+            navigator.serviceWorker.addEventListener('message', e => {
+                if (!e.data) return;
+                if (e.data.type === 'push-nav') goTo(e.data.url);
+                else if (e.data.type === 'push-received' && window.notifReload) window.notifReload();
+            });
         }
 
         function goTo(href) {
@@ -3448,6 +3496,7 @@ Minimum version required to store current data is: `+i+`.
             if (sub && !sameKey(sub.options && sub.options.applicationServerKey, key)) { try { await sub.unsubscribe(); } catch (e) {} sub = null; }
             if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
             await postSub(sub);
+            LS.set('malimi_push_ts', String(Date.now()));
             return sub;
         }
         const who = () => String(typeof currentUser !== 'undefined' && currentUser ? (currentUser.id || currentUser.phone || 'u') : 'guest');
@@ -3488,8 +3537,8 @@ Minimum version required to store current data is: `+i+`.
         // Mtumiaji akishawasha arifa: unganisha simu na akaunti (baada ya kuingia) na jisajili upya kimya kimya ikihitajika
         async function sync() {
             if (!pushOK || Notification.permission !== 'granted' || LS.get('malimi_push_off') === '1') return;
-            const w = who();
-            if (syncedFor === w) return;
+            const w = who(), stale = Date.now() - (+LS.get('malimi_push_ts') || 0) > 432e5;
+            if (syncedFor === w && !stale) return;
             try { const k = await loadKey(); if (!k.configured) return; await ensureSub(k); syncedFor = w; } catch (e) {}
         }
 
@@ -3520,9 +3569,19 @@ Minimum version required to store current data is: `+i+`.
             if (di) di.style.display = standalone ? 'none' : '';
             if (dp) dp.style.display = st === 'unsupported' ? 'none' : '';
             if (dl) dl.textContent = st === 'on' ? 'Arifa: Zimewashwa' : st === 'denied' ? 'Arifa zimezuiwa' : 'Washa Arifa';
+            const nb = $('notifPushBox'), nt = $('notifPushText'), nbtn = $('notifPushBtn');
+            if (nb) {
+                nb.style.display = st === 'on' || st === 'unsupported' ? 'none' : '';
+                if (nt) nt.textContent = st === 'off' ? 'Usipitwe na offer na taarifa muhimu, hata app ikiwa imefungwa.' : TEXT[st];
+                if (nbtn) {
+                    nbtn.style.display = st === 'denied' ? 'none' : '';
+                    nbtn.textContent = st === 'ios-install' ? 'Jinsi ya kuweka app' : 'Washa Arifa';
+                    nbtn.onclick = st === 'ios-install' ? window.pwaInstall : window.pushEnable;
+                }
+            }
         }
 
-        /* ---- Banner ya kukaribisha (mara moja kwa siku 7 ukiifunga) ---- */
+        /* ---- Banner ya kukaribisha (ukiifunga inarudi baada ya siku 1) ---- */
         function hideBar(remember) {
             const bar = $('pwaBar'); if (bar) bar.style.display = 'none';
             if (remember) LS.set('malimi_bar_dismiss', String(Date.now()));
@@ -3537,18 +3596,66 @@ Minimum version required to store current data is: `+i+`.
         async function maybeBar() {
             if (barShown || document.body.classList.contains('is-admin')) return;
             if (isStandalone() && !(pushOK && Notification.permission === 'default')) return;
-            if (Date.now() - (+LS.get('malimi_bar_dismiss') || 0) < 7 * 864e5) return;
+            if (Date.now() - (+LS.get('malimi_bar_dismiss') || 0) < 864e5) return;
             const st = await state();
             if (st === 'off' && pushOK && Notification.permission === 'default') showBar('Washa arifa', 'Pata taarifa za offer na punguzo bila kufungua app.', 'Washa', () => window.pushEnable());
             else if (deferredInstall && !isStandalone()) showBar('Weka app kwenye simu', 'Fungua haraka kama WhatsApp, moja kwa moja kutoka Home Screen.', 'Weka', () => window.pwaInstall());
         }
         let barTimer = null;
-        function scheduleBar() { if (barShown || barTimer) return; barTimer = setTimeout(() => { barTimer = null; maybeBar(); }, 7000); }
+        function scheduleBar() { if (barShown || barTimer) return; barTimer = setTimeout(() => { barTimer = null; maybeBar(); }, 3000); }
+
+        /* ---- Sehemu ya Arifa (inbox) ---- */
+        const SEEN_KEY = 'malimi_notif_seen';
+        let inbox = [];
+        const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const seenId = () => +LS.get(SEEN_KEY) || 0;
+        const maxId = () => inbox.reduce((m, x) => Math.max(m, +x.id || 0), 0);
+        const panelOpen = () => { const p = $('notif-panel'); return !!(p && p.classList.contains('active') && !document.hidden); };
+        function ago(ms) {
+            const s = Math.max(0, (Date.now() - (+ms || 0)) / 1000);
+            if (s < 60) return 'Sasa hivi';
+            if (s < 3600) return 'Dakika ' + Math.floor(s / 60) + ' zilizopita';
+            if (s < 86400) return 'Saa ' + Math.floor(s / 3600) + ' zilizopita';
+            if (s < 604800) return 'Siku ' + Math.floor(s / 86400) + ' zilizopita';
+            try { return new Date(+ms).toLocaleDateString('sw-TZ', { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return ''; }
+        }
+        function paintBadge() {
+            const s = seenId(), n = inbox.filter(m => m.id > s).length, txt = n > 9 ? '9+' : String(n);
+            ['notifBadge', 'drawerNotifBadge'].forEach(id => { const el = $(id); if (el) { el.textContent = txt; el.style.display = n ? '' : 'none'; } });
+            try { if (navigator.setAppBadge) (n ? navigator.setAppBadge(n) : navigator.clearAppBadge()).catch(() => {}); } catch (e) {}
+        }
+        function renderInbox() {
+            const box = $('notifList'); if (!box) return;
+            if (!inbox.length) { box.innerHTML = '<div class="card notif-empty">Hakuna arifa bado. Offer na taarifa mpya zitaonekana hapa.</div>'; return; }
+            const s = seenId();
+            box.innerHTML = inbox.map(m => '<button type="button" class="card notif-item' + (m.id > s ? ' unread' : '') + '" data-url="' + esc(m.url || '/') + '"><span class="ni-dot"></span><span class="ni-main"><b>' + esc(m.title) + '</b><span>' + esc(m.body) + '</span><small>' + esc(ago(m.created_at)) + '</small></span></button>').join('');
+        }
+        function markAllSeen() { if (inbox.length) LS.set(SEEN_KEY, String(maxId())); paintBadge(); }
+        async function loadInbox() {
+            try {
+                const r = await fetch('/api/notifications', { cache: 'no-store' });
+                if (!r.ok) return;
+                const d = await r.json();
+                inbox = Array.isArray(d.items) ? d.items : [];
+                // Mtumiaji mpya: ujumbe wa zamani usihesabiwe kama haujasomwa
+                if (LS.get(SEEN_KEY) === null && inbox.length) LS.set(SEEN_KEY, String(maxId()));
+                paintBadge(); renderInbox();
+                if (panelOpen()) markAllSeen();
+            } catch (e) {}
+        }
+        window.notifReload = loadInbox;
+        window.notifOpened = function () { renderInbox(); markAllSeen(); loadInbox(); };
+        window.notifMarkAll = function () { markAllSeen(); renderInbox(); };
+        document.addEventListener('click', e => {
+            const it = e.target.closest && e.target.closest('.notif-item');
+            if (it) goTo(it.getAttribute('data-url') || '/');
+        });
+        setInterval(() => { if (!document.hidden) loadInbox(); }, 60000);
 
         window.onUserUiUpdated = function () { sync(); refresh(); scheduleBar(); };
-        document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) { refresh(); sync(); loadInbox(); } });
         loadKey().catch(() => {});
-        refresh(); sync(); scheduleBar();
+        refresh(); sync(); scheduleBar(); loadInbox();
 
         /* Omba ruhusa ya arifa moja kwa moja app inapofunguliwa (mtumiaji anaona "Allow / Don't allow" ya browser) */
         let autoAsked = false;
@@ -3582,6 +3689,8 @@ Minimum version required to store current data is: `+i+`.
                 <button class="thm-opt" data-theme="violet" onclick="setTheme('violet')" aria-label="Zambarau"><span class="thm-swatch sw-violet"><i></i><b></b></span><span>Zambarau</span></button>
                 <button class="thm-opt" data-theme="sunset" onclick="setTheme('sunset')" aria-label="Machweo"><span class="thm-swatch sw-sunset"><i></i><b></b></span><span>Machweo</span></button>
                 <button class="thm-opt" data-theme="rose" onclick="setTheme('rose')" aria-label="Waridi"><span class="thm-swatch sw-rose"><i></i><b></b></span><span>Waridi</span></button>
+                <button class="thm-opt" data-theme="emerald" onclick="setTheme('emerald')" aria-label="Zumaridi"><span class="thm-swatch sw-emerald"><i></i><b></b></span><span>Zumaridi</span></button>
+                <button class="thm-opt" data-theme="lilac" onclick="setTheme('lilac')" aria-label="Zambarau Mwanga"><span class="thm-swatch sw-lilac"><i></i><b></b></span><span>Zambarau Mwanga</span></button>
                 <button class="thm-opt" data-theme="forest" onclick="setTheme('forest')" aria-label="Msitu"><span class="thm-swatch sw-forest"><i></i><b></b></span><span>Msitu</span></button>
             </div>
         </div>
@@ -3600,12 +3709,13 @@ Minimum version required to store current data is: `+i+`.
     <script>
     // ===== Theme =====
     const THEMES = { light: {}, dark: { dark: 1 }, ocean: { acc: 'acc-ocean' }, violet: { dark: 1, acc: 'acc-violet' },
-        sunset: { acc: 'acc-sunset' }, rose: { acc: 'acc-rose' }, forest: { dark: 1, acc: 'acc-forest' } };
+        sunset: { acc: 'acc-sunset' }, rose: { acc: 'acc-rose' }, forest: { dark: 1, acc: 'acc-forest' },
+        emerald: { acc: 'acc-emerald' }, lilac: { acc: 'acc-lilac' } };
     function applyTheme(t) {
         if (!THEMES[t]) t = 'light';
         const c = document.documentElement.classList, d = THEMES[t];
         c.toggle('theme-dark', !!d.dark);
-        ['acc-ocean', 'acc-violet', 'acc-sunset', 'acc-rose', 'acc-forest'].forEach(k => c.toggle(k, d.acc === k));
+        ['acc-ocean', 'acc-violet', 'acc-sunset', 'acc-rose', 'acc-forest', 'acc-emerald', 'acc-lilac'].forEach(k => c.toggle(k, d.acc === k));
         document.querySelectorAll('.thm-opt').forEach(x => x.classList.toggle('active', x.dataset.theme === t));
     }
     function setTheme(t) {
