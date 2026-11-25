@@ -3,15 +3,20 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import secrets
+import threading
 import time
 from functools import wraps
 from urllib.parse import urlparse
 
 import requests
-from flask import Flask, g, jsonify, request, send_from_directory
+from flask import Flask, abort, g, jsonify, request, send_from_directory
 
-app = Flask(__name__, static_folder='.', static_url_path='')
+# static_folder=None: Flask isn't allowed to serve the whole project folder
+# (app.py, .env, *.sql would otherwise be downloadable). See static_files() below.
+app = Flask(__name__, static_folder=None)
+app.config['MAX_CONTENT_LENGTH'] = 256 * 1024  # reject huge request bodies
 
 
 def _load_local_env():
@@ -35,17 +40,33 @@ def _load_local_env():
 
 _load_local_env()
 
-_fallback_seed = (
-    os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '').strip()
-    or os.environ.get('DALIPAY_SECRET_KEY', '').strip()
-    or os.path.abspath(__file__)
-)
-SESSION_SECRET = os.environ.get('SESSION_SECRET', '').strip() or hashlib.sha256(
-    f'malimi:{_fallback_seed}'.encode('utf-8')
-).hexdigest()
+def _resolve_session_secret() -> str:
+    explicit = os.environ.get('SESSION_SECRET', '').strip()
+    if explicit:
+        if len(explicit) < 32:
+            print('[SECURITY] SESSION_SECRET ni fupi. Tumia angalau herufi 32: python -c "import secrets; print(secrets.token_hex(32))"', flush=True)
+        return explicit
+    # Never derive the secret from the file path (it is guessable). Use a real secret instead.
+    seed = (
+        os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '').strip()
+        or os.environ.get('DALIPAY_SECRET_KEY', '').strip()
+        or os.environ.get('SUPABASE_SECRET_KEY', '').strip()
+    )
+    if seed:
+        print('[SECURITY] SESSION_SECRET haijawekwa. Weka SESSION_SECRET yako mwenyewe kwenye Environment Variables.', flush=True)
+        return hashlib.sha256(f'malimi:{seed}'.encode('utf-8')).hexdigest()
+    print('[SECURITY] SESSION_SECRET haijawekwa. Secret ya muda imetengenezwa; session zitafutika seva ikizimwa.', flush=True)
+    return secrets.token_hex(32)
+
+
+SESSION_SECRET = _resolve_session_secret()
 DEVICE_COOKIE_NAME = 'tra_device_token'
 SESSION_COOKIE_NAME = 'malimi_session'
-SESSION_MAX_AGE_SEC = 60 * 60 * 24 * 365
+try:
+    _session_days = max(1, min(365, int(os.environ.get('SESSION_MAX_AGE_DAYS', '30'))))
+except ValueError:
+    _session_days = 30
+SESSION_MAX_AGE_SEC = 60 * 60 * 24 * _session_days
 GENERATION_COIN_COST = 5
 FREE_SIGNUP_COINS = 10
 
@@ -151,6 +172,83 @@ def now_ms():
     return int(time.time() * 1000)
 
 
+# ----------------------------------------------------------------------------
+# Security helpers
+# ----------------------------------------------------------------------------
+VERBOSE_ERRORS = os.environ.get('VERBOSE_ERRORS', '').strip() == '1'  # dev only
+MIN_PASSWORD_LEN = 8
+MAX_PASSWORD_LEN = 128  # stops huge passwords being used to burn CPU in scrypt
+LOGIN_WINDOW_SEC = 15 * 60
+LOGIN_MAX_FAILS_PER_EMAIL = 5
+LOGIN_MAX_FAILS_PER_IP = 20
+EMAIL_RE = re.compile(r'^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$')
+
+# In-memory rate limiter. Per server instance only: on serverless/multi-instance
+# hosting it slows attackers down but is not a hard global limit.
+_rl_lock = threading.Lock()
+_rl_hits = {}
+
+
+def rl_count(key: str, window_sec: int) -> int:
+    now = time.time()
+    with _rl_lock:
+        hits = [t for t in _rl_hits.get(key, []) if now - t < window_sec]
+        if hits:
+            _rl_hits[key] = hits
+        else:
+            _rl_hits.pop(key, None)
+        return len(hits)
+
+
+def rl_record(key: str):
+    now = time.time()
+    with _rl_lock:
+        _rl_hits.setdefault(key, []).append(now)
+        if len(_rl_hits) > 20000:
+            cutoff = now - 3600
+            for k in [k for k, v in _rl_hits.items() if not v or v[-1] < cutoff]:
+                _rl_hits.pop(k, None)
+
+
+def rl_reset(key: str):
+    with _rl_lock:
+        _rl_hits.pop(key, None)
+
+
+def rate_limited(key: str, limit: int, window_sec: int) -> bool:
+    """True if the limit is already reached; otherwise records this request."""
+    if rl_count(key, window_sec) >= limit:
+        return True
+    rl_record(key)
+    return False
+
+
+def client_ip() -> str:
+    fwd = request.headers.get('X-Forwarded-For', '')
+    ip = fwd.split(',')[0].strip() if fwd else (request.remote_addr or '')
+    return (ip or 'unknown')[:64]
+
+
+def get_json_dict() -> dict:
+    data = request.get_json(silent=True)
+    return data if isinstance(data, dict) else {}
+
+
+def clean_text(raw, max_len: int) -> str:
+    text = ''.join(ch for ch in str(raw or '') if ch.isprintable())
+    return text.strip()[:max_len]
+
+
+def service_unavailable(err=None):
+    if err is not None:
+        print(f'[Service Unavailable] {err}', flush=True)
+    return jsonify({'error': 'Huduma haipatikani kwa sasa. Tafadhali jaribu tena baadaye.'}), 503
+
+
+def too_many_requests(message: str = 'Maombi mengi mno. Tafadhali subiri kidogo kisha ujaribu tena.'):
+    return jsonify({'error': message}), 429
+
+
 def hash_password(password: str) -> str:
     salt = secrets.token_hex(16)
     derived = hashlib.scrypt(password.encode('utf-8'), salt=salt.encode('utf-8'), n=16384, r=8, p=1, dklen=64)
@@ -168,6 +266,10 @@ def verify_password(password: str, stored: str) -> bool:
     except ValueError:
         return False
     return hmac.compare_digest(derived, original)
+
+
+# Used so that login takes the same time whether or not the email exists.
+DUMMY_PASSWORD_HASH = hash_password(secrets.token_hex(8))
 
 
 def sign_token(user_id: int) -> str:
@@ -192,9 +294,14 @@ def verify_token(token: str):
     try:
         padded = payload + '=' * (-len(payload) % 4)
         data = json.loads(base64.urlsafe_b64decode(padded).decode('utf-8'))
-        if not isinstance(data.get('uid'), int) or data.get('exp', 0) < now_ms():
+        uid = data.get('uid')
+        exp = data.get('exp', 0)
+        if not isinstance(uid, int) or isinstance(uid, bool) or not isinstance(exp, int):
             return None
-        return data['uid']
+        # Reject expired tokens and tokens with an expiry longer than we ever issue.
+        if exp < now_ms() or exp > now_ms() + SESSION_MAX_AGE_SEC * 1000 + 60000:
+            return None
+        return uid
     except Exception:
         return None
 
@@ -205,13 +312,16 @@ def sanitize_identifier(raw) -> str:
     return ''.join(ch for ch in raw.strip() if ch.isalnum() or ch in ('_', '-'))[:128]
 
 
-def _cookie_attrs() -> str:
-    is_https = (
+def _is_https() -> bool:
+    return (
         request.is_secure
         or request.headers.get('X-Forwarded-Proto', '') == 'https'
         or os.environ.get('VERCEL') == '1'
     )
-    return 'HttpOnly; Secure; SameSite=None; Partitioned' if is_https else 'HttpOnly; SameSite=Lax'
+
+
+def _cookie_attrs() -> str:
+    return 'HttpOnly; Secure; SameSite=None; Partitioned' if _is_https() else 'HttpOnly; SameSite=Lax'
 
 
 def set_device_cookie(response, token: str):
@@ -236,16 +346,58 @@ def clear_session_cookie(response):
     )
 
 
+def _allowed_origins() -> set:
+    raw = os.environ.get('ALLOWED_ORIGINS', '')
+    return {o.strip().rstrip('/').lower() for o in raw.split(',') if o.strip()}
+
+
 def verify_same_origin():
-    origin = request.headers.get('Origin')
-    host = request.headers.get('X-Forwarded-Host') or request.headers.get('Host') or ''
-    if origin and host:
-        try:
-            if urlparse(origin).netloc != host:
-                return False
-        except Exception:
-            return False
-    return True
+    host = (request.headers.get('X-Forwarded-Host') or request.headers.get('Host') or '').split(',')[0].strip().lower()
+    source = request.headers.get('Origin') or request.headers.get('Referer') or ''
+    if not source:
+        # Browsers always send Origin on cross-site POSTs; no header = non-browser client.
+        return True
+    try:
+        parsed = urlparse(source)
+    except Exception:
+        return False
+    if f'{parsed.scheme}://{parsed.netloc}'.lower() in _allowed_origins():
+        return True
+    return bool(host) and parsed.netloc.lower() == host
+
+
+CSRF_EXEMPT_PATHS = {'/api/payments/dalipay/webhook', '/api/payments/dalipay/callback'}
+
+
+@app.before_request
+def csrf_guard():
+    # The session cookie is SameSite=None, so EVERY state-changing API route
+    # (not only login/register) must check where the request came from.
+    if (
+        request.method in ('POST', 'PUT', 'PATCH', 'DELETE')
+        and request.path.startswith('/api/')
+        and request.path not in CSRF_EXEMPT_PATHS
+        and not verify_same_origin()
+    ):
+        return jsonify({'error': 'Invalid request origin.'}), 403
+
+
+@app.after_request
+def add_security_headers(resp):
+    resp.headers.setdefault('X-Content-Type-Options', 'nosniff')
+    resp.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
+    resp.headers.setdefault('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+    # Set FRAME_ANCESTORS (e.g. "'self' https://your-site.com") if this app must be embedded in an iframe.
+    frame_ancestors = os.environ.get('FRAME_ANCESTORS', '').strip() or "'self'"
+    resp.headers.setdefault(
+        'Content-Security-Policy',
+        f"frame-ancestors {frame_ancestors}; base-uri 'self'; object-src 'none'",
+    )
+    if _is_https():
+        resp.headers.setdefault('Strict-Transport-Security', 'max-age=31536000')
+    if request.path.startswith('/api/'):
+        resp.headers['Cache-Control'] = 'no-store'
+    return resp
 
 
 def require_auth(fn):
@@ -378,15 +530,20 @@ def api_register():
     if not verify_same_origin():
         return jsonify({'error': 'Invalid request origin.'}), 403
 
-    data = request.get_json(silent=True) or {}
-    full_name = str(data.get('fullName', '')).strip()
+    data = get_json_dict()
+    if rate_limited(f'register:ip:{client_ip()}', 10, 60 * 60):
+        return too_many_requests('Usajili mwingi mno kutoka mtandao huu. Jaribu tena baadaye.')
+
+    full_name = clean_text(data.get('fullName', ''), 100)
     email = str(data.get('email', '')).strip().lower()
-    phone = str(data.get('phone', '')).strip()
+    phone = re.sub(r'[^\d+]', '', str(data.get('phone', '')))[:16]
     password = str(data.get('password', ''))
     device_id = sanitize_identifier(data.get('deviceId') or data.get('device_id') or '')
 
-    if len(full_name) < 2 or '@' not in email or len(password) < 6:
-        return jsonify({'error': 'Jaza jina kamili, barua pepe sahihi, na nenosiri (angalau herufi 6).'}), 400
+    if len(full_name) < 2 or len(email) > 254 or not EMAIL_RE.match(email):
+        return jsonify({'error': 'Jaza jina kamili na barua pepe sahihi.'}), 400
+    if len(password) < MIN_PASSWORD_LEN or len(password) > MAX_PASSWORD_LEN:
+        return jsonify({'error': f'Nenosiri liwe na herufi {MIN_PASSWORD_LEN} hadi {MAX_PASSWORD_LEN}.'}), 400
 
     try:
         existing_users = sb_select('users', {'select': 'id', 'email': f'eq.{email}', 'limit': '1'})
@@ -433,17 +590,21 @@ def api_register():
             },
         )
     except RuntimeError as e:
-        return jsonify({'error': str(e)}), 503
+        return service_unavailable(e)
     except requests.HTTPError as e:
         print(f'[Supabase Register Error] {e}', flush=True)
         detail = str(e)
-        if '42501' in detail or 'permission denied' in detail:
-            return jsonify({'error': 'Ruhusa ya Supabase (42501) imekataliwa kwa service_role. Endesha supabase_schema.sql mpya (yenye GRANT ... TO service_role) kwenye SQL Editor.'}), 500
-        if '42P01' in detail or 'Could not find the table' in detail:
-            return jsonify({'error': 'Majedwali ya Supabase hayajaundwa. Endesha supabase_schema.sql kwenye Supabase SQL Editor.'}), 500
-        if '401' in detail or 'Invalid API key' in detail:
-            return jsonify({'error': 'SUPABASE_SERVICE_ROLE_KEY si sahihi. Tumia Secret key (sb_secret_...).'}), 500
-        return jsonify({'error': f'Tatizo la Supabase: {detail}'}), 500
+        if '23505' in detail or 'duplicate key' in detail:
+            return jsonify({'error': 'Barua pepe hii tayari imesajiliwa. Tafadhali ingia.'}), 409
+        if VERBOSE_ERRORS:  # developer hints: only shown when VERBOSE_ERRORS=1
+            if '42501' in detail or 'permission denied' in detail:
+                return jsonify({'error': 'Ruhusa ya Supabase (42501) imekataliwa kwa service_role. Endesha supabase_schema.sql mpya (yenye GRANT ... TO service_role) kwenye SQL Editor.'}), 500
+            if '42P01' in detail or 'Could not find the table' in detail:
+                return jsonify({'error': 'Majedwali ya Supabase hayajaundwa. Endesha supabase_schema.sql kwenye Supabase SQL Editor.'}), 500
+            if '401' in detail or 'Invalid API key' in detail:
+                return jsonify({'error': 'SUPABASE_SERVICE_ROLE_KEY si sahihi. Tumia Secret key (sb_secret_...).'}), 500
+            return jsonify({'error': f'Tatizo la Supabase: {detail}'}), 500
+        return jsonify({'error': 'Imeshindwa kusajili akaunti. Tafadhali jaribu tena baadaye.'}), 500
     except Exception as e:
         print(f'[Register Error] {e}', flush=True)
         return jsonify({'error': 'Imeshindwa kusajili akaunti kwenye Supabase.'}), 500
@@ -472,19 +633,34 @@ def api_login():
     if not verify_same_origin():
         return jsonify({'error': 'Invalid request origin.'}), 403
 
-    data = request.get_json(silent=True) or {}
-    email = str(data.get('email', '')).strip().lower()
+    data = get_json_dict()
+    email = str(data.get('email', '')).strip().lower()[:254]
     password = str(data.get('password', ''))
+    if len(password) > MAX_PASSWORD_LEN:
+        password = ''  # can never match; avoids hashing giant inputs
     device_id = sanitize_identifier(data.get('deviceId') or data.get('device_id') or '')
+
+    email_key = f'login:email:{email}'
+    ip_key = f'login:ip:{client_ip()}'
+    if (
+        rl_count(email_key, LOGIN_WINDOW_SEC) >= LOGIN_MAX_FAILS_PER_EMAIL
+        or rl_count(ip_key, LOGIN_WINDOW_SEC) >= LOGIN_MAX_FAILS_PER_IP
+    ):
+        return too_many_requests('Majaribio mengi yasiyo sahihi. Subiri dakika 15 kisha ujaribu tena.')
 
     try:
         rows = sb_select('users', {'select': '*', 'email': f'eq.{email}', 'limit': '1'})
         user_row = rows[0] if rows else None
     except RuntimeError as e:
-        return jsonify({'error': str(e)}), 503
+        return service_unavailable(e)
 
-    if not user_row or not verify_password(password, user_row['password_hash']):
+    # Always run scrypt, even for unknown emails, so response time doesn't reveal which emails exist.
+    password_ok = verify_password(password, user_row['password_hash'] if user_row else DUMMY_PASSWORD_HASH)
+    if not user_row or not password_ok:
+        rl_record(email_key)
+        rl_record(ip_key)
         return jsonify({'error': 'Barua pepe au nenosiri si sahihi.'}), 401
+    rl_reset(email_key)
 
     cookie_token = sanitize_identifier(request.cookies.get(DEVICE_COOKIE_NAME, '')) or secrets.token_hex(24)
     if device_id:
@@ -545,18 +721,23 @@ def api_me():
         )
         return jsonify({'user': sanitize_user(user_row), 'payments': payments, 'generations': generations})
     except RuntimeError as e:
-        return jsonify({'error': str(e)}), 503
+        return service_unavailable(e)
 
 
 @app.route('/api/documents/generate', methods=['POST'])
 @require_auth
 def api_generate_document():
-    data = request.get_json(silent=True) or {}
+    data = get_json_dict()
     doc_type = data.get('docType')
     if doc_type not in ('tin', 'bl'):
         return jsonify({'error': 'Aina ya hati si sahihi.'}), 400
 
-    doc_label = str(data.get('docLabel') or ('TIN Certificate' if doc_type == 'tin' else 'Business License')).strip()[:120]
+    if rate_limited(f'generate:user:{g.user_id}', 30, 60):
+        return too_many_requests()
+
+    doc_label = clean_text(
+        data.get('docLabel') or ('TIN Certificate' if doc_type == 'tin' else 'Business License'), 120
+    ) or ('TIN Certificate' if doc_type == 'tin' else 'Business License')
     try:
         result = sb_rpc(
             'deduct_generation_coins',
@@ -582,7 +763,7 @@ def api_generate_document():
             }
         )
     except RuntimeError as e:
-        return jsonify({'error': str(e)}), 503
+        return service_unavailable(e)
     except Exception:
         return jsonify({'error': 'Hitilafu imetokea wakati wa kukata coin.'}), 500
 
@@ -590,11 +771,15 @@ def api_generate_document():
 @app.route('/api/payments/dalipay/initiate', methods=['POST'])
 @require_auth
 def api_dalipay_initiate():
-    data = request.get_json(silent=True) or {}
-    package_id = str(data.get('packageId', ''))
-    phone_clean = normalize_phone_tz(str(data.get('phoneNumber', '')))
+    data = get_json_dict()
+    package_id = str(data.get('packageId', ''))[:50]
+    phone_clean = normalize_phone_tz(str(data.get('phoneNumber', ''))[:32])
     if not phone_clean:
         return jsonify({'error': 'Weka namba sahihi ya simu ya Tanzania (mfano 0754123456).'}), 400
+
+    # Each request sends a USSD push to a phone: limit per user and per phone number.
+    if rate_limited(f'pay:user:{g.user_id}', 5, 10 * 60) or rate_limited(f'pay:phone:{phone_clean}', 3, 10 * 60):
+        return too_many_requests('Umejaribu malipo mara nyingi. Subiri dakika chache kisha ujaribu tena.')
 
     pkg = PACKAGES.get(package_id)
     if not pkg:
@@ -609,10 +794,11 @@ def api_dalipay_initiate():
     _, collections_url = resolve_dalipay_urls()
 
     if not public_key or not secret_key:
+        print('[Config] DALIPAY_PUBLIC_KEY / DALIPAY_SECRET_KEY hazijawekwa.', flush=True)
         return (
             jsonify(
                 {
-                    'error': 'Malipo ya Dalipay hayajaunganishwa bado. Weka DALIPAY_PUBLIC_KEY, DALIPAY_SECRET_KEY, na DALIPAY_CALLBACK_SECRET kwenye Environment Variables.'
+                    'error': 'Malipo hayapatikani kwa sasa. Tafadhali jaribu tena baadaye.'
                 }
             ),
             503,
@@ -648,7 +834,7 @@ def api_dalipay_initiate():
             },
         )
     except RuntimeError as e:
-        return jsonify({'error': str(e)}), 503
+        return service_unavailable(e)
 
     payload_body = {
         'account_number': local_account,
@@ -677,7 +863,8 @@ def api_dalipay_initiate():
 
         if not resp.ok or res_json.get('success') is False:
             sb_update('payments', {'reference': f'eq.{reference}'}, {'status': 'failed'})
-            return jsonify({'error': res_json.get('message') or 'Ombi la malipo ya Dalipay limekataliwa.', 'reference': reference}), 502
+            print(f'[Dalipay] request rejected ({resp.status_code}): {str(res_json.get("message") or "")[:200]}', flush=True)
+            return jsonify({'error': 'Ombi la malipo limekataliwa. Tafadhali jaribu tena.', 'reference': reference}), 502
 
         provider_ref = str(
             nested_data.get('uuid')
@@ -687,6 +874,7 @@ def api_dalipay_initiate():
             or res_json.get('id')
             or ''
         )
+        provider_ref = sanitize_identifier(provider_ref)
         if provider_ref:
             sb_update('payments', {'reference': f'eq.{reference}'}, {'provider_ref': provider_ref})
 
@@ -720,6 +908,7 @@ def api_dalipay_initiate():
             }
         )
     except Exception:
+        app.logger.exception('Dalipay initiate failed')
         sb_update('payments', {'reference': f'eq.{reference}'}, {'status': 'failed'})
         return jsonify({'error': 'Imeshindwa kuwasiliana na seva ya Dalipay.', 'reference': reference}), 502
 
@@ -727,6 +916,9 @@ def api_dalipay_initiate():
 @app.route('/api/payments/status/<reference>', methods=['GET'])
 @require_auth
 def api_payment_status(reference):
+    reference = sanitize_identifier(reference)
+    if not reference:
+        return jsonify({'error': 'Muamala haupatikani.'}), 404
     try:
         payments = sb_select(
             'payments',
@@ -738,7 +930,7 @@ def api_payment_status(reference):
 
         public_key = os.environ.get('DALIPAY_PUBLIC_KEY', '').strip()
         secret_key = os.environ.get('DALIPAY_SECRET_KEY', '').strip()
-        provider_ref = str(payment.get('provider_ref') or '').strip()
+        provider_ref = sanitize_identifier(str(payment.get('provider_ref') or ''))  # goes into a URL path
         if payment.get('status') == 'pending' and provider_ref and public_key and secret_key:
             try:
                 base_url, _ = resolve_dalipay_urls()
@@ -783,13 +975,14 @@ def api_payment_status(reference):
             }
         )
     except RuntimeError as e:
-        return jsonify({'error': str(e)}), 503
+        return service_unavailable(e)
 
 
 def _handle_dalipay_webhook():
     callback_secret = os.environ.get('DALIPAY_CALLBACK_SECRET', '').strip()
     if not callback_secret:
-        return jsonify({'error': 'DALIPAY_CALLBACK_SECRET is not configured.'}), 503
+        print('[Config] DALIPAY_CALLBACK_SECRET haijawekwa; webhook imekataliwa.', flush=True)
+        return jsonify({'error': 'Webhook not available.'}), 503
 
     raw_body = request.get_data()
     sig_header = (
@@ -804,10 +997,12 @@ def _handle_dalipay_webhook():
 
     cleaned_sig = sig_header[7:] if sig_header.lower().startswith('sha256=') else sig_header
     expected_hex = hmac.new(callback_secret.encode('utf-8'), raw_body, hashlib.sha256).hexdigest()
-    if not hmac.compare_digest(cleaned_sig, expected_hex):
+    if not hmac.compare_digest(cleaned_sig.lower().encode('utf-8'), expected_hex.encode('utf-8')):
         return jsonify({'error': 'Invalid webhook signature.'}), 401
 
-    payload = request.get_json(silent=True) or {}
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        payload = {}
     event_data = payload.get('data') if isinstance(payload.get('data'), dict) else {}
     reference = sanitize_identifier(
         event_data.get('external_id')
@@ -825,6 +1020,7 @@ def _handle_dalipay_webhook():
         or payload.get('id')
         or ''
     )
+    provider_ref = sanitize_identifier(provider_ref)
 
     if not reference:
         return jsonify({'error': 'Missing payment reference.'}), 400
@@ -834,8 +1030,10 @@ def _handle_dalipay_webhook():
             'settle_dalipay_payment',
             {'p_reference': reference, 'p_provider_ref': provider_ref, 'p_now_ms': now_ms()},
         )
-        if not res.get('ok'):
-            return jsonify({'error': res.get('error', 'Settlement failed')}), int(res.get('status_code', 404))
+        if not isinstance(res, dict) or not res.get('ok'):
+            err = res.get('error', 'Settlement failed') if isinstance(res, dict) else 'Settlement failed'
+            code = int(res.get('status_code', 404)) if isinstance(res, dict) else 500
+            return jsonify({'error': err}), code
         return jsonify({'received': True, 'status': 'completed'})
 
     if status_raw in ('failed', 'cancelled', 'canceled', 'expired', 'payment.failed', 'collection.failed'):
@@ -848,11 +1046,32 @@ def _handle_dalipay_webhook():
 @app.route('/api/payments/dalipay/webhook', methods=['POST'])
 @app.route('/api/payments/dalipay/callback', methods=['POST'])
 def api_dalipay_webhook():
-    return _handle_dalipay_webhook()
+    try:
+        return _handle_dalipay_webhook()
+    except Exception:
+        app.logger.exception('Dalipay webhook failed')
+        return jsonify({'error': 'Webhook processing failed.'}), 500
+
+
+ALLOWED_STATIC_EXT = {
+    '.html', '.css', '.js', '.mjs', '.json', '.webmanifest', '.txt',
+    '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico',
+    '.woff', '.woff2', '.ttf', '.otf', '.mp3', '.mp4', '.webm', '.wav', '.ogg',
+}
+BLOCKED_STATIC_NAMES = {
+    'app.py', 'vercel.json', 'package.json', 'package-lock.json', 'requirements.txt',
+    'node_modules', '__pycache__', 'venv', '.venv', 'api',
+}
 
 
 @app.route('/<path:path>')
 def static_files(path):
+    # Only serve public front-end assets. Never source code, .env, .sql, dotfiles or config.
+    parts = [seg for seg in path.replace('\\', '/').split('/') if seg]
+    if not parts or any(seg.startswith('.') or seg.lower() in BLOCKED_STATIC_NAMES for seg in parts):
+        abort(404)
+    if os.path.splitext(parts[-1])[1].lower() not in ALLOWED_STATIC_EXT:
+        abort(404)
     return send_from_directory('.', path)
 
 
