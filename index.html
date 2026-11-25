@@ -759,6 +759,33 @@
         .pk-opt[aria-selected="true"] .pk-radio { border-color: #fdba74; }
         .pk-opt[aria-selected="true"] .pk-radio::after { content: ""; width: 11px; height: 11px; border-radius: 50%; background: #fdba74; }
         .pk-empty { padding: 18px; text-align: center; color: rgba(255, 255, 255, .6); font-size: .85rem; }
+
+        /* ===== Admin: simu (mobile) ===== */
+        @media (max-width: 720px) {
+            #adminApp { padding: 10px 10px 92px; }
+            .a-top b { font-size: .9rem; }
+            .a-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; margin: 0; padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; overflow: visible; background: rgba(255, 255, 255, .96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); box-shadow: 0 -10px 24px -16px rgba(15, 23, 42, .4); }
+            .a-tabs button { padding: 10px 2px; font-size: .68rem; border-color: transparent; background: transparent; }
+            .a-tabs button.active { background: var(--grad); color: #fff; }
+            .a-grid { grid-template-columns: repeat(2, 1fr); }
+            .a-bar { gap: 8px; } .a-bar input { flex: 1 1 100%; min-height: 42px; } .a-bar select, .a-bar button { flex: 1; min-height: 42px; }
+            #adminApp .table-card { background: transparent; border: none; box-shadow: none; overflow: visible; border-radius: 0; }
+            #adminApp .table-wrap { overflow: visible; max-height: none; }
+            #adminApp table.data-table, #adminApp table.data-table tbody, #adminApp table.data-table tr, #adminApp table.data-table td { display: block; width: 100%; }
+            #adminApp table.data-table thead { display: none; }
+            #adminApp table.data-table tr { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 6px 12px; margin-bottom: 10px; box-shadow: var(--sh-s); }
+            #adminApp table.data-table tr:hover { background: #fff; }
+            #adminApp table.data-table td { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0 !important; border-bottom: 1px dashed #e8eef4; text-align: right; }
+            #adminApp table.data-table td:last-child { border-bottom: none; }
+            #adminApp table.data-table td::before { content: attr(data-l); flex: none; text-align: left; font-size: .64rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .03em; }
+            #adminApp table.data-table td[data-l=""] { justify-content: flex-end; }
+            #adminApp table.data-table td[data-l=""]::before, #adminApp table.data-table td.tx-empty::before { display: none; }
+            #adminApp table.data-table td.tx-empty { justify-content: center; }
+            .a-act { justify-content: flex-end; width: 100%; } .a-act button { min-height: 38px; padding: 8px 14px; font-size: .76rem; }
+            .a-ed input, .a-ed select { width: 130px; min-height: 40px; } .a-ed input[type=checkbox] { width: 22px !important; min-height: 22px; }
+            .a-form { max-width: 100%; padding: 14px; } .a-form input, .a-form textarea, .a-form select { min-height: 42px; }
+            .a-ref { text-align: right; }
+        }
     </style>
 <script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
 <body>
@@ -952,7 +979,7 @@
                         <tr><th><label for="bl_name">License Issued To</label></th><td><input type="text" id="bl_name" value="" placeholder="Mfano: JOSEPHAT SAMWEL NGONYANI"></td></tr>
                         <tr><th><label for="bl_business">For the Business of</label></th><td><input type="text" id="bl_business" class="pick-input" value="" readonly placeholder="Chagua au tafuta biashara" onclick="openBizPicker()"></td></tr>
                         <tr><th><label for="bl_type">Business Licensing</label></th><td><input type="text" id="bl_type" value="NEW LICENSE" readonly style="background:#f1f5f9;color:#334155;font-weight:700;cursor:not-allowed;"></td></tr>
-                        <tr><th><label for="bl_principal">Principal / Branch</label></th><td><input type="text" id="bl_principal" value="" placeholder="Mfano: PRINCIPAL"></td></tr>
+                        <tr><th><label for="bl_principal">Principal / Branch</label></th><td><input type="text" id="bl_principal" value="PRINCIPAL" readonly style="background:#f1f5f9;color:#334155;font-weight:700;cursor:not-allowed;"></td></tr>
                         <tr><th><label for="bl_issue">Date of Issue</label></th><td><input type="date" id="bl_issue" class="mono" value="" oninput="setBlExpiry()" onchange="setBlExpiry()"></td></tr>
                         <tr><th><label for="bl_expire">Expiring Date</label></th><td><input type="date" id="bl_expire" class="mono" value="" readonly style="background:#f1f5f9;color:#334155;font-weight:700;cursor:not-allowed;"></td></tr>
                         <tr><th><label for="bl_region">Region</label></th><td><input type="text" id="bl_region" value="" placeholder="Mfano: Mwanza"></td></tr>
@@ -1319,7 +1346,8 @@
 
         function resetBlForm() {
             document.getElementById('bl_type').value = 'NEW LICENSE';
-            ['bl_office', 'bl_tin', 'bl_name', 'bl_business', 'bl_principal', 'bl_issue', 'bl_expire', 'bl_region', 'bl_ward', 'bl_street', 'bl_fee'].forEach(id => {
+            document.getElementById('bl_principal').value = 'PRINCIPAL';
+            ['bl_office', 'bl_tin', 'bl_name', 'bl_business', 'bl_issue', 'bl_expire', 'bl_region', 'bl_ward', 'bl_street', 'bl_fee'].forEach(id => {
                 const el = document.getElementById(id);
                 el.value = '';
                 el.dataset.prevVal = '';
@@ -2358,7 +2386,7 @@
         setInterval(() => { if (!document.hidden) loadPackages(); }, 60000);
 
         // ========== ADMIN DASHBOARD ==========
-        let adminReady = false, aPk = [];
+        let adminReady = false, aPk = [], aCur = '';
         const $a = id => document.getElementById(id);
         const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         async function adminApi(path, method, body) {
@@ -2369,8 +2397,10 @@
         }
         function aToast(m, bad) { const t = $a('aToast'); t.textContent = m; t.className = bad ? 'bad' : 'ok'; t.style.display = 'block'; clearTimeout(aToast.t); aToast.t = setTimeout(() => { t.style.display = 'none'; }, 2500); }
         async function aRun(fn) { try { await fn(); } catch (e) { aToast(e.message, 1); } }
-        function adminInit() { if (adminReady) return; adminReady = true; adminShow('stats'); }
+        function aLabel() { document.querySelectorAll('#adminBody table').forEach(t => { const h = [...t.querySelectorAll('thead th')].map(x => x.textContent.trim()); t.querySelectorAll('tbody tr').forEach(tr => [...tr.children].forEach((td, i) => { if (td.colSpan < 2) td.dataset.l = h[i] || ''; })); }); }
+        function adminInit() { if (adminReady) return; adminReady = true; new MutationObserver(aLabel).observe($a('adminBody'), { childList: true, subtree: true }); adminShow('stats'); }
         function adminShow(tab) {
+            aCur = tab;
             document.querySelectorAll('[data-atab]').forEach(b => b.classList.toggle('active', b.dataset.atab === tab));
             ({ stats: aStats, pay: aPay, users: aUsers, prices: aPrices, offer: aOffer })[tab]();
         }
@@ -2378,6 +2408,7 @@
             $a('adminBody').innerHTML = '<p class="a-mute">Inapakia...</p>';
             await aRun(async () => {
                 const d = await adminApi('/stats');
+                if (aCur !== 'stats') return;
                 const c = (l, v) => '<div class="a-stat"><span>' + l + '</span><b class="mono">' + v + '</b></div>';
                 $a('adminBody').innerHTML = '<div class="a-grid">' + c('Watumiaji', d.users) + c('Waliozuiwa', d.blocked) + c('Mapato (TZS)', Number(d.revenue).toLocaleString()) + c('Malipo yamekamilika', d.completed) + c('Yanasubiri', d.pending) + c('Yameshindwa', d.failed) + c('Hati zilizotengenezwa', d.documents) + '</div>';
             });
@@ -2388,7 +2419,9 @@
         }
         async function aPayLoad() {
             await aRun(async () => {
+                if (!$a('aq')) return;
                 const d = await adminApi('/payments?q=' + encodeURIComponent($a('aq').value) + '&status=' + $a('ast').value);
+                if (!$a('aList')) return;
                 const rows = d.payments.map(p => {
                     const st = PAY_STATUS[p.status] || { label: p.status, cls: 'neutral' };
                     const u = p.user || {};
@@ -2407,7 +2440,9 @@
         }
         async function aUsersLoad() {
             await aRun(async () => {
+                if (!$a('auq')) return;
                 const d = await adminApi('/users?q=' + encodeURIComponent($a('auq').value));
+                if (!$a('aList')) return;
                 const rows = d.users.map(u => '<tr><td>' + esc(u.full_name) + (u.isAdmin ? ' <span class="badge unl">Admin</span>' : '') + '<div class="a-mute">' + esc(localPhone(u.phone)) + (u.email ? ' · ' + esc(u.email) : '') + '</div></td><td class="mono">' + (u.isUnlimited ? 'Unlimited' : u.coins) + '</td><td>' + (u.is_blocked ? '<span class="badge fail">Amezuiwa</span>' : '<span class="badge ok">Hai</span>') + '</td><td>' + (u.isAdmin ? '' : '<div class="a-act"><button onclick="aCoins(' + Number(u.id) + ')">± Coin</button><button class="' + (u.is_blocked ? 'grn' : 'red') + '" onclick="aBlock(' + Number(u.id) + ',' + (!u.is_blocked) + ')">' + (u.is_blocked ? 'Fungua' : 'Zuia') + '</button><button class="red" onclick="aDel(' + Number(u.id) + ')">Futa</button></div>') + '</td></tr>').join('');
                 $a('aList').innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr><th>Mtumiaji</th><th>Salio</th><th>Hali</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="4" class="tx-empty">Hakuna watumiaji.</td></tr>') + '</tbody></table></div>';
             });
@@ -2417,6 +2452,7 @@
         async function aCoins(id) { const v = prompt('Ongeza au punguza coin (mfano 10 au -5):'); if (v === null || v.trim() === '') return; await aRun(async () => { const d = await adminApi('/users/' + id + '/coins', 'POST', { delta: parseInt(v, 10) }); aToast('Salio jipya: ' + d.coins); aUsersLoad(); }); }
         async function aPrices() { await aRun(async () => { aPk = (await adminApi('/packages')).packages; aPricesDraw(); }); }
         function aPricesDraw() {
+            if (aCur !== 'prices') return;
             const rows = aPk.map((p, i) => '<tr><td><select onchange="aPk[' + i + '].category=this.value;aPricesDraw()"><option value="coins"' + (p.category !== 'unlimited' ? ' selected' : '') + '>Coins</option><option value="unlimited"' + (p.category === 'unlimited' ? ' selected' : '') + '>Unlimited</option></select></td><td><input type="number" min="1" value="' + (p.category === 'unlimited' ? '' : p.coins) + '" ' + (p.category === 'unlimited' ? 'disabled' : '') + ' onchange="aPk[' + i + '].coins=+this.value"></td><td><input type="number" min="1" value="' + (p.category === 'unlimited' ? p.unlimitedDays : '') + '" ' + (p.category !== 'unlimited' ? 'disabled' : '') + ' onchange="aPk[' + i + '].unlimitedDays=+this.value"></td><td><input type="number" min="100" value="' + p.amountTzs + '" onchange="aPk[' + i + '].amountTzs=+this.value"></td><td><input type="checkbox" style="width:auto" ' + (p.active !== false ? 'checked' : '') + ' onchange="aPk[' + i + '].active=this.checked"></td><td><div class="a-act"><button class="red" onclick="aPk.splice(' + i + ',1);aPricesDraw()">Ondoa</button></div></td></tr>').join('');
             $a('adminBody').innerHTML = '<div class="table-card a-ed"><div class="table-wrap"><table class="data-table"><thead><tr><th>Aina</th><th>Coins</th><th>Siku</th><th>Bei (TZS)</th><th>Hai</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div></div><div class="a-bar" style="margin-top:12px"><button class="btn-sm slate" onclick="aPk.push({category:\'coins\',coins:10,unlimitedDays:0,amountTzs:1000,active:true});aPricesDraw()">+ Kifurushi</button><button class="btn-sm teal" onclick="aSavePrices()">Hifadhi Bei</button><button class="btn-sm slate" onclick="aResetPrices()">Rudisha za awali</button></div>';
         }
@@ -2425,6 +2461,7 @@
         async function aOffer() {
             await aRun(async () => {
                 const o = (await adminApi('/offer')).offer;
+                if (aCur !== 'offer') return;
                 const cur = o ? '<div class="a-stat" style="margin-bottom:12px;max-width:520px"><span>Offer inayoendelea</span><b>' + esc(o.title) + '</b><span>Bonasi ' + (o.bonusPercent || 0) + '% · Punguzo ' + (o.discountPercent || 0) + '% · Inaisha: ' + esc(fmtDate(o.endsAt, true)) + '</span><div class="a-act"><button class="red" onclick="aOfferStop()">Zima sasa</button></div></div>' : '<p class="a-mute" style="margin-bottom:12px">Hakuna offer inayoendelea.</p>';
                 $a('adminBody').innerHTML = cur + '<div class="a-form"><label>Kichwa cha offer<input id="of_t" maxlength="60" placeholder="Mfano: Sikukuu Offer"></label><label>Maelezo (watumiaji wataona)<textarea id="of_d" rows="4" maxlength="800" placeholder="Eleza offer..."></textarea></label><label>Muda<span style="display:flex;gap:6px"><input id="of_m" type="number" min="1" value="24" style="flex:1"><select id="of_u"><option value="1">Dakika</option><option value="60" selected>Masaa</option><option value="1440">Siku</option></select></span></label><label>Coins za ziada (%)<input id="of_b" type="number" min="0" max="500" value="0"></label><label>Punguzo la bei (%)<input id="of_x" type="number" min="0" max="90" value="0"></label><button class="btn btn-gen" onclick="aOfferSave()">Weka Offer</button></div>';
             });
