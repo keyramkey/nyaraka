@@ -1000,10 +1000,13 @@ def api_push_subscribe():
         uid = optional_user_id()
         if uid is not None and not sb_select('users', {'select': 'id', 'id': f'eq.{uid}', 'limit': '1'}):
             uid = None
-        sb_upsert('push_subscriptions', {
-            'endpoint': endpoint, 'p256dh': p256dh, 'auth': auth, 'user_id': uid,
+        row = {
+            'endpoint': endpoint, 'p256dh': p256dh, 'auth': auth,
             'user_agent': clean_text(request.headers.get('User-Agent', ''), 200), 'updated_at': now_ms(),
-        }, 'endpoint')
+        }
+        if uid is not None:  # a guest re-sync must not unlink a device that already belongs to a user
+            row['user_id'] = uid
+        sb_upsert('push_subscriptions', row, 'endpoint')
     except RuntimeError as e:
         return service_unavailable(e)
     except requests.HTTPError as e:
@@ -1023,11 +1026,27 @@ def api_push_unsubscribe():
     return jsonify({'ok': True})
 
 
+@app.route('/api/notifications', methods=['GET'])
+def api_notifications():
+    """In-app notification inbox: the latest broadcasts sent by admin (same list for everyone)."""
+    if rate_limited(f'notif_list:{client_ip()}', 120, 60):
+        return too_many_requests()
+    try:
+        rows = sb_select('push_messages', {'select': 'id,title,body,url,created_at', 'order': 'id.desc', 'limit': '30'})
+    except RuntimeError as e:
+        return service_unavailable(e)
+    except requests.HTTPError as e:
+        print(f'[Notifications] {e}', flush=True)
+        return jsonify({'items': []})
+    return jsonify({'items': rows})
+
+
 def _push_one(sub: dict, payload: str, priv: str, subject: str) -> str:
     try:
         webpush(
             subscription_info={'endpoint': sub['endpoint'], 'keys': {'p256dh': sub['p256dh'], 'auth': sub['auth']}},
             data=payload, vapid_private_key=priv, vapid_claims={'sub': subject}, ttl=60 * 60 * 24, timeout=8,
+            headers={'Urgency': 'high'},
         )
         return 'ok'
     except WebPushException as e:
@@ -1090,8 +1109,6 @@ def admin_push_send():
             msg = {'id': 0, 'title': title, 'body': body, 'url': url, 'sent': 0, 'failed': 0, 'total': 0}
             if not test:
                 msg['total'] = sb_count('push_subscriptions', {})
-                if msg['total'] == 0:
-                    return jsonify({'error': 'Bado hakuna aliyewasha arifa.'}), 400
                 created = sb_insert('push_messages', {'title': title, 'body': body, 'url': url, 'total': msg['total'],
                                                       'sent': 0, 'failed': 0, 'created_at': now_ms()})
                 msg['id'] = int(created['id'])
