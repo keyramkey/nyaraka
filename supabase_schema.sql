@@ -202,3 +202,32 @@ alter table public.device_claims drop constraint if exists device_claims_user_id
 alter table public.device_claims
   add constraint device_claims_user_id_fkey
   foreign key (user_id) references public.users(id) on delete set null;
+
+-- ===== Push notifications (PWA) + admin broadcast migration (safe to re-run) =====
+create table if not exists public.push_subscriptions (
+  id bigint generated always as identity primary key,
+  endpoint text not null unique,
+  p256dh text not null,
+  auth text not null,
+  user_id bigint references public.users(id) on delete cascade,
+  user_agent text not null default '',
+  created_at bigint not null default ((extract(epoch from now()) * 1000)::bigint),
+  updated_at bigint not null default 0
+);
+create index if not exists idx_push_subs_user on public.push_subscriptions(user_id);
+
+create table if not exists public.push_messages (
+  id bigint generated always as identity primary key,
+  title text not null,
+  body text not null,
+  url text not null default '/',
+  total integer not null default 0,
+  sent integer not null default 0,
+  failed integer not null default 0,
+  created_at bigint not null
+);
+
+alter table public.push_subscriptions enable row level security;
+alter table public.push_messages enable row level security;
+grant select, insert, update, delete on table public.push_subscriptions, public.push_messages to service_role;
+grant usage, select on all sequences in schema public to service_role;

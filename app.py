@@ -11,8 +11,16 @@ import unicodedata
 from functools import wraps
 from urllib.parse import urlparse
 
+from concurrent.futures import ThreadPoolExecutor
+
 import requests
-from flask import Flask, abort, g, jsonify, request, send_from_directory
+from flask import Flask, Response, abort, g, jsonify, request, send_from_directory
+
+try:  # Web Push (pywebpush). App still boots without it; push features just report "not ready".
+    from pywebpush import webpush, WebPushException
+except Exception:  # pragma: no cover
+    webpush = None
+    WebPushException = Exception
 
 # static_folder=None: Flask isn't allowed to serve the whole project folder
 # (app.py, .env, *.sql would otherwise be downloadable). See static_files() below.
@@ -896,6 +904,230 @@ def admin_offer():
 
 
 # ----------------------------------------------------------------------------
+# Web Push (PWA notifications) + admin broadcast
+# ----------------------------------------------------------------------------
+PUSH_CHUNK = 100      # subscriptions handled per request (keeps each call well inside serverless time limits)
+PUSH_WORKERS = 16
+PUSH_TITLE_MAX, PUSH_BODY_MAX = 60, 180
+B64URL_RE = re.compile(r'^[A-Za-z0-9_\-]+$')
+# Subscription endpoints are supplied by browsers; only talk to real push services (blocks SSRF).
+PUSH_HOST_SUFFIXES = ('fcm.googleapis.com', 'android.googleapis.com', 'push.services.mozilla.com',
+                      'push.apple.com', 'notify.windows.com')
+
+
+def vapid_config():
+    pub = os.environ.get('VAPID_PUBLIC_KEY', '').strip()
+    priv = os.environ.get('VAPID_PRIVATE_KEY', '').strip()
+    subject = os.environ.get('VAPID_SUBJECT', '').strip()
+    if not subject:
+        first = next(iter(sorted(admin_emails())), '')
+        subject = first or 'admin@example.com'
+    if not subject.startswith(('mailto:', 'https://')):
+        subject = f'mailto:{subject}'
+    return pub, priv, subject
+
+
+def push_ready() -> bool:
+    pub, priv, _ = vapid_config()
+    return bool(webpush and pub and priv)
+
+
+def push_host_allowed(endpoint: str) -> bool:
+    try:
+        u = urlparse(endpoint)
+    except Exception:
+        return False
+    host = (u.hostname or '').lower()
+    if u.scheme != 'https' or not host:
+        return False
+    extra = tuple(h.strip().lower() for h in os.environ.get('PUSH_ALLOWED_HOSTS', '').split(',') if h.strip())
+    return any(host == suf or host.endswith('.' + suf) for suf in PUSH_HOST_SUFFIXES + extra)
+
+
+def safe_push_url(raw) -> str:
+    """Only same-site relative paths (e.g. /?view=wallet) so a notification can never open another website."""
+    url = str(raw or '').strip()
+    if not url.startswith('/') or url.startswith('//') or '\\' in url or len(url) > 200:
+        return '/'
+    if any(ord(ch) < 32 for ch in url):
+        return '/'
+    return url
+
+
+def sb_count(table: str, params: dict) -> int:
+    url, key = get_supabase_config()
+    headers = sb_headers(key, 'count=exact')
+    headers['Range-Unit'] = 'items'
+    headers['Range'] = '0-0'
+    resp = requests.get(f'{url}/rest/v1/{table}', headers=headers, params={**params, 'select': 'id'}, timeout=15)
+    if resp.status_code not in (200, 206):
+        raise requests.HTTPError(f'Supabase count {table} failed ({resp.status_code}): {_extract_sb_error(resp)}', response=resp)
+    try:
+        return int(resp.headers.get('Content-Range', '').split('/')[-1])
+    except ValueError:
+        return 0
+
+
+def sb_upsert(table: str, payload: dict, conflict: str):
+    url, key = get_supabase_config()
+    resp = requests.post(f'{url}/rest/v1/{table}', params={'on_conflict': conflict},
+                         headers=sb_headers(key, 'resolution=merge-duplicates,return=minimal'), json=payload, timeout=15)
+    if not resp.ok:
+        raise requests.HTTPError(f'Supabase upsert {table} failed ({resp.status_code}): {_extract_sb_error(resp)}', response=resp)
+
+
+def optional_user_id():
+    auth = request.headers.get('Authorization', '')
+    token = auth[7:].strip() if auth.startswith('Bearer ') else (request.cookies.get(SESSION_COOKIE_NAME, '') or '')
+    return verify_token(token) if token else None
+
+
+@app.route('/api/push/key', methods=['GET'])
+def api_push_key():
+    pub, priv, _ = vapid_config()
+    ready = push_ready()
+    return jsonify({'configured': ready, 'publicKey': pub if ready else ''})
+
+
+@app.route('/api/push/subscribe', methods=['POST'])
+def api_push_subscribe():
+    if rate_limited(f'push_sub:{client_ip()}', 40, 3600):
+        return too_many_requests()
+    d = get_json_dict()
+    endpoint = str(d.get('endpoint') or '').strip()
+    keys = d.get('keys') if isinstance(d.get('keys'), dict) else {}
+    p256dh, auth = str(keys.get('p256dh') or '').strip(), str(keys.get('auth') or '').strip()
+    if (not endpoint or len(endpoint) > 1500 or not push_host_allowed(endpoint)
+            or not (60 <= len(p256dh) <= 128 and B64URL_RE.match(p256dh))
+            or not (16 <= len(auth) <= 40 and B64URL_RE.match(auth))):
+        return jsonify({'error': 'Taarifa za arifa si sahihi.'}), 400
+    try:
+        uid = optional_user_id()
+        if uid is not None and not sb_select('users', {'select': 'id', 'id': f'eq.{uid}', 'limit': '1'}):
+            uid = None
+        sb_upsert('push_subscriptions', {
+            'endpoint': endpoint, 'p256dh': p256dh, 'auth': auth, 'user_id': uid,
+            'user_agent': clean_text(request.headers.get('User-Agent', ''), 200), 'updated_at': now_ms(),
+        }, 'endpoint')
+    except RuntimeError as e:
+        return service_unavailable(e)
+    except requests.HTTPError as e:
+        print(f'[Push Subscribe Error] {e}', flush=True)
+        return jsonify({'error': 'Imeshindwa kuwasha arifa. Jaribu tena.'}), 500
+    return jsonify({'ok': True})
+
+
+@app.route('/api/push/unsubscribe', methods=['POST'])
+def api_push_unsubscribe():
+    endpoint = str(get_json_dict().get('endpoint') or '').strip()[:1500]
+    if endpoint and not rate_limited(f'push_unsub:{client_ip()}', 40, 3600):
+        try:
+            sb_delete('push_subscriptions', {'endpoint': f'eq.{endpoint}'})
+        except Exception as e:
+            print(f'[Push Unsubscribe] {e}', flush=True)
+    return jsonify({'ok': True})
+
+
+def _push_one(sub: dict, payload: str, priv: str, subject: str) -> str:
+    try:
+        webpush(
+            subscription_info={'endpoint': sub['endpoint'], 'keys': {'p256dh': sub['p256dh'], 'auth': sub['auth']}},
+            data=payload, vapid_private_key=priv, vapid_claims={'sub': subject}, ttl=60 * 60 * 24, timeout=8,
+        )
+        return 'ok'
+    except WebPushException as e:
+        code = getattr(getattr(e, 'response', None), 'status_code', None)
+        return 'gone' if code in (404, 410) else 'fail'
+    except Exception:
+        return 'fail'
+
+
+@app.route('/api/admin/push/stats', methods=['GET'])
+@require_auth
+@require_admin
+def admin_push_stats():
+    try:
+        history = sb_select('push_messages', {'select': 'id,title,body,url,total,sent,failed,created_at',
+                                              'order': 'id.desc', 'limit': '10'})
+        return jsonify({
+            'configured': push_ready(), 'libInstalled': webpush is not None,
+            'subscribers': sb_count('push_subscriptions', {}),
+            'mine': sb_count('push_subscriptions', {'user_id': f'eq.{g.user_id}'}),
+            'history': history,
+        })
+    except RuntimeError as e:
+        return service_unavailable(e)
+    except requests.HTTPError as e:
+        print(f'[Push Stats] {e}', flush=True)
+        return jsonify({'error': 'Jedwali la arifa halipo. Endesha supabase_schema.sql tena.'}), 500
+
+
+@app.route('/api/admin/push/send', methods=['POST'])
+@require_auth
+@require_admin
+def admin_push_send():
+    """Broadcast in chunks. The client calls it repeatedly, passing messageId + afterId, until nextAfterId is null.
+    test=true sends only to the admin's own devices and is not logged."""
+    pub, priv, subject = vapid_config()
+    if webpush is None:
+        return jsonify({'error': 'Maktaba ya pywebpush haijasakinishwa. Angalia requirements.txt kisha ufanye deploy upya.'}), 503
+    if not (pub and priv):
+        return jsonify({'error': 'VAPID keys hazijawekwa kwenye Environment Variables.'}), 503
+    d = get_json_dict()
+    test = bool(d.get('test'))
+    try:
+        after = max(0, int(d.get('afterId') or 0))
+        msg_id = int(d['messageId']) if d.get('messageId') else None
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Taarifa si sahihi.'}), 400
+    try:
+        if msg_id:
+            rows = sb_select('push_messages', {'select': '*', 'id': f'eq.{msg_id}', 'limit': '1'})
+            if not rows:
+                return jsonify({'error': 'Ujumbe haupatikani.'}), 404
+            msg = rows[0]
+        else:
+            title = clean_text(d.get('title'), PUSH_TITLE_MAX)
+            body = ''.join(c for c in str(d.get('body') or '') if c.isprintable() or c == '\n').strip()[:PUSH_BODY_MAX]
+            url = safe_push_url(d.get('url'))
+            if not title or not body:
+                return jsonify({'error': 'Jaza kichwa na ujumbe.'}), 400
+            msg = {'id': 0, 'title': title, 'body': body, 'url': url, 'sent': 0, 'failed': 0, 'total': 0}
+            if not test:
+                msg['total'] = sb_count('push_subscriptions', {})
+                if msg['total'] == 0:
+                    return jsonify({'error': 'Bado hakuna aliyewasha arifa.'}), 400
+                created = sb_insert('push_messages', {'title': title, 'body': body, 'url': url, 'total': msg['total'],
+                                                      'sent': 0, 'failed': 0, 'created_at': now_ms()})
+                msg['id'] = int(created['id'])
+
+        q = {'select': 'id,endpoint,p256dh,auth', 'id': f'gt.{after}', 'order': 'id.asc', 'limit': str(PUSH_CHUNK)}
+        if test:
+            q['user_id'] = f'eq.{g.user_id}'
+        subs = sb_select('push_subscriptions', q)
+        payload = json.dumps({'title': msg['title'], 'body': msg['body'], 'url': msg['url'],
+                              'tag': f"msg-{msg['id']}" if msg['id'] else 'malimi-test'}, ensure_ascii=False)
+        with ThreadPoolExecutor(max_workers=PUSH_WORKERS) as pool:
+            results = list(pool.map(lambda sub: _push_one(sub, payload, priv, subject), subs))
+        ok, gone = results.count('ok'), [s_['id'] for s_, r_ in zip(subs, results) if r_ == 'gone']
+        failed = len(results) - ok - len(gone)
+        if gone:
+            sb_delete('push_subscriptions', {'id': f"in.({','.join(str(i) for i in gone)})"})
+        sent_total, failed_total = int(msg.get('sent') or 0) + ok, int(msg.get('failed') or 0) + failed + len(gone)
+        if not test and msg['id']:
+            sb_update('push_messages', {'id': f"eq.{msg['id']}"}, {'sent': sent_total, 'failed': failed_total})
+        done = test or len(subs) < PUSH_CHUNK
+        return jsonify({'ok': True, 'messageId': msg['id'] or None, 'test': test, 'total': msg.get('total') or len(subs),
+                        'sent': sent_total, 'failed': failed_total, 'removed': len(gone),
+                        'nextAfterId': None if done else int(subs[-1]['id'])})
+    except RuntimeError as e:
+        return service_unavailable(e)
+    except requests.HTTPError as e:
+        print(f'[Push Send] {e}', flush=True)
+        return jsonify({'error': 'Imeshindwa kutuma. Hakikisha umeendesha supabase_schema.sql tena.'}), 500
+
+
+# ----------------------------------------------------------------------------
 # Forgot password (security questions), change password, security questions, delete account
 # ----------------------------------------------------------------------------
 def _question_payload(uid: int, key: str):
@@ -1100,6 +1332,23 @@ def api_delete_account():
 def delete_account_page():
     # Public URL for Google Play "Data safety -> account deletion" (same app, opens the deletion form).
     return send_from_directory('.', 'index.html')
+
+
+@app.route('/sw.js')
+def service_worker():
+    # Must be served from the site root (scope "/") and must never be cached by the browser/CDN,
+    # otherwise users would not receive service-worker updates.
+    resp = send_from_directory('.', 'sw.js', mimetype='application/javascript')
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    resp.headers['Service-Worker-Allowed'] = '/'
+    return resp
+
+
+@app.route('/manifest.webmanifest')
+def web_manifest():
+    resp = send_from_directory('.', 'manifest.webmanifest', mimetype='application/manifest+json')
+    resp.headers['Cache-Control'] = 'public, max-age=3600'
+    return resp
 
 
 @app.route('/')

@@ -43,7 +43,9 @@ Configure your Dalipay Merchant Dashboard Webhook URL to:
 - `tin_template.png` – Updated TIN Certificate template
 - `bl_template.png` – Updated Business License template
 - `vercel.json` – Vercel Python serverless routing
-- `requirements.txt` – Python dependencies (`flask`, `requests`)
+- `requirements.txt` – Python dependencies (`flask`, `requests`, `pywebpush`)
+- `sw.js`, `manifest.webmanifest`, `offline.html`, `favicon.ico`, `favicon.svg`, `icons/` – PWA (service worker, installable app, icons)
+- `tools/make_icons.py`, `tools/generate_vapid.py` – icon generator and VAPID key generator (not served publicly)
 
 ## 5. Admin Dashboard
 
@@ -61,3 +63,28 @@ Configure your Dalipay Merchant Dashboard Webhook URL to:
 - **Existing users** (no questions yet): Profile → *Weka Maswali ya Usalama* (needs password). Until then forgot password tells them to contact support.
 - **Change password:** Profile → *Badili Nenosiri*.
 - **Delete account / data (Google Play):** in-app Profile → *Futa Akaunti na Data* (and drawer menu), plus public page **`https://your-domain/delete-account`** (also `/futa-akaunti`) — put this URL in Play Console → App content → Data safety → *Account deletion*. Deletes user, payments, generations. The anonymous device record stays (user link set to NULL) so deleting + re-registering cannot give free coins again. Admin accounts cannot be deleted from this form.
+
+
+## 7. PWA + Push Notifications (arifa hata app ikiwa imefungwa)
+
+**Hatua za kuwasha (mara moja tu):**
+
+1. Endesha tena `supabase_schema.sql` (migration mpya chini: `push_subscriptions`, `push_messages`).
+2. Tengeneza VAPID keys: `pip install cryptography` kisha `python tools/generate_vapid.py`.
+3. Weka kwenye Vercel → Environment Variables kisha **Redeploy**:
+   ```env
+   VAPID_PUBLIC_KEY=...
+   VAPID_PRIVATE_KEY=...
+   VAPID_SUBJECT=mailto:your-email@example.com
+   ```
+   Usibadilishe keys baadaye (watumiaji wote watalazimika kuwasha arifa upya). Usiweke `VAPID_PRIVATE_KEY` kwenye GitHub.
+4. `requirements.txt` sasa ina `pywebpush`; Vercel itaisakinisha wakati wa deploy.
+
+**Kwa mtumiaji:** banner ya "Washa arifa" inaonekana baada ya sekunde chache (ukiifunga, haitarudi kwa siku 7). Pia kuna *Profile → Arifa za simu* na menu ya pembeni → *Washa Arifa* / *Weka App kwenye Simu*.
+Android/Chrome: inaweka app kama PWA na arifa zinafika hata app imefungwa. iPhone (iOS 16.4+): lazima kwanza *Share → Add to Home Screen*, kisha ufungue app hiyo na uwashe arifa.
+
+**Kwa admin:** tab mpya **Arifa**: andika kichwa + ujumbe, chagua ukurasa utakaofunguka mtu akibonyeza arifa, angalia muonekano, bonyeza *Jaribu kwangu* (inakuja kwenye simu yako tu) au *Tuma kwa wote*. Ujumbe unatumwa kwa vipande (devices 100 kwa ombi) ili usikatike kwenye Vercel. Subscriptions zilizokufa (410/404) zinafutwa zenyewe. Kwenye tab ya **Offer** kuna kisanduku "Tuma arifa ya offer kwa watumiaji wote" (kimewashwa kwa default): ukiweka offer, arifa inatumwa papo hapo.
+
+**Usalama:** subscription endpoint inakubaliwa tu kutoka push services halali (FCM, Mozilla, Apple, Windows) ili seva isitumike kupiga URL za ndani (SSRF); link ya arifa inaruhusiwa kuwa ndani ya tovuti yako tu; admin pekee ndiye anaweza kutuma.
+
+**Kubadilisha icon:** hariri `tools/make_icons.py` kisha endesha `python tools/make_icons.py` (inahitaji `pillow` na `numpy`). Ukibadilisha `sw.js`, badilisha `VERSION` ndani yake.

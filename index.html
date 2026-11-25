@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#0b1324">
+    <meta name="application-name" content="MALIMI COPY">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="MALIMI COPY">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="description" content="Tengeneza TIN Certificate na Business License kwa haraka. Pokea taarifa za offer moja kwa moja kwenye simu yako.">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="/icons/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
     <title>MALIMI COPY — TRA Document Filler</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -776,7 +788,7 @@
         @media (max-width: 720px) {
             #adminApp { padding: 10px 10px 92px; }
             .a-top b { font-size: .9rem; }
-            .a-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; margin: 0; padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; overflow: visible; background: rgba(255, 255, 255, .96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); box-shadow: 0 -10px 24px -16px rgba(15, 23, 42, .4); }
+            .a-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; margin: 0; padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; overflow: visible; background: rgba(255, 255, 255, .96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); box-shadow: 0 -10px 24px -16px rgba(15, 23, 42, .4); }
             .a-tabs button { padding: 10px 2px; font-size: .68rem; border-color: transparent; background: transparent; }
             .a-tabs button.active { background: var(--grad); color: #fff; }
             .a-grid { grid-template-columns: repeat(2, 1fr); }
@@ -927,6 +939,18 @@
         }
         @keyframes sheetUp { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
 
+        /* custom confirm (admin) */
+        .a-cf-bg { position: fixed; inset: 0; z-index: 130; display: none; align-items: center; justify-content: center; padding: 18px; background: rgba(15, 12, 41, .62); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+        .a-cf-bg.open { display: flex; }
+        .a-cf { width: min(340px, 100%); background: #fff; border-radius: 26px; padding: 22px 18px 16px; text-align: center; box-shadow: 0 34px 70px -24px rgba(0, 0, 0, .7); animation: popIn .22s; }
+        .a-cf-ic { width: 58px; height: 58px; border-radius: 19px; margin: 0 auto 12px; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, #7c3aed, #db2777); box-shadow: 0 14px 26px -12px rgba(124, 58, 237, .8); }
+        .a-cf.red .a-cf-ic { background: linear-gradient(135deg, #e11d48, #f43f5e); box-shadow: 0 14px 26px -12px rgba(225, 29, 72, .8); }
+        .a-cf.orange .a-cf-ic { background: linear-gradient(135deg, #f59e0b, #f97316); box-shadow: 0 14px 26px -12px rgba(245, 158, 11, .8); }
+        .a-cf.green .a-cf-ic { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 14px 26px -12px rgba(5, 150, 105, .8); }
+        .a-cf h3 { font-size: 1.02rem; font-weight: 800; color: #0f172a; }
+        .a-cf p { font-size: .8rem; color: #475569; margin-top: 6px; line-height: 1.5; white-space: pre-line; word-break: break-word; }
+        .a-cf .a-btns { margin-top: 16px; }
+
         /* ===== Pull to refresh ===== */
         #ptr { position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 8px); z-index: 120; width: 42px; height: 42px; margin-left: -21px; border-radius: 50%; display: grid; place-items: center; color: #7c3aed; background: #fff; box-shadow: 0 10px 24px -8px rgba(76, 29, 149, .55), 0 0 0 1px rgba(124, 58, 237, .12); opacity: 0; transform: translateY(-60px); pointer-events: none; }
         #ptr.go { color: #fff; background: linear-gradient(135deg, #7c3aed, #db2777); }
@@ -950,6 +974,39 @@
             .a-ri, .a-av { width: 38px; height: 38px; border-radius: 12px; } .a-row { gap: 10px; padding: 10px; }
             .a-chip { font-size: .68rem; padding: 7px 6px; }
         }
+
+        /* ===== PWA: banner ya kuweka app / kuwasha arifa ===== */
+        .pwa-bar { position: fixed; left: 12px; right: 12px; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); max-width: 520px; margin: 0 auto; z-index: 95; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 20px; color: #e2e8f0; background: linear-gradient(135deg, #0b1324, #0f2f3a); border: 1px solid rgba(94, 234, 212, .22); box-shadow: 0 24px 48px -20px rgba(2, 6, 23, .7); animation: pwaIn .35s var(--ease); }
+        .pwa-bar img { width: 44px; height: 44px; border-radius: 12px; flex: none; }
+        .pwa-bar .pwa-txt { flex: 1; min-width: 0; display: grid; gap: 2px; }
+        .pwa-bar .pwa-txt b { font-size: .86rem; color: #fff; }
+        .pwa-bar .pwa-txt span { font-size: .72rem; color: #94a3b8; line-height: 1.35; }
+        .pwa-bar .pwa-yes { flex: none; border: none; border-radius: 12px; padding: 10px 14px; font: inherit; font-size: .78rem; font-weight: 800; color: #fff; cursor: pointer; background: linear-gradient(135deg, #14b8a6, #0f766e); }
+        .pwa-bar .pwa-no { flex: none; width: 32px; height: 32px; border: none; border-radius: 10px; background: rgba(255, 255, 255, .08); color: #cbd5e1; font-size: 1.2rem; line-height: 1; cursor: pointer; }
+        body.is-admin .pwa-bar { display: none !important; }
+        @keyframes pwaIn { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+        .push-card .pc-row { display: flex; gap: 12px; align-items: flex-start; }
+        .push-card .pc-ico { flex: none; width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; color: #fff; background: var(--grad); box-shadow: 0 10px 18px -10px rgba(15, 118, 110, .9); }
+        .push-card h3 { font-size: .98rem; font-weight: 700; }
+        .push-card p { font-size: .78rem; color: #64748b; margin-top: 3px; line-height: 1.45; }
+        .push-card .pc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        /* Admin: Arifa */
+        .a-push-warn { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: 16px; padding: 12px 14px; font-size: .78rem; font-weight: 600; line-height: 1.45; margin-bottom: 12px; }
+        .a-push-form { margin-top: 14px; }
+        .a-push-form .a-field small { font-weight: 700; color: #94a3b8; margin-left: 6px; }
+        .a-push-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; margin-top: 12px; }
+        .a-np { display: flex; gap: 10px; align-items: flex-start; background: #f1f5f9; border-radius: 16px; padding: 12px; }
+        .a-np img { width: 38px; height: 38px; border-radius: 10px; flex: none; }
+        .a-np small { display: block; font-size: .62rem; color: #64748b; font-weight: 700; }
+        .a-np b { display: block; font-size: .82rem; color: #0f172a; margin-top: 2px; word-break: break-word; }
+        .a-np p { font-size: .76rem; color: #475569; margin-top: 2px; white-space: pre-wrap; word-break: break-word; }
+        .a-push-hist { margin-top: 14px; display: grid; gap: 8px; max-width: 560px; }
+        .a-push-hist h5 { font-size: .8rem; font-weight: 800; color: #334155; }
+        .a-push-hist .h { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 11px 13px; display: grid; gap: 3px; }
+        .a-push-hist .h b { font-size: .82rem; word-break: break-word; }
+        .a-push-hist .h span { font-size: .72rem; color: #64748b; }
+        .a-check { display: flex; align-items: center; gap: 9px; font-size: .8rem; font-weight: 700; color: #334155; margin: 2px 0 12px; cursor: pointer; }
+        .a-check input { width: 18px; height: 18px; accent-color: #7c3aed; flex: none; }
     </style>
 <script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
 <body>
@@ -995,6 +1052,8 @@
                 <button class="drawer-item" data-view="bl" onclick="switchView('bl');toggleDrawer(false)"><span class="di-ico "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 21v-4h6v4"/><path d="M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01"/></svg></span><span>Business License</span></button>
                 <button class="drawer-item" data-view="wallet" onclick="switchView('wallet');toggleDrawer(false)"><span class="di-ico coin"><span class="mcoin" style="width:24px;height:24px"></span></span><span>Buy Coins</span></button>
                 <button class="drawer-item" data-view="profile" onclick="switchView('profile');toggleDrawer(false)"><span class="di-ico "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><span>Profile</span></button>
+                <button class="drawer-item" id="drawerPushBtn" onclick="pushToggle();toggleDrawer(false)"><span class="di-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span><span id="drawerPushLbl">Washa Arifa</span></button>
+                <button class="drawer-item" id="drawerInstallBtn" onclick="pwaInstall();toggleDrawer(false)"><span class="di-ico green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg></span><span>Weka App kwenye Simu</span></button>
                 <hr>
                 <button class="drawer-item" onclick="toggleDrawer(false);openAcctModal('delete')"><span class="di-ico red"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span><span>Futa Akaunti / Data</span></button>
                 <button class="drawer-item" onclick="toggleDrawer(false);openContactModal()"><span class="di-ico green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></span><span>Contact</span></button>
@@ -1272,6 +1331,20 @@
                     </div>
                 </div>
 
+                <div class="card push-card" id="pushCard" style="margin-top:16px;">
+                    <div class="pc-row">
+                        <span class="pc-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span>
+                        <div>
+                            <h3>Arifa za simu</h3>
+                            <p id="pushCardText">Pokea taarifa za offer na malipo moja kwa moja kwenye simu yako, hata app ikiwa imefungwa.</p>
+                        </div>
+                    </div>
+                    <div class="pc-actions">
+                        <button class="btn-sm teal" id="pushCardBtn" type="button">Washa Arifa</button>
+                        <button class="btn-sm" id="pushCardInstall" type="button" onclick="pwaInstall()">Weka App kwenye Simu</button>
+                    </div>
+                </div>
+
                 <div class="card" style="margin-top:16px;">
                     <h3 style="font-size:0.95rem;font-weight:800;margin-bottom:4px;">Usalama wa Akaunti</h3>
                     <p id="profSecqStatus" class="sec-hint" style="margin-bottom:12px;"></p>
@@ -1336,10 +1409,12 @@
             <button data-atab="users" onclick="adminShow('users')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg><span>Watumiaji</span></button>
             <button data-atab="prices" onclick="adminShow('prices')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"/><circle cx="7" cy="7" r="1.2"/></svg><span>Bei</span></button>
             <button data-atab="offer" onclick="adminShow('offer')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg><span>Offer</span></button>
+            <button data-atab="push" onclick="adminShow('push')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Arifa</span></button>
         </div>
         <div id="adminBody"></div>
         <div id="aToast"></div>
         <div id="aSheetBg" class="a-sheet-bg" onclick="if(event.target===this)aClose()"><div class="a-sheet" id="aSheet"></div></div>
+        <div id="aCfBg" class="a-cf-bg" onclick="if(event.target===this)aCfDone(false)"><div class="a-cf" id="aCf" role="alertdialog" aria-modal="true" aria-labelledby="aCfT" aria-describedby="aCfM"><div class="a-cf-ic" id="aCfI"></div><h3 id="aCfT"></h3><p id="aCfM"></p><div class="a-btns"><button type="button" class="a-btn s" id="aCfNo"></button><button type="button" class="a-btn" id="aCfYes"></button></div></div></div>
     </div>
     <!-- BOTTOM NAVIGATION BAR -->
     <nav class="bottom-nav" aria-label="Urambazaji wa chini">
@@ -1515,6 +1590,13 @@
             </div>
             <div id="contactModalActions" style="display:flex;flex-direction:column;gap:10px;"></div>
         </div>
+    </div>
+
+    <div id="pwaBar" class="pwa-bar" role="dialog" aria-live="polite" style="display:none">
+        <img src="/icons/icon-192.png" alt="" width="44" height="44">
+        <div class="pwa-txt"><b id="pwaBarTitle"></b><span id="pwaBarSub"></span></div>
+        <button class="pwa-yes" id="pwaBarYes" type="button"></button>
+        <button class="pwa-no" id="pwaBarNo" type="button" aria-label="Baadaye">&times;</button>
     </div>
 
     <script>
@@ -1778,6 +1860,7 @@
                 document.getElementById('tin_gen_btn').textContent = 'Generate TIN (-1 Coin)';
                 document.getElementById('bl_gen_btn').textContent = 'Generate License (-1 Coin)';
             }
+            try { if (window.onUserUiUpdated) window.onUserUiUpdated(); } catch (e) {}
         }
 
         async function logoutUser() {
@@ -2846,6 +2929,8 @@
             trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>',
             save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>',
             gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
+            bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+            send: '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
             unlock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>',
             power: '<path d="M18.4 6.6a9 9 0 1 1-12.8 0"/><line x1="12" y1="2" x2="12" y2="12"/>'
         };
@@ -2865,6 +2950,27 @@
         async function aRun(fn) { try { await fn(); } catch (e) { aToast(e.message, 1); } }
         function aOpen(html) { $a('aSheet').innerHTML = html; $a('aSheetBg').classList.add('open'); document.body.style.overflow = 'hidden'; }
         function aClose() { $a('aSheetBg').classList.remove('open'); document.body.style.overflow = ''; }
+        /* Custom confirm — inachukua nafasi ya confirm() ya browser. Matumizi: if (!await aConfirm({ title, msg, ok, tone, icon })) return; */
+        let aCfRes = null;
+        function aCfDone(v) { const bg = $a('aCfBg'); if (!bg.classList.contains('open')) return; bg.classList.remove('open'); const r = aCfRes; aCfRes = null; if (r) r(v); }
+        function aConfirm(o) {
+            o = o || {};
+            if (aCfRes) aCfDone(false);
+            const tone = o.tone || 'red';
+            $a('aCf').className = 'a-cf ' + tone;
+            $a('aCfI').innerHTML = aIc(o.icon || 'trash', 26);
+            $a('aCfT').textContent = o.title || 'Una uhakika?';
+            $a('aCfM').textContent = o.msg || '';
+            $a('aCfNo').textContent = o.cancel || 'Ghairi';
+            const y = $a('aCfYes'); y.textContent = o.ok || 'Ndiyo';
+            y.className = 'a-btn ' + (tone === 'red' ? 'r' : tone === 'orange' ? 'o' : tone === 'green' ? 'g' : 'v');
+            $a('aCfBg').classList.add('open');
+            setTimeout(() => y.focus(), 30);
+            return new Promise(res => { aCfRes = res; });
+        }
+        $a('aCfNo').onclick = () => aCfDone(false);
+        $a('aCfYes').onclick = () => aCfDone(true);
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && $a('aCfBg').classList.contains('open')) { e.stopPropagation(); aCfDone(false); } }, true);
         function refreshApp() { setTimeout(() => location.reload(), 350); }
         // Vuta chini ili kurefresh (pull to refresh)
         (function () {
@@ -2904,12 +3010,12 @@
             document.addEventListener('touchend', end, { passive: true });
             document.addEventListener('touchcancel', end, { passive: true });
         })();
-        function adminInit() { if (adminReady) return; adminReady = true; let t = 'stats'; try { t = sessionStorage.getItem('malimi_admin_tab') || 'stats'; } catch (e) {} adminShow(['stats', 'pay', 'users', 'prices', 'offer'].includes(t) ? t : 'stats'); }
+        function adminInit() { if (adminReady) return; adminReady = true; let t = 'stats'; try { t = sessionStorage.getItem('malimi_admin_tab') || 'stats'; } catch (e) {} adminShow(['stats', 'pay', 'users', 'prices', 'offer', 'push'].includes(t) ? t : 'stats'); }
         function adminShow(tab) {
             aCur = tab;
             try { sessionStorage.setItem('malimi_admin_tab', tab); } catch (e) {}
             document.querySelectorAll('[data-atab]').forEach(b => b.classList.toggle('active', b.dataset.atab === tab));
-            ({ stats: aStats, pay: aPay, users: aUsers, prices: aPrices, offer: aOffer })[tab]();
+            ({ stats: aStats, pay: aPay, users: aUsers, prices: aPrices, offer: aOffer, push: aPush })[tab]();
         }
 
         /* ---------- Muhtasari ---------- */
@@ -2961,7 +3067,7 @@
         }
         async function aSettle(i) {
             const p = aPays[i];
-            if (!confirm('Thibitisha malipo haya na umwongezee mteja coin/Unlimited?\n' + p.reference)) return;
+            if (!await aConfirm({ title: 'Thibitisha malipo?', msg: 'Mteja ataongezewa coin/Unlimited kulingana na kifurushi.\n' + p.reference, ok: 'Thibitisha', tone: 'green', icon: 'ok' })) return;
             await aRun(async () => { await adminApi('/payments/' + encodeURIComponent(p.reference) + '/settle', 'POST'); aToast('Malipo yamethibitishwa.'); aClose(); aCache.stats = null; aPayLoad(); });
         }
 
@@ -3004,11 +3110,11 @@
         }
         async function aBlock(i) {
             const u = aUsrs[i], b = !u.is_blocked;
-            if (!confirm(b ? 'Mzuie mtumiaji huyu?' : 'Mfungulie mtumiaji huyu?')) return;
+            if (!await aConfirm(b ? { title: 'Mzuie mtumiaji?', msg: 'Mtumiaji huyu hataweza kutumia app hadi umfungulie.', ok: 'Mzuie', tone: 'orange', icon: 'ban' } : { title: 'Mfungulie mtumiaji?', msg: 'Mtumiaji huyu ataruhusiwa kutumia app tena.', ok: 'Mfungulie', tone: 'green', icon: 'unlock' })) return;
             await aRun(async () => { await adminApi('/users/' + u.id + '/block', 'POST', { blocked: b }); u.is_blocked = b; aCache.users = null; aToast('Imefanyika.'); aUsersDraw(); aUserOpen(i); });
         }
         async function aDel(i) {
-            if (!confirm('Futa akaunti hii kabisa pamoja na historia yake ya malipo na hati? Haiwezi kurudishwa.')) return;
+            if (!await aConfirm({ title: 'Futa akaunti?', msg: 'Akaunti hii itafutwa kabisa pamoja na historia yake ya malipo na hati. Haiwezi kurudishwa.', ok: 'Futa', tone: 'red', icon: 'trash' })) return;
             await aRun(async () => { await adminApi('/users/' + aUsrs[i].id, 'DELETE'); aUsrs.splice(i, 1); aCache = {}; aToast('Amefutwa.'); aClose(); aUsersDraw(); });
         }
 
@@ -3050,13 +3156,13 @@
             if (aEdit < 0) list.push(o); else list[aEdit] = Object.assign(list[aEdit], o);
             aPkPush(list, 'Kifurushi kimehifadhiwa.');
         }
-        function aPkDel() {
-            if (!confirm('Ondoa kifurushi hiki?')) return;
+        async function aPkDel() {
+            if (!await aConfirm({ title: 'Ondoa kifurushi?', msg: 'Kifurushi hiki kitaondolewa kwenye orodha ya bei.', ok: 'Ondoa', tone: 'red', icon: 'trash' })) return;
             const list = aPk.filter((_, k) => k !== aEdit);
             if (!list.length) { aToast('Lazima abaki kifurushi angalau kimoja.', 1); return; }
             aPkPush(list, 'Kimeondolewa.');
         }
-        async function aResetPrices() { if (!confirm('Rudisha bei za awali?')) return; await aRun(async () => { await adminApi('/packages', 'DELETE'); aToast('Zimerudishwa.'); aPrices(); loadPackages(); }); }
+        async function aResetPrices() { if (!await aConfirm({ title: 'Rudisha bei za awali?', msg: 'Bei na vifurushi vya sasa vitabadilishwa na vile vya awali.', ok: 'Rudisha', tone: 'orange', icon: 'wait' })) return; await aRun(async () => { await adminApi('/packages', 'DELETE'); aToast('Zimerudishwa.'); aPrices(); loadPackages(); }); }
 
         /* ---------- Offer ---------- */
         async function aOffer() {
@@ -3070,12 +3176,80 @@
                     + '<div class="a-field"><span>Maelezo (watumiaji wataona)</span><textarea id="of_d" rows="3" maxlength="800" placeholder="Eleza offer..."></textarea></div>'
                     + '<div class="a-field"><span>Muda</span><div class="a-dur"><input id="of_m" type="number" min="1" value="24"><select id="of_u"><option value="1">Dakika</option><option value="60" selected>Masaa</option><option value="1440">Siku</option></select></div></div>'
                     + '<div class="a-field"><span>Punguzo la bei</span><div class="a-disc"><input id="of_x" type="range" min="5" max="90" step="5" value="20" oninput="$a(\'of_xo\').value=this.value+\'%\'"><output id="of_xo">20%</output></div></div>'
+                    + '<label class="a-check"><input id="of_n" type="checkbox" checked>Tuma arifa ya offer kwa watumiaji wote</label>'
                     + '<button class="a-btn v" style="width:100%" onclick="aOfferSave()">' + aIc('gift', 16) + 'Weka Offer</button></div>';
             });
         }
-        async function aOfferSave() { await aRun(async () => { await adminApi('/offer', 'POST', { title: $a('of_t').value, description: $a('of_d').value, durationMinutes: Math.round(+$a('of_m').value * +$a('of_u').value), discountPercent: +$a('of_x').value }); aToast('Offer imewekwa.'); aOffer(); loadPackages(); }); }
-        async function aOfferStop() { if (!confirm('Zima offer sasa?')) return; await aRun(async () => { await adminApi('/offer', 'DELETE'); aToast('Offer imezimwa.'); aOffer(); loadPackages(); }); }
+        async function aOfferSave() {
+            await aRun(async () => {
+                const t = $a('of_t').value.trim(), desc = $a('of_d').value.trim(), x = +$a('of_x').value, notify = !!($a('of_n') && $a('of_n').checked);
+                await adminApi('/offer', 'POST', { title: $a('of_t').value, description: $a('of_d').value, durationMinutes: Math.round(+$a('of_m').value * +$a('of_u').value), discountPercent: x });
+                aToast('Offer imewekwa.'); aOffer(); loadPackages();
+                if (!notify) return;
+                try {
+                    const r = await aPushBroadcast({ title: ('\uD83C\uDF81 ' + t).slice(0, 60), body: ('Punguzo la ' + x + '% kwa vifurushi vyote. ' + (desc || 'Nunua sasa kabla muda haujaisha!')).slice(0, 180), url: '/?view=wallet' }, false);
+                    aToast('Offer imewekwa na arifa zimetumwa kwa ' + r.sent + '.');
+                } catch (e) { aToast('Offer imewekwa, ila arifa hazikutumwa: ' + e.message, 1); }
+            });
+        }
+        async function aOfferStop() { if (!await aConfirm({ title: 'Zima offer?', msg: 'Offer inayoendelea itasimamishwa sasa hivi.', ok: 'Zima', tone: 'red', icon: 'power' })) return; await aRun(async () => { await adminApi('/offer', 'DELETE'); aToast('Offer imezimwa.'); aOffer(); loadPackages(); }); }
 
+
+
+        /* ---------- Arifa (Push) ---------- */
+        let aPushBusy = false;
+        const PUSH_LINKS = [['/', 'Nyumbani'], ['/?view=wallet', 'Nunua Coins (offer)'], ['/?view=tin', 'TIN Certificate'], ['/?view=bl', 'Business License']];
+        async function aPushBroadcast(body, test, onProgress) {
+            let r = await adminApi('/push/send', 'POST', Object.assign({ test: !!test }, body));
+            while (r.nextAfterId) {
+                if (onProgress) onProgress(r.sent + '/' + r.total);
+                r = await adminApi('/push/send', 'POST', { test: false, messageId: r.messageId, afterId: r.nextAfterId });
+            }
+            return r;
+        }
+        async function aPush() {
+            $a('adminBody').innerHTML = aLoader();
+            await aRun(async () => {
+                const d = await adminApi('/push/stats');
+                if (aCur !== 'push') return;
+                const c = (g, ic, l, v) => '<div class="a-stat ' + g + '"><div class="si">' + aIc(ic, 18) + '</div><span>' + l + '</span><b class="mono">' + v + '</b></div>';
+                const warn = d.configured ? '' : '<div class="a-push-warn">' + (d.libInstalled ? 'VAPID keys hazijawekwa kwenye Vercel (VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT). Soma README sehemu ya 7.' : 'Maktaba ya pywebpush haijasakinishwa. Hakikisha requirements.txt ina pywebpush kisha ufanye deploy upya.') + '</div>';
+                const hist = (d.history || []).map(h => '<div class="h"><b>' + esc(h.title) + '</b><span>' + esc(h.body) + '</span><span>' + esc(fmtDate(h.created_at, true)) + ' · Imefika ' + tzs(h.sent) + ' kati ya ' + tzs(h.total) + (h.failed ? ' · Imeshindwa ' + tzs(h.failed) : '') + '</span></div>').join('');
+                const opts = PUSH_LINKS.map(l => '<option value="' + l[0] + '">' + l[1] + '</option>').join('');
+                $a('adminBody').innerHTML = warn
+                    + '<div class="a-grid">' + c('g-blue', 'users', 'Wanaopokea arifa', tzs(d.subscribers)) + c('g-green', 'bell', 'Simu zangu', tzs(d.mine)) + '</div>'
+                    + '<div class="a-offer-form a-push-form"><h4>' + aIc('bell', 18) + 'Tuma ujumbe kwa wote</h4>'
+                    + '<div class="a-field"><span>Kichwa</span><input id="pu_t" maxlength="60" placeholder="Mfano: \uD83C\uDF81 Offer ya Sikukuu!" oninput="aPushPrev()"></div>'
+                    + '<div class="a-field"><span>Ujumbe<small id="pu_cnt">0/180</small></span><textarea id="pu_b" rows="3" maxlength="180" placeholder="Andika taarifa unayotaka watumiaji wapate..." oninput="aPushPrev()"></textarea></div>'
+                    + '<div class="a-field"><span>Mtu akibonyeza, afunguliwe</span><select id="pu_u">' + opts + '</select></div>'
+                    + '<div class="a-field"><span>Muonekano kwenye simu</span><div class="a-np"><img src="/icons/icon-192.png" alt=""><div><small>MALIMI COPY \u00B7 sasa hivi</small><b id="pu_pt">Kichwa cha ujumbe</b><p id="pu_pb">Ujumbe wako utaonekana hapa.</p></div></div></div>'
+                    + '<div class="a-push-actions"><button class="a-btn s" id="pu_test" onclick="aPushGo(true)">Jaribu kwangu</button><button class="a-btn v" id="pu_all" onclick="aPushGo(false)">' + aIc('send', 16) + 'Tuma kwa wote</button></div>'
+                    + (d.mine ? '' : '<button class="a-btn o" style="width:100%;margin-top:8px" onclick="aPushHere()">' + aIc('bell', 16) + 'Washa arifa kwenye simu hii (kujaribu)</button>')
+                    + '</div>'
+                    + (hist ? '<div class="a-push-hist"><h5>Ujumbe uliotumwa karibuni</h5>' + hist + '</div>' : '');
+            });
+        }
+        function aPushPrev() {
+            const t = $a('pu_t').value.trim(), b = $a('pu_b').value;
+            $a('pu_pt').textContent = t || 'Kichwa cha ujumbe'; $a('pu_pb').textContent = b.trim() || 'Ujumbe wako utaonekana hapa.';
+            $a('pu_cnt').textContent = b.length + '/180';
+        }
+        async function aPushHere() { if (window.pushEnable && await window.pushEnable()) aPush(); }
+        async function aPushGo(test) {
+            if (aPushBusy) return;
+            const body = { title: $a('pu_t').value.trim(), body: $a('pu_b').value.trim(), url: $a('pu_u').value };
+            if (!body.title || !body.body) { aToast('Jaza kichwa na ujumbe.', 1); return; }
+            if (!test && !await aConfirm({ title: 'Tuma kwa wote?', msg: 'Ujumbe huu utatumwa kwa watumiaji wote wenye arifa.\n\n' + body.title + '\n' + body.body, ok: 'Tuma', tone: 'purple', icon: 'send' })) return;
+            aPushBusy = true;
+            const btn = $a(test ? 'pu_test' : 'pu_all'), old = btn.innerHTML;
+            btn.disabled = true;
+            try {
+                const r = await aPushBroadcast(body, test, n => { btn.textContent = 'Inatuma... ' + n; });
+                if (test) aToast(r.sent ? 'Imetumwa kwenye simu yako.' : 'Haikufika. Washa arifa kwenye simu hii kwanza.', !r.sent);
+                else { aToast('Imetumwa kwa ' + r.sent + (r.failed ? ' (zimeshindwa ' + r.failed + ')' : '') + '.'); if (aCur === 'push') aPush(); }
+            } catch (e) { aToast(e.message, 1); }
+            finally { aPushBusy = false; if (btn.isConnected) { btn.disabled = false; btn.innerHTML = old; } }
+        }
 
         const WA_GROUP = 'https://chat.whatsapp.com/BSWYugdXA9e0mPcwyRPeNQ';
         const WA_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.21 3.07.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35M12.05 21.8h0a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.89-9.88 2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.89 9.88M20.46 3.49A11.8 11.8 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.68 1.45c6.56 0 11.9-5.34 11.9-11.89 0-3.18-1.24-6.17-3.48-8.42"/></svg>';
@@ -3142,6 +3316,196 @@
         refreshProfile();
         setAuthMode('register');
         if (/^\/(delete-account|futa-akaunti)\/?$/.test(location.pathname)) openAcctModal('delete');
+    </script>
+
+    <script>
+    /* ===== PWA: service worker, kuweka app, arifa (push) ===== */
+    (function () {
+        'use strict';
+        const ua = navigator.userAgent || '';
+        const isIOS = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const swOK = 'serviceWorker' in navigator;
+        const pushOK = swOK && 'PushManager' in window && 'Notification' in window;
+        const LS = {
+            get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+            set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+            del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+        };
+        const $ = id => document.getElementById(id);
+        const say = m => { if (typeof showNotice === 'function') showNotice(m); else alert(m); };
+        const VIEWS = ['home', 'tin', 'bl', 'wallet', 'profile'];
+        let deferredInstall = null, syncedFor = null, keyInfo = null, barShown = false;
+
+        /* ---- Service worker ---- */
+        if (swOK) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(() => refresh()).catch(() => {});
+            });
+            // Mtumiaji akibonyeza arifa app ikiwa wazi: nenda kwenye ukurasa husika bila kureload (fomu hazipotei)
+            navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'push-nav') goTo(e.data.url); });
+        }
+
+        function goTo(href) {
+            try {
+                const u = new URL(href, location.origin);
+                if (u.origin !== location.origin) return;
+                const v = u.searchParams.get('view');
+                if (VIEWS.includes(v) && typeof switchView === 'function') { switchView(v); window.scrollTo(0, 0); }
+            } catch (e) {}
+        }
+        // Link ya kina (arifa / shortcut ya icon): /?view=wallet
+        (function () {
+            const p = new URLSearchParams(location.search);
+            if (!p.has('view') && !p.has('source')) return;
+            goTo(location.href);
+            p.delete('view'); p.delete('source');
+            const q = p.toString();
+            try { history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + location.hash); } catch (e) {}
+        })();
+
+        /* ---- Kuweka app kwenye simu ---- */
+        window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; refresh(); scheduleBar(); });
+        window.addEventListener('appinstalled', () => { deferredInstall = null; hideBar(false); refresh(); say('MALIMI COPY imewekwa kwenye simu yako.'); });
+        window.pwaInstall = async function () {
+            if (isStandalone()) { say('App tayari imewekwa kwenye simu yako.'); return; }
+            if (deferredInstall) {
+                deferredInstall.prompt();
+                try { await deferredInstall.userChoice; } catch (e) {}
+                deferredInstall = null; refresh(); return;
+            }
+            if (isIOS) say('Kwenye iPhone: bonyeza kitufe cha Share (mraba wenye mshale wa juu), kisha chagua "Add to Home Screen".');
+            else say('Fungua menu ya browser (\u22EE) kisha chagua "Install app" au "Add to Home screen".');
+        };
+
+        /* ---- Arifa (push) ---- */
+        const toBytes = b64 => {
+            const raw = atob((b64 + '='.repeat((4 - b64.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/'));
+            return Uint8Array.from(raw, c => c.charCodeAt(0));
+        };
+        const sameKey = (buf, bytes) => {
+            if (!buf) return true;
+            const a = new Uint8Array(buf);
+            return a.length === bytes.length && a.every((v, i) => v === bytes[i]);
+        };
+        const loadKey = () => keyInfo ? Promise.resolve(keyInfo) : fetch('/api/push/key').then(r => r.json()).then(k => (keyInfo = k));
+        const getReg = () => Promise.race([navigator.serviceWorker.ready, new Promise((_, rej) => setTimeout(() => rej(new Error('sw-timeout')), 8000))]);
+        async function currentSub() {
+            if (!pushOK) return null;
+            try { const reg = await navigator.serviceWorker.getRegistration('/'); return reg ? await reg.pushManager.getSubscription() : null; } catch (e) { return null; }
+        }
+        async function postSub(sub) {
+            const r = await fetch('/api/push/subscribe', { method: 'POST', credentials: 'include', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify(sub.toJSON()) });
+            if (!r.ok) throw new Error('subscribe-failed');
+        }
+        async function ensureSub(k) {
+            const reg = await getReg(), key = toBytes(k.publicKey);
+            let sub = await reg.pushManager.getSubscription();
+            if (sub && !sameKey(sub.options && sub.options.applicationServerKey, key)) { try { await sub.unsubscribe(); } catch (e) {} sub = null; }
+            if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+            await postSub(sub);
+            return sub;
+        }
+        const who = () => String(typeof currentUser !== 'undefined' && currentUser ? (currentUser.id || currentUser.phone || 'u') : 'guest');
+
+        window.pushEnable = async function () {
+            if (!pushOK) {
+                say(isIOS && !isStandalone() ? 'Kwenye iPhone, kwanza weka app kwenye Home Screen (Share \u2192 Add to Home Screen), kisha ifungue na uwashe arifa.' : 'Simu au browser hii haiwezi kupokea arifa.');
+                return false;
+            }
+            try {
+                const k = keyInfo || await loadKey();
+                if (!k.configured) { say('Arifa bado hazijaandaliwa. Jaribu tena baadaye.'); return false; }
+                const perm = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+                if (perm !== 'granted') {
+                    say(perm === 'denied' ? 'Umezuia arifa. Ziruhusu kwenye Settings za browser/app kisha ujaribu tena.' : 'Arifa hazijawashwa.');
+                    refresh(); return false;
+                }
+                await ensureSub(k);
+                syncedFor = who(); LS.del('malimi_push_off');
+                refresh(); say('Arifa zimewashwa. Utapokea taarifa za offer hata app ikiwa imefungwa.');
+                return true;
+            } catch (e) { say('Imeshindwa kuwasha arifa. Jaribu tena.'); refresh(); return false; }
+        };
+        window.pushDisable = async function () {
+            try {
+                const sub = await currentSub();
+                if (sub) {
+                    const endpoint = sub.endpoint;
+                    await sub.unsubscribe();
+                    fetch('/api/push/unsubscribe', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint }) }).catch(() => {});
+                }
+            } catch (e) {}
+            LS.set('malimi_push_off', '1'); syncedFor = null;
+            refresh(); say('Arifa zimezimwa.');
+        };
+        window.pushToggle = async function () { (await state()) === 'on' ? window.pushDisable() : window.pushEnable(); };
+
+        // Mtumiaji akishawasha arifa: unganisha simu na akaunti (baada ya kuingia) na jisajili upya kimya kimya ikihitajika
+        async function sync() {
+            if (!pushOK || Notification.permission !== 'granted' || LS.get('malimi_push_off') === '1') return;
+            const w = who();
+            if (syncedFor === w) return;
+            try { const k = await loadKey(); if (!k.configured) return; await ensureSub(k); syncedFor = w; } catch (e) {}
+        }
+
+        async function state() {
+            if (!pushOK) return isIOS && !isStandalone() ? 'ios-install' : 'unsupported';
+            if (Notification.permission === 'denied') return 'denied';
+            if (Notification.permission === 'granted') return (await currentSub()) && LS.get('malimi_push_off') !== '1' ? 'on' : 'off';
+            return 'off';
+        }
+        const TEXT = {
+            on: 'Arifa zimewashwa. Utapokea taarifa za offer na malipo hata app ikiwa imefungwa.',
+            off: 'Pokea taarifa za offer na malipo moja kwa moja kwenye simu yako, hata app ikiwa imefungwa.',
+            denied: 'Umezuia arifa. Ziruhusu kwenye Settings za browser/app (Site settings \u2192 Notifications).',
+            'ios-install': 'Kwenye iPhone, weka app kwenye Home Screen kwanza (Share \u2192 Add to Home Screen), kisha uwashe arifa.',
+            unsupported: 'Simu au browser hii haitumii arifa.'
+        };
+        async function refresh() {
+            const st = await state();
+            const t = $('pushCardText'), b = $('pushCardBtn'), ib = $('pushCardInstall'), dl = $('drawerPushLbl'), di = $('drawerInstallBtn'), dp = $('drawerPushBtn');
+            if (t) t.textContent = TEXT[st];
+            if (b) {
+                b.style.display = st === 'unsupported' || st === 'denied' ? 'none' : '';
+                b.textContent = st === 'on' ? 'Zima Arifa' : st === 'ios-install' ? 'Jinsi ya kuweka app' : 'Washa Arifa';
+                b.onclick = st === 'on' ? window.pushDisable : st === 'ios-install' ? window.pwaInstall : window.pushEnable;
+            }
+            const standalone = isStandalone();
+            if (ib) ib.style.display = standalone || st === 'ios-install' ? 'none' : '';
+            if (di) di.style.display = standalone ? 'none' : '';
+            if (dp) dp.style.display = st === 'unsupported' ? 'none' : '';
+            if (dl) dl.textContent = st === 'on' ? 'Arifa: Zimewashwa' : st === 'denied' ? 'Arifa zimezuiwa' : 'Washa Arifa';
+        }
+
+        /* ---- Banner ya kukaribisha (mara moja kwa siku 7 ukiifunga) ---- */
+        function hideBar(remember) {
+            const bar = $('pwaBar'); if (bar) bar.style.display = 'none';
+            if (remember) LS.set('malimi_bar_dismiss', String(Date.now()));
+        }
+        function showBar(title, sub, yesLabel, yesFn) {
+            const bar = $('pwaBar'); if (!bar) return;
+            $('pwaBarTitle').textContent = title; $('pwaBarSub').textContent = sub; $('pwaBarYes').textContent = yesLabel;
+            $('pwaBarYes').onclick = async () => { hideBar(false); await yesFn(); };
+            $('pwaBarNo').onclick = () => hideBar(true);
+            bar.style.display = 'flex'; barShown = true;
+        }
+        async function maybeBar() {
+            if (barShown || document.body.classList.contains('is-admin')) return;
+            if (isStandalone() && !(pushOK && Notification.permission === 'default')) return;
+            if (Date.now() - (+LS.get('malimi_bar_dismiss') || 0) < 7 * 864e5) return;
+            const st = await state();
+            if (st === 'off' && pushOK && Notification.permission === 'default') showBar('Washa arifa', 'Pata taarifa za offer na punguzo bila kufungua app.', 'Washa', () => window.pushEnable());
+            else if (deferredInstall && !isStandalone()) showBar('Weka app kwenye simu', 'Fungua haraka kama WhatsApp, moja kwa moja kutoka Home Screen.', 'Weka', () => window.pwaInstall());
+        }
+        let barTimer = null;
+        function scheduleBar() { if (barShown || barTimer) return; barTimer = setTimeout(() => { barTimer = null; maybeBar(); }, 7000); }
+
+        window.onUserUiUpdated = function () { sync(); refresh(); scheduleBar(); };
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+        loadKey().catch(() => {});
+        refresh(); sync(); scheduleBar();
+    })();
     </script>
 </body>
 </html>
