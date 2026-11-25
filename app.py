@@ -1832,7 +1832,7 @@ ALLOWED_STATIC_EXT = {
 }
 BLOCKED_STATIC_NAMES = {
     'app.py', 'vercel.json', 'package.json', 'package-lock.json', 'requirements.txt',
-    'node_modules', '__pycache__', 'venv', '.venv', 'api',
+    'node_modules', '__pycache__', 'venv', '.venv', 'api', 'pages',
 }
 
 
@@ -1850,6 +1850,27 @@ def download_apk():
         mimetype='application/vnd.android.package-archive',
         as_attachment=True, download_name='MALIMI-COPY.apk',
     )
+    resp.headers['Cache-Control'] = 'public, max-age=300'
+    return resp
+
+
+@app.route('/pakua')
+@app.route('/download')
+@app.route('/app')
+def download_page():
+    # Ukurasa wa kupakua app (link ya kushare): https://your-domain/pakua
+    # Button ya "PAKUA" inaita /download-app ambayo inatoa APK moja kwa moja.
+    try:
+        with open(os.path.join(app.root_path, 'pages', 'download.html'), encoding='utf-8') as f:
+            html = f.read()
+    except OSError:
+        abort(404)
+    apk_path = os.path.join(app.root_path, 'downloads', APK_FILE)
+    size = '%.1f MB' % (os.path.getsize(apk_path) / 1048576.0) if os.path.isfile(apk_path) else ''
+    if size == '0.4 MB':
+        size = '%d KB' % round(os.path.getsize(apk_path) / 1024.0)
+    html = html.replace('{{BASE}}', request.url_root).replace('{{SIZE}}', size or 'Android')
+    resp = Response(html, mimetype='text/html')
     resp.headers['Cache-Control'] = 'public, max-age=300'
     return resp
 
