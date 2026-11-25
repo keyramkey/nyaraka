@@ -231,6 +231,7 @@ alter table public.push_subscriptions enable row level security;
 alter table public.push_messages enable row level security;
 grant select, insert, update, delete on table public.push_subscriptions, public.push_messages to service_role;
 grant usage, select on all sequences in schema public to service_role;
+<<<<<<< HEAD
 
 -- ===== Auth v2: kifaa kimoja tu kwa wakati + nenosiri la muda kutoka kwa admin (safe to re-run) =====
 -- session_id: kila login mpya inabadilisha id hii, na vifaa vya zamani vinatolewa.
@@ -238,3 +239,5 @@ grant usage, select on all sequences in schema public to service_role;
 alter table public.users add column if not exists session_id text;
 alter table public.users add column if not exists must_change_password boolean not null default false;
 -- Maswali ya usalama hayatumiki tena (column ya security_answers inabaki bila madhara).
+=======
+>>>>>>> e7f107da6472bc7e2bbc90577e39333391f5d96c
