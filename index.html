@@ -3458,6 +3458,27 @@
         document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
         loadKey().catch(() => {});
         refresh(); sync(); scheduleBar();
+
+        /* Omba ruhusa ya arifa moja kwa moja app inapofunguliwa (mtumiaji anaona "Allow / Don't allow" ya browser) */
+        let autoAsked = false;
+        async function autoEnable() {
+            if (autoAsked || !pushOK || Notification.permission !== 'default' || LS.get('malimi_push_off') === '1') return;
+            autoAsked = true;
+            const t0 = Date.now();
+            try {
+                const k = keyInfo || await loadKey();
+                if (!k.configured) return;
+                const perm = await Notification.requestPermission();
+                if (perm === 'granted') { await ensureSub(k); syncedFor = who(); LS.del('malimi_push_off'); }
+                else if (perm === 'default' && Date.now() - t0 < 400) {
+                    // Browser imekataa kuuliza bila mguso (mfano Safari): jaribu tena mguso wa kwanza
+                    const onTap = () => { document.removeEventListener('pointerdown', onTap, true); autoAsked = false; autoEnable(); };
+                    document.addEventListener('pointerdown', onTap, true);
+                }
+            } catch (e) {}
+            refresh();
+        }
+        setTimeout(autoEnable, 1500);
     })();
     </script>
 </body>
