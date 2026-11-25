@@ -3,7 +3,7 @@
 create table if not exists public.users (
   id bigint generated always as identity primary key,
   full_name text not null,
-  email text not null unique,
+  email text unique,
   phone text not null default '',
   password_hash text not null,
   coins integer not null default 0 check (coins >= 0),
@@ -16,7 +16,7 @@ create table if not exists public.device_claims (
   id bigint generated always as identity primary key,
   device_id text,
   cookie_token text,
-  user_id bigint not null references public.users(id) on delete cascade,
+  user_id bigint references public.users(id) on delete set null,
   created_at bigint not null
 );
 
@@ -87,7 +87,7 @@ begin
     return jsonb_build_object(
       'ok', false,
       'status_code', 402,
-      'error', format('Salio lako ni coin %s. Unahitaji coin %s kutengeneza hati. Tafadhali nunua coin kupitia Dalipay.', v_user.coins, p_cost),
+      'error', format('Salio lako ni coin %s. Unahitaji coin %s kutengeneza hati. Tafadhali nunua coin kwanza.', v_user.coins, p_cost),
       'current_coins', v_user.coins
     );
   end if;
@@ -177,3 +177,64 @@ revoke all on function public.deduct_generation_coins(bigint, text, text, intege
 revoke all on function public.settle_dalipay_payment(text, text, bigint) from public, anon, authenticated;
 grant execute on function public.deduct_generation_coins(bigint, text, text, integer, bigint) to service_role;
 grant execute on function public.settle_dalipay_payment(text, text, bigint) to service_role;
+
+-- ===== Admin dashboard migration (safe to re-run) =====
+alter table public.users alter column email drop not null;
+alter table public.users add column if not exists is_blocked boolean not null default false;
+create table if not exists public.app_settings (
+  key text primary key,
+  value jsonb not null default '{}'::jsonb,
+  updated_at bigint not null default 0
+);
+alter table public.app_settings enable row level security;
+grant select, insert, update, delete on table public.app_settings to service_role;
+
+-- ===== Security questions, password reset lock, account deletion migration (safe to re-run) =====
+-- Hashed answers: {"mother": "salt:hash", "ward": "salt:hash", "year": "salt:hash"}
+alter table public.users add column if not exists security_answers jsonb;
+alter table public.users add column if not exists reset_fails integer not null default 0;
+alter table public.users add column if not exists reset_locked_until bigint not null default 0;
+
+-- When an account is deleted, keep the (anonymous) device record so the same device
+-- cannot delete + re-register to collect the 5 free coins again.
+alter table public.device_claims alter column user_id drop not null;
+alter table public.device_claims drop constraint if exists device_claims_user_id_fkey;
+alter table public.device_claims
+  add constraint device_claims_user_id_fkey
+  foreign key (user_id) references public.users(id) on delete set null;
+
+-- ===== Push notifications (PWA) + admin broadcast migration (safe to re-run) =====
+create table if not exists public.push_subscriptions (
+  id bigint generated always as identity primary key,
+  endpoint text not null unique,
+  p256dh text not null,
+  auth text not null,
+  user_id bigint references public.users(id) on delete cascade,
+  user_agent text not null default '',
+  created_at bigint not null default ((extract(epoch from now()) * 1000)::bigint),
+  updated_at bigint not null default 0
+);
+create index if not exists idx_push_subs_user on public.push_subscriptions(user_id);
+
+create table if not exists public.push_messages (
+  id bigint generated always as identity primary key,
+  title text not null,
+  body text not null,
+  url text not null default '/',
+  total integer not null default 0,
+  sent integer not null default 0,
+  failed integer not null default 0,
+  created_at bigint not null
+);
+
+alter table public.push_subscriptions enable row level security;
+alter table public.push_messages enable row level security;
+grant select, insert, update, delete on table public.push_subscriptions, public.push_messages to service_role;
+grant usage, select on all sequences in schema public to service_role;
+
+-- ===== Auth v2: kifaa kimoja tu kwa wakati + nenosiri la muda kutoka kwa admin (safe to re-run) =====
+-- session_id: kila login mpya inabadilisha id hii, na vifaa vya zamani vinatolewa.
+-- must_change_password: admin akimpa mteja nenosiri la muda, mteja anaombwa kuweka lake akiingia.
+alter table public.users add column if not exists session_id text;
+alter table public.users add column if not exists must_change_password boolean not null default false;
+-- Maswali ya usalama hayatumiki tena (column ya security_answers inabaki bila madhara).
