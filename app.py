@@ -67,7 +67,7 @@ try:
 except ValueError:
     _session_days = 30
 SESSION_MAX_AGE_SEC = 60 * 60 * 24 * _session_days
-GENERATION_COIN_COST = 5
+GENERATION_COIN_COST = 1
 FREE_SIGNUP_COINS = 10
 
 PACKAGES = {
@@ -410,7 +410,16 @@ def require_auth(fn):
         uid = verify_token(token)
         if uid is None:
             return jsonify({'error': 'Session imeisha. Tafadhali ingia tena.'}), 401
+        try:
+            rows = sb_select('users', {'select': 'id,email,phone,is_blocked', 'id': f'eq.{uid}', 'limit': '1'})
+        except RuntimeError as e:
+            return service_unavailable(e)
+        if not rows:
+            return jsonify({'error': 'Session imeisha. Tafadhali ingia tena.'}), 401
+        if rows[0].get('is_blocked'):
+            return jsonify({'error': 'Akaunti yako imezuiwa. Tafadhali wasiliana na msaada.'}), 403
         g.user_id = uid
+        g.is_admin = is_admin_row(rows[0])
         return fn(*args, **kwargs)
 
     return wrapper
@@ -421,12 +430,14 @@ def sanitize_user(row: dict):
     return {
         'id': int(row['id']),
         'fullName': row['full_name'],
-        'email': row['email'],
+        'email': row.get('email') or '',
         'phone': row.get('phone') or '',
         'coins': int(row.get('coins') or 0),
         'unlimitedUntil': unlimited_until,
         'isUnlimited': unlimited_until > now_ms(),
         'freeBonusGranted': bool(row.get('free_bonus_granted')),
+        'isAdmin': is_admin_row(row),
+        'isBlocked': bool(row.get('is_blocked')),
     }
 
 
@@ -496,6 +507,291 @@ def get_contact_config():
     }
 
 
+
+# ----------------------------------------------------------------------------
+# Admin + settings (prices, offers)
+# ----------------------------------------------------------------------------
+def phone_variants(n):
+    return [to_local_tz_phone(n), n, '+' + n]
+
+
+def admin_emails():
+    return {e.strip().lower() for e in os.environ.get('ADMIN_EMAILS', '').split(',') if e.strip()}
+
+
+def is_admin_row(row):
+    return bool(row) and (row.get('email') or '').strip().lower() in admin_emails()
+
+
+def require_admin(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not getattr(g, 'is_admin', False):
+            return jsonify({'error': 'Huna ruhusa ya admin.'}), 403
+        return fn(*args, **kwargs)
+    return wrapper
+
+
+def sb_delete(table, params):
+    url, key = get_supabase_config()
+    resp = requests.delete(f'{url}/rest/v1/{table}', headers=sb_headers(key), params=params, timeout=15)
+    if not resp.ok:
+        raise requests.HTTPError(f'Supabase delete {table} failed ({resp.status_code})', response=resp)
+
+
+def get_settings():
+    try:
+        rows = sb_select('app_settings', {'select': 'key,value', 'key': 'in.(packages,offer)'})
+        return {r_['key']: r_['value'] for r_ in rows}
+    except Exception as e:
+        print(f'[Settings] {e}', flush=True)
+        return {}
+
+
+def save_setting(key, value):
+    url, k = get_supabase_config()
+    resp = requests.post(f'{url}/rest/v1/app_settings', params={'on_conflict': 'key'},
+                         headers=sb_headers(k, 'resolution=merge-duplicates,return=minimal'),
+                         json={'key': key, 'value': value, 'updated_at': now_ms()}, timeout=15)
+    if not resp.ok:
+        raise requests.HTTPError(f'save setting failed ({resp.status_code}): {_extract_sb_error(resp)}', response=resp)
+
+
+def base_packages(st):
+    stored = st.get('packages')
+    return stored if isinstance(stored, list) and stored else list(PACKAGES.values())
+
+
+def active_offer(st):
+    o = st.get('offer')
+    if isinstance(o, dict) and int(o.get('endsAt') or 0) > now_ms():
+        return o
+    return None
+
+
+def public_offer(st):
+    o = active_offer(st)
+    if not o:
+        return None
+    return {k: o.get(k) for k in ('title', 'description', 'endsAt', 'bonusPercent', 'discountPercent')}
+
+
+def effective_packages(st):
+    o = active_offer(st) or {}
+    bonus, disc = int(o.get('bonusPercent') or 0), int(o.get('discountPercent') or 0)
+    out = []
+    for p in base_packages(st):
+        if not p.get('active', True):
+            continue
+        q = dict(p)
+        q['originalAmountTzs'], q['originalCoins'], q['bonusCoins'] = p['amountTzs'], p['coins'], 0
+        if disc:
+            q['amountTzs'] = max(100, round(p['amountTzs'] * (100 - disc) / 100))
+        if bonus and p['category'] == 'coins':
+            q['bonusCoins'] = p['coins'] * bonus // 100
+            q['coins'] = p['coins'] + q['bonusCoins']
+            q['label'] = f"{q['coins']:,} Coins"
+        out.append(q)
+    return out
+
+
+def norm_pkg(p):
+    unl = p.get('category') == 'unlimited'
+    amount, coins, days = int(p.get('amountTzs')), int(p.get('coins') or 0), int(p.get('unlimitedDays') or 0)
+    if not 100 <= amount <= 10000000:
+        raise ValueError('Bei lazima iwe kati ya TZS 100 na 10,000,000.')
+    if unl and not 1 <= days <= 365:
+        raise ValueError('Siku za Unlimited ziwe 1 hadi 365.')
+    if not unl and not 1 <= coins <= 100000:
+        raise ValueError('Coins ziwe 1 hadi 100,000.')
+    pid = sanitize_identifier(p.get('id')) or f"{'u' if unl else 'c'}_{secrets.token_hex(3)}"
+    return {'id': pid, 'category': 'unlimited' if unl else 'coins', 'amountTzs': amount,
+            'coins': 0 if unl else coins, 'unlimitedDays': days if unl else 0,
+            'label': f'Unlimited ({days} Days)' if unl else f'{coins:,} Coins', 'active': bool(p.get('active', True))}
+
+
+def _q(name):
+    return re.sub(r'[^A-Za-z0-9_\-+@. ]', '', request.args.get(name, '')).strip()[:40]
+
+
+@app.route('/api/admin/stats', methods=['GET'])
+@require_auth
+@require_admin
+def admin_stats():
+    try:
+        users = sb_select('users', {'select': 'id,is_blocked', 'limit': '20000'})
+        pays = sb_select('payments', {'select': 'amount_tzs,status', 'limit': '20000'})
+        gens = sb_select('generations', {'select': 'id', 'limit': '20000'})
+    except RuntimeError as e:
+        return service_unavailable(e)
+    done = [x for x in pays if x['status'] == 'completed']
+    return jsonify({'users': len(users), 'blocked': sum(1 for u in users if u.get('is_blocked')),
+                    'revenue': sum(int(x['amount_tzs']) for x in done), 'completed': len(done),
+                    'pending': sum(1 for x in pays if x['status'] == 'pending'),
+                    'failed': sum(1 for x in pays if x['status'] == 'failed'), 'documents': len(gens)})
+
+
+@app.route('/api/admin/payments', methods=['GET'])
+@require_auth
+@require_admin
+def admin_payments():
+    q, st = _q('q'), request.args.get('status', '')
+    params = {'select': '*', 'order': 'created_at.desc', 'limit': '100'}
+    if q:
+        conds = [f'reference.ilike.*{q}*', f'provider_ref.ilike.*{q}*', f'phone_number.ilike.*{q}*']
+        if q.startswith('0') and q[1:].isdigit():
+            conds.append(f'phone_number.ilike.*255{q[1:]}*')
+        params['or'] = '(' + ','.join(conds) + ')'
+    if st in ('pending', 'completed', 'failed'):
+        params['status'] = f'eq.{st}'
+    try:
+        rows = sb_select('payments', params)
+        ids = sorted({int(x['user_id']) for x in rows})
+        users = {}
+        if ids:
+            for u in sb_select('users', {'select': 'id,full_name,email,phone', 'id': f'in.({",".join(map(str, ids))})'}):
+                users[int(u['id'])] = u
+    except RuntimeError as e:
+        return service_unavailable(e)
+    for x in rows:
+        u = users.get(int(x['user_id'])) or {}
+        x['user'] = {'name': u.get('full_name', ''), 'email': u.get('email') or '', 'phone': u.get('phone') or ''}
+    return jsonify({'payments': rows})
+
+
+@app.route('/api/admin/payments/<reference>/settle', methods=['POST'])
+@require_auth
+@require_admin
+def admin_settle(reference):
+    reference = sanitize_identifier(reference)
+    try:
+        res = sb_rpc('settle_dalipay_payment', {'p_reference': reference, 'p_provider_ref': '', 'p_now_ms': now_ms()})
+    except RuntimeError as e:
+        return service_unavailable(e)
+    if not isinstance(res, dict) or not res.get('ok'):
+        return jsonify({'error': (res or {}).get('error', 'Imeshindwa.')}), 404
+    return jsonify({'ok': True})
+
+
+@app.route('/api/admin/users', methods=['GET'])
+@require_auth
+@require_admin
+def admin_users():
+    q = _q('q')
+    params = {'select': 'id,full_name,email,phone,coins,unlimited_until,is_blocked,created_at', 'order': 'created_at.desc', 'limit': '100'}
+    if q:
+        conds = [f'full_name.ilike.*{q}*', f'email.ilike.*{q}*', f'phone.ilike.*{q}*']
+        if q.startswith('0') and q[1:].isdigit():
+            conds.append(f'phone.ilike.*255{q[1:]}*')
+        params['or'] = '(' + ','.join(conds) + ')'
+    try:
+        rows = sb_select('users', params)
+    except RuntimeError as e:
+        return service_unavailable(e)
+    for u in rows:
+        u['isAdmin'] = is_admin_row(u)
+        u['isUnlimited'] = int(u.get('unlimited_until') or 0) > now_ms()
+    return jsonify({'users': rows})
+
+
+def _target(uid):
+    rows = sb_select('users', {'select': 'id,email,coins', 'id': f'eq.{uid}', 'limit': '1'})
+    if not rows:
+        return None, (jsonify({'error': 'Mtumiaji hapatikani.'}), 404)
+    if is_admin_row(rows[0]) or uid == g.user_id:
+        return None, (jsonify({'error': 'Huwezi kufanya hivi kwa akaunti ya admin.'}), 400)
+    return rows[0], None
+
+
+@app.route('/api/admin/users/<int:uid>/block', methods=['POST'])
+@require_auth
+@require_admin
+def admin_block(uid):
+    row, err = _target(uid)
+    if err:
+        return err
+    sb_update('users', {'id': f'eq.{uid}'}, {'is_blocked': bool(get_json_dict().get('blocked'))})
+    return jsonify({'ok': True})
+
+
+@app.route('/api/admin/users/<int:uid>', methods=['DELETE'])
+@require_auth
+@require_admin
+def admin_delete_user(uid):
+    row, err = _target(uid)
+    if err:
+        return err
+    sb_delete('users', {'id': f'eq.{uid}'})
+    return jsonify({'ok': True})
+
+
+@app.route('/api/admin/users/<int:uid>/coins', methods=['POST'])
+@require_auth
+@require_admin
+def admin_coins(uid):
+    row, err = _target(uid)
+    if err:
+        return err
+    try:
+        delta = int(get_json_dict().get('delta'))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Weka namba sahihi.'}), 400
+    if not -100000 <= delta <= 100000:
+        return jsonify({'error': 'Kiasi ni kikubwa mno.'}), 400
+    new = max(0, int(row.get('coins') or 0) + delta)
+    sb_update('users', {'id': f'eq.{uid}'}, {'coins': new})
+    return jsonify({'ok': True, 'coins': new})
+
+
+@app.route('/api/admin/packages', methods=['GET', 'PUT', 'DELETE'])
+@require_auth
+@require_admin
+def admin_packages():
+    try:
+        if request.method == 'GET':
+            return jsonify({'packages': base_packages(get_settings())})
+        if request.method == 'DELETE':
+            save_setting('packages', [])
+            return jsonify({'ok': True})
+        raw = get_json_dict().get('packages')
+        if not isinstance(raw, list) or not raw or len(raw) > 30:
+            return jsonify({'error': 'Weka vifurushi 1 hadi 30.'}), 400
+        pk = [norm_pkg(x) for x in raw]
+        if len({x['id'] for x in pk}) != len(pk):
+            return jsonify({'error': 'Vifurushi vina ID zinazojirudia.'}), 400
+        save_setting('packages', pk)
+        return jsonify({'ok': True, 'packages': pk})
+    except (ValueError, TypeError) as e:
+        return jsonify({'error': str(e) or 'Taarifa si sahihi.'}), 400
+    except RuntimeError as e:
+        return service_unavailable(e)
+
+
+@app.route('/api/admin/offer', methods=['GET', 'POST', 'DELETE'])
+@require_auth
+@require_admin
+def admin_offer():
+    try:
+        if request.method == 'GET':
+            return jsonify({'offer': public_offer(get_settings())})
+        if request.method == 'DELETE':
+            save_setting('offer', {})
+            return jsonify({'ok': True})
+        d = get_json_dict()
+        title = clean_text(d.get('title'), 60)
+        desc = ''.join(c for c in str(d.get('description') or '') if c.isprintable() or c == '\n').strip()[:800]
+        mins, bonus, disc = int(d.get('durationMinutes')), int(d.get('bonusPercent') or 0), int(d.get('discountPercent') or 0)
+        if not title or not 1 <= mins <= 525600 or not 0 <= bonus <= 500 or not 0 <= disc <= 90 or not (bonus or disc):
+            return jsonify({'error': 'Jaza kichwa, muda, na angalau bonasi % au punguzo %.'}), 400
+        save_setting('offer', {'title': title, 'description': desc, 'endsAt': now_ms() + mins * 60000,
+                               'bonusPercent': bonus, 'discountPercent': disc})
+        return jsonify({'ok': True})
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Taarifa si sahihi.'}), 400
+    except RuntimeError as e:
+        return service_unavailable(e)
+
+
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
@@ -503,6 +799,8 @@ def index():
 
 @app.route('/api/packages', methods=['GET'])
 def api_packages():
+    st = get_settings()
+    eff = effective_packages(st)
     supabase_ready = bool(
         os.environ.get('SUPABASE_URL', '').strip()
         and (
@@ -514,7 +812,9 @@ def api_packages():
         {
             'generationCost': GENERATION_COIN_COST,
             'freeSignupCoins': FREE_SIGNUP_COINS,
-            'packages': list(PACKAGES.values()),
+            'packages': eff,
+            'offer': public_offer(st),
+            'serverNow': now_ms(),
             'contact': get_contact_config(),
             'dalipayConfigured': bool(
                 os.environ.get('DALIPAY_SECRET_KEY', '').strip()
@@ -536,17 +836,24 @@ def api_register():
 
     full_name = clean_text(data.get('fullName', ''), 100)
     email = str(data.get('email', '')).strip().lower()
-    phone = re.sub(r'[^\d+]', '', str(data.get('phone', '')))[:16]
+    phone_n = normalize_phone_tz(str(data.get('phone', ''))[:32])
+    phone = to_local_tz_phone(phone_n) if phone_n else ''
     password = str(data.get('password', ''))
     device_id = sanitize_identifier(data.get('deviceId') or data.get('device_id') or '')
 
-    if len(full_name) < 2 or len(email) > 254 or not EMAIL_RE.match(email):
-        return jsonify({'error': 'Jaza jina kamili na barua pepe sahihi.'}), 400
+    if len(full_name) < 2:
+        return jsonify({'error': 'Jaza jina kamili.'}), 400
+    if not phone_n:
+        return jsonify({'error': 'Weka namba sahihi ya simu ya Tanzania (mfano 0754123456).'}), 400
+    if email and (len(email) > 254 or not EMAIL_RE.match(email)):
+        return jsonify({'error': 'Barua pepe si sahihi.'}), 400
     if len(password) < MIN_PASSWORD_LEN or len(password) > MAX_PASSWORD_LEN:
         return jsonify({'error': f'Nenosiri liwe na herufi {MIN_PASSWORD_LEN} hadi {MAX_PASSWORD_LEN}.'}), 400
 
     try:
-        existing_users = sb_select('users', {'select': 'id', 'email': f'eq.{email}', 'limit': '1'})
+        if sb_select('users', {'select': 'id', 'phone': f'in.({",".join(phone_variants(phone_n))})', 'limit': '1'}):
+            return jsonify({'error': 'Namba hii ya simu tayari imesajiliwa. Tafadhali ingia.'}), 409
+        existing_users = bool(email) and sb_select('users', {'select': 'id', 'email': f'eq.{email}', 'limit': '1'})
         if existing_users:
             return jsonify({'error': 'Barua pepe hii tayari imesajiliwa. Tafadhali ingia.'}), 409
 
@@ -569,7 +876,7 @@ def api_register():
             'users',
             {
                 'full_name': full_name,
-                'email': email,
+                'email': email or None,
                 'phone': phone,
                 'password_hash': hash_password(password),
                 'coins': starting_coins,
@@ -634,7 +941,7 @@ def api_login():
         return jsonify({'error': 'Invalid request origin.'}), 403
 
     data = get_json_dict()
-    email = str(data.get('email', '')).strip().lower()[:254]
+    email = str(data.get('identifier') or data.get('email') or '').strip().lower()[:254]
     password = str(data.get('password', ''))
     if len(password) > MAX_PASSWORD_LEN:
         password = ''  # can never match; avoids hashing giant inputs
@@ -649,7 +956,12 @@ def api_login():
         return too_many_requests('Majaribio mengi yasiyo sahihi. Subiri dakika 15 kisha ujaribu tena.')
 
     try:
-        rows = sb_select('users', {'select': '*', 'email': f'eq.{email}', 'limit': '1'})
+        if '@' in email:
+            lq = {'select': '*', 'email': f'eq.{email}', 'limit': '1'}
+        else:
+            pn = normalize_phone_tz(email)
+            lq = {'select': '*', 'phone': f'in.({",".join(phone_variants(pn))})', 'limit': '1'} if pn else None
+        rows = sb_select('users', lq) if lq else []
         user_row = rows[0] if rows else None
     except RuntimeError as e:
         return service_unavailable(e)
@@ -659,8 +971,10 @@ def api_login():
     if not user_row or not password_ok:
         rl_record(email_key)
         rl_record(ip_key)
-        return jsonify({'error': 'Barua pepe au nenosiri si sahihi.'}), 401
+        return jsonify({'error': 'Namba/barua pepe au nenosiri si sahihi.'}), 401
     rl_reset(email_key)
+    if user_row.get('is_blocked'):
+        return jsonify({'error': 'Akaunti yako imezuiwa. Tafadhali wasiliana na msaada.'}), 403
 
     cookie_token = sanitize_identifier(request.cookies.get(DEVICE_COOKIE_NAME, '')) or secrets.token_hex(24)
     if device_id:
@@ -781,7 +1095,7 @@ def api_dalipay_initiate():
     if rate_limited(f'pay:user:{g.user_id}', 5, 10 * 60) or rate_limited(f'pay:phone:{phone_clean}', 3, 10 * 60):
         return too_many_requests('Umejaribu malipo mara nyingi. Subiri dakika chache kisha ujaribu tena.')
 
-    pkg = PACKAGES.get(package_id)
+    pkg = next((x for x in effective_packages(get_settings()) if x['id'] == package_id), None)
     if not pkg:
         return jsonify({'error': 'Kifurushi kilichochaguliwa hakipo.'}), 400
     amount_tzs = pkg['amountTzs']
@@ -904,13 +1218,13 @@ def api_dalipay_initiate():
                 'status': 'pending',
                 'amountTzs': amount_tzs,
                 'packageLabel': package_label,
-                'message': 'Ombi la malipo limetumwa kwenye simu yako kupitia Dalipay. Thibitisha USSD push.',
+                'message': 'Ombi la malipo limetumwa kwenye simu yako. Weka PIN kukamilisha.',
             }
         )
     except Exception:
         app.logger.exception('Dalipay initiate failed')
         sb_update('payments', {'reference': f'eq.{reference}'}, {'status': 'failed'})
-        return jsonify({'error': 'Imeshindwa kuwasiliana na seva ya Dalipay.', 'reference': reference}), 502
+        return jsonify({'error': 'Imeshindwa kuwasiliana na mfumo wa malipo.', 'reference': reference}), 502
 
 
 @app.route('/api/payments/status/<reference>', methods=['GET'])

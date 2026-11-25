@@ -3,7 +3,7 @@
 create table if not exists public.users (
   id bigint generated always as identity primary key,
   full_name text not null,
-  email text not null unique,
+  email text unique,
   phone text not null default '',
   password_hash text not null,
   coins integer not null default 0 check (coins >= 0),
@@ -87,7 +87,7 @@ begin
     return jsonb_build_object(
       'ok', false,
       'status_code', 402,
-      'error', format('Salio lako ni coin %s. Unahitaji coin %s kutengeneza hati. Tafadhali nunua coin kupitia Dalipay.', v_user.coins, p_cost),
+      'error', format('Salio lako ni coin %s. Unahitaji coin %s kutengeneza hati. Tafadhali nunua coin kwanza.', v_user.coins, p_cost),
       'current_coins', v_user.coins
     );
   end if;
@@ -177,3 +177,14 @@ revoke all on function public.deduct_generation_coins(bigint, text, text, intege
 revoke all on function public.settle_dalipay_payment(text, text, bigint) from public, anon, authenticated;
 grant execute on function public.deduct_generation_coins(bigint, text, text, integer, bigint) to service_role;
 grant execute on function public.settle_dalipay_payment(text, text, bigint) to service_role;
+
+-- ===== Admin dashboard migration (safe to re-run) =====
+alter table public.users alter column email drop not null;
+alter table public.users add column if not exists is_blocked boolean not null default false;
+create table if not exists public.app_settings (
+  key text primary key,
+  value jsonb not null default '{}'::jsonb,
+  updated_at bigint not null default 0
+);
+alter table public.app_settings enable row level security;
+grant select, insert, update, delete on table public.app_settings to service_role;

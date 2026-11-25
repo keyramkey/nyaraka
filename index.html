@@ -713,6 +713,52 @@
         .tx-actions { margin-top: 10px; }
         .tx-actions .btn { min-height: 38px; font-size: 0.76rem; border-radius: 12px; }
         .tx-modal .mini-btn { font-size: 0.68rem; padding: 5px 10px; }
+
+        /* ===== Offer FAB + Admin ===== */
+        .offer-fab { position: fixed; left: 0; top: 50%; transform: translateY(-50%); z-index: 35; display: none; flex-direction: column; align-items: center; gap: 2px; padding: 9px 8px 9px 7px; border: none; border-radius: 0 16px 16px 0; background: linear-gradient(160deg, #f43f5e, #ea580c); color: #fff; cursor: pointer; box-shadow: 0 12px 26px -10px rgba(234, 88, 12, .8); animation: ofPulse 2s infinite; }
+        .offer-fab b { font-size: .62rem; letter-spacing: .08em; } .offer-fab span.mono { font-size: .62rem; font-weight: 600; }
+        @keyframes ofPulse { 0%,100% { box-shadow: 0 12px 26px -10px rgba(234,88,12,.8); } 50% { box-shadow: 0 12px 30px -4px rgba(244,63,94,.95); } }
+        .of-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; }
+        #adminApp { display: none; max-width: 1100px; margin: 0 auto; padding: 14px 14px 60px; }
+        body.is-admin #adminApp { display: block; }
+        body.is-admin .topbar, body.is-admin .bottom-nav, body.is-admin main.container, body.is-admin #drawerBackdrop, body.is-admin #offerFab { display: none !important; }
+        .a-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 1rem; }
+        .a-tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 14px; padding-bottom: 2px; }
+        .a-tabs button { border: none; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 8px 14px; font-size: .78rem; font-weight: 700; color: #475569; cursor: pointer; white-space: nowrap; }
+        .a-tabs button.active { background: var(--grad); color: #fff; border-color: transparent; }
+        .a-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+        .a-stat { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 4px; font-size: .72rem; color: #64748b; }
+        .a-stat b { font-size: 1.2rem; color: #0f172a; }
+        .a-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .a-bar input, .a-bar select, .a-form input, .a-form textarea, .a-form select, .a-ed input, .a-ed select { padding: 8px 10px; border: 1.5px solid #d6dee8; border-radius: 10px; font: inherit; font-size: .8rem; background: #fff; min-width: 0; }
+        .a-bar input { flex: 1; min-width: 160px; }
+        #adminApp table.data-table { font-size: .74rem; } #adminApp table.data-table td, #adminApp table.data-table th { padding: 8px 10px; }
+        .a-ed input { width: 86px; } .a-act { display: flex; gap: 5px; flex-wrap: wrap; }
+        .a-act button { border: none; border-radius: 8px; padding: 5px 9px; font-size: .68rem; font-weight: 700; cursor: pointer; background: #f1f5f9; color: #0f172a; }
+        .a-act .red { background: #fee2e2; color: #b91c1c; } .a-act .grn { background: #dcfce7; color: #15803d; }
+        .a-form { display: grid; gap: 10px; max-width: 520px; background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 16px; }
+        .a-form label { font-size: .72rem; font-weight: 700; color: #334155; display: grid; gap: 4px; }
+        .a-mute { color: #64748b; font-size: .8rem; } .a-ref { font-size: .72rem; word-break: break-all; }
+        #aToast { display: none; position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 99; padding: 10px 16px; border-radius: 12px; font-size: .8rem; font-weight: 600; color: #fff; }
+        #aToast.ok { background: #047857; } #aToast.bad { background: #b91c1c; }
+
+        /* ===== Picker (giza) ===== */
+        table.entry-table input.pick-input, table.entry-table input.pick-input:focus { cursor: pointer; padding-right: 36px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+        .contact-btn svg { flex: none; } .contact-btn.wa.grp { background: #fff; color: #047857; border: 1.5px solid #047857; box-shadow: none; }
+        .pk-ov { position: fixed; inset: 0; z-index: 95; display: none; align-items: center; justify-content: center; padding: 14px; background: rgba(8, 6, 4, .6); backdrop-filter: blur(4px); }
+        .pk-ov.open { display: flex; }
+        .pk-card { width: min(380px, 100%); max-height: 84vh; display: flex; flex-direction: column; background: #33291f; color: #f5efe8; border-radius: 24px; overflow: hidden; box-shadow: 0 30px 70px -20px rgba(0, 0, 0, .7); animation: popIn .22s; }
+        .pk-head { display: flex; gap: 8px; align-items: center; padding: 12px 14px; border-bottom: 1px solid rgba(255, 255, 255, .12); }
+        .pk-search { flex: 1; min-width: 0; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .16); border-radius: 12px; padding: 10px 12px; color: #fff; font: inherit; outline: none; }
+        .pk-search:focus { border-color: #fdba74; } .pk-search::placeholder { color: rgba(255, 255, 255, .55); }
+        .pk-x { width: 36px; height: 36px; border: none; border-radius: 12px; background: rgba(255, 255, 255, .1); color: #fff; font-size: 1.3rem; cursor: pointer; flex: none; }
+        .pk-list { list-style: none; overflow: auto; }
+        .pk-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 16px; border-bottom: 1px solid rgba(255, 255, 255, .09); cursor: pointer; font-size: .95rem; line-height: 1.3; }
+        .pk-opt:hover, .pk-opt:active { background: rgba(255, 255, 255, .07); }
+        .pk-radio { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .7); flex: none; display: grid; place-items: center; }
+        .pk-opt[aria-selected="true"] .pk-radio { border-color: #fdba74; }
+        .pk-opt[aria-selected="true"] .pk-radio::after { content: ""; width: 11px; height: 11px; border-radius: 50%; background: #fdba74; }
+        .pk-empty { padding: 18px; text-align: center; color: rgba(255, 255, 255, .6); font-size: .85rem; }
     </style>
 <script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
 <body>
@@ -788,7 +834,7 @@
                         <div class="launcher-icon teal">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>
                         </div>
-                        <span class="launcher-cost mono">5 Coins</span>
+                        <span class="launcher-cost mono">1 Coin</span>
                     </div>
                     <div>
                         <h2>TIN Certificate</h2>
@@ -802,7 +848,7 @@
                         <div class="launcher-icon slate">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01"/></svg>
                         </div>
-                        <span class="launcher-cost mono" style="color:#334155;">5 Coins</span>
+                        <span class="launcher-cost mono" style="color:#334155;">1 Coin</span>
                     </div>
                     <div>
                         <h2>Business License</h2>
@@ -839,7 +885,7 @@
         <div id="tin-panel" class="panel">
             <div class="sub-header">
                 <button class="back-btn" onclick="switchView('home')">&larr; Rudi</button>
-                <span class="mono" style="font-size:0.78rem;color:#64748b;font-weight:600;">TIN Certificate · 5 Coins</span>
+                <span class="mono" style="font-size:0.78rem;color:#64748b;font-weight:600;">TIN Certificate · 1 Coin</span>
             </div>
 
             <section id="tinFormSection" class="form-shell">
@@ -867,7 +913,7 @@
                     </tbody>
                 </table>
                 <div class="form-shell-foot">
-                    <button class="btn btn-gen" id="tin_gen_btn" onclick="unlockAndGenerate('tin')">Generate TIN (-5 Coins)</button>
+                    <button class="btn btn-gen" id="tin_gen_btn" onclick="unlockAndGenerate('tin')">Generate TIN (-1 Coin)</button>
                 </div>
             </section>
 
@@ -890,7 +936,7 @@
         <div id="bl-panel" class="panel">
             <div class="sub-header">
                 <button class="back-btn" onclick="switchView('home')">&larr; Rudi</button>
-                <span class="mono" style="font-size:0.78rem;color:#64748b;font-weight:600;">Business License · 5 Coins</span>
+                <span class="mono" style="font-size:0.78rem;color:#64748b;font-weight:600;">Business License · 1 Coin</span>
             </div>
 
             <section id="blFormSection" class="form-shell">
@@ -904,11 +950,11 @@
                         <tr><th><label for="bl_office">Issuing Office</label></th><td><input type="text" id="bl_office" value="" placeholder="Mfano: MWANZA"></td></tr>
                         <tr><th><label for="bl_tin">Tax Identification No</label></th><td><input type="text" id="bl_tin" class="mono" inputmode="numeric" maxlength="11" value="" placeholder="Mfano: 164-905-318" oninput="handleTinAutoDash(this)"></td></tr>
                         <tr><th><label for="bl_name">License Issued To</label></th><td><input type="text" id="bl_name" value="" placeholder="Mfano: JOSEPHAT SAMWEL NGONYANI"></td></tr>
-                        <tr><th><label for="bl_business">For the Business of</label></th><td><input type="text" id="bl_business" value="" placeholder="Mfano: HARDWARE AND BUILDING MATERIALS - RETAIL"></td></tr>
-                        <tr><th><label for="bl_type">Business Licensing</label></th><td><input type="text" id="bl_type" value="" placeholder="Mfano: NEW LICENSE"></td></tr>
+                        <tr><th><label for="bl_business">For the Business of</label></th><td><input type="text" id="bl_business" class="pick-input" value="" readonly placeholder="Chagua au tafuta biashara" onclick="openBizPicker()"></td></tr>
+                        <tr><th><label for="bl_type">Business Licensing</label></th><td><input type="text" id="bl_type" value="NEW LICENSE" readonly style="background:#f1f5f9;color:#334155;font-weight:700;cursor:not-allowed;"></td></tr>
                         <tr><th><label for="bl_principal">Principal / Branch</label></th><td><input type="text" id="bl_principal" value="" placeholder="Mfano: PRINCIPAL"></td></tr>
-                        <tr><th><label for="bl_issue">Date of Issue</label></th><td><input type="date" id="bl_issue" class="mono" value=""></td></tr>
-                        <tr><th><label for="bl_expire">Expiring Date</label></th><td><input type="date" id="bl_expire" class="mono" value=""></td></tr>
+                        <tr><th><label for="bl_issue">Date of Issue</label></th><td><input type="date" id="bl_issue" class="mono" value="" oninput="setBlExpiry()" onchange="setBlExpiry()"></td></tr>
+                        <tr><th><label for="bl_expire">Expiring Date</label></th><td><input type="date" id="bl_expire" class="mono" value="" readonly style="background:#f1f5f9;color:#334155;font-weight:700;cursor:not-allowed;"></td></tr>
                         <tr><th><label for="bl_region">Region</label></th><td><input type="text" id="bl_region" value="" placeholder="Mfano: Mwanza"></td></tr>
                         <tr><th><label for="bl_ward">Ward</label></th><td><input type="text" id="bl_ward" value="" placeholder="Mfano: Nyamagana"></td></tr>
                         <tr><th><label for="bl_street">Street</label></th><td><input type="text" id="bl_street" value="" placeholder="Mfano: Pamba Road"></td></tr>
@@ -916,7 +962,7 @@
                     </tbody>
                 </table>
                 <div class="form-shell-foot">
-                    <button class="btn btn-gen" id="bl_gen_btn" onclick="unlockAndGenerate('bl')">Generate License (-5 Coins)</button>
+                    <button class="btn btn-gen" id="bl_gen_btn" onclick="unlockAndGenerate('bl')">Generate License (-1 Coin)</button>
                 </div>
             </section>
 
@@ -939,7 +985,7 @@
         <div id="wallet-panel" class="panel">
             <div class="sub-header">
                 <button class="back-btn" onclick="switchView('home')">&larr; Rudi</button>
-                <span class="mono" style="font-size:0.78rem;color:#64748b;font-weight:600;">Hati 1 = 5 Coins</span>
+                <span class="mono" style="font-size:0.78rem;color:#64748b;font-weight:600;">Hati 1 = 1 Coin</span>
             </div>
 
             <div class="wallet-hero">
@@ -985,7 +1031,7 @@
                     <div style="padding:18px 20px;">
                         <div class="pay-summary-rows">
                             <div class="pay-summary-row"><span style="color:#64748b;">Kifurushi</span><strong id="chkPkgTitle">55 Coins</strong></div>
-                            <div class="pay-summary-row"><span style="color:#64748b;">Maelezo</span><span id="chkPkgDetail" class="mono" style="font-size:0.76rem;color:#334155;">~Hati 11 · Coin 5/hati</span></div>
+                            <div class="pay-summary-row"><span style="color:#64748b;">Maelezo</span><span id="chkPkgDetail" class="mono" style="font-size:0.76rem;color:#334155;">~Hati 55 · Coin 1/hati</span></div>
                             <div class="pay-summary-row"><strong style="color:#0f172a;">Jumla</strong><strong id="chkPkgTotal" class="mono" style="font-size:1.15rem;color:#0f766e;">TZS 5,000</strong></div>
                         </div>
 
@@ -1057,6 +1103,35 @@
         </div>
     </main>
 
+
+    <button id="offerFab" class="offer-fab" onclick="openOfferModal()" aria-label="Offer">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>
+        <b>OFFER</b><span id="offerFabTime" class="mono"></span>
+    </button>
+    <div id="offerModal" class="modal-backdrop" onclick="if(event.target===this)closeOfferModal()">
+        <div class="modal-box" style="max-width:360px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+                <h3 id="offerTitle" style="font-size:1.05rem;font-weight:800;"></h3>
+                <button class="mini-btn" onclick="closeOfferModal()">Funga</button>
+            </div>
+            <div class="mono" style="margin-top:6px;font-size:.78rem;font-weight:700;color:#c2410c;">Inaisha baada ya: <span id="offerModalTime"></span></div>
+            <div id="offerTags" class="of-tags"></div>
+            <p id="offerDesc" style="font-size:.84rem;color:#334155;white-space:pre-wrap;margin-bottom:14px;"></p>
+            <button class="btn btn-gen" onclick="closeOfferModal();switchView('wallet')">Nunua Sasa</button>
+        </div>
+    </div>
+    <div id="adminApp">
+        <div class="a-top"><b>MALIMI COPY · Admin</b><button class="btn-sm slate" onclick="logoutUser()">Toka</button></div>
+        <div class="a-tabs">
+            <button data-atab="stats" onclick="adminShow('stats')">Muhtasari</button>
+            <button data-atab="pay" onclick="adminShow('pay')">Miamala</button>
+            <button data-atab="users" onclick="adminShow('users')">Watumiaji</button>
+            <button data-atab="prices" onclick="adminShow('prices')">Bei</button>
+            <button data-atab="offer" onclick="adminShow('offer')">Offer</button>
+        </div>
+        <div id="adminBody"></div>
+        <div id="aToast"></div>
+    </div>
     <!-- BOTTOM NAVIGATION BAR -->
     <nav class="bottom-nav" aria-label="Urambazaji wa chini">
         <div class="bottom-nav-inner">
@@ -1100,12 +1175,12 @@
                     <input type="text" id="auth_name">
                 </div>
                 <div class="form-group">
-                    <label>Namba ya Simu (Hiari)</label>
+                    <label>Namba ya Simu (Lazima)</label>
                     <input type="tel" id="auth_phone" class="mono" placeholder="0754123456">
                 </div>
             </div>
             <div class="form-group">
-                <label>Barua Pepe</label>
+                <label id="auth_email_lbl">Barua Pepe (Hiari)</label>
                 <input type="email" id="auth_email">
             </div>
             <div class="form-group">
@@ -1161,6 +1236,7 @@
         let selectedPkgId = 'coins_55';
         let walletFilter = 'all';
         let packagesList = [];
+        let genCost = 1;
         let deviceIdCache = '';
         let pollTimer = null;
         let noticeTimer = null;
@@ -1242,7 +1318,8 @@
         }
 
         function resetBlForm() {
-            ['bl_office', 'bl_tin', 'bl_name', 'bl_business', 'bl_type', 'bl_principal', 'bl_issue', 'bl_expire', 'bl_region', 'bl_ward', 'bl_street', 'bl_fee'].forEach(id => {
+            document.getElementById('bl_type').value = 'NEW LICENSE';
+            ['bl_office', 'bl_tin', 'bl_name', 'bl_business', 'bl_principal', 'bl_issue', 'bl_expire', 'bl_region', 'bl_ward', 'bl_street', 'bl_fee'].forEach(id => {
                 const el = document.getElementById(id);
                 el.value = '';
                 el.dataset.prevVal = '';
@@ -1304,9 +1381,13 @@
             document.getElementById('regExtraFields').style.display = mode === 'register' ? 'block' : 'none';
             document.getElementById('authTitle').textContent = mode === 'register' ? 'Fungua Akaunti (10 Free Coins)' : 'Ingia Kwenye Akaunti';
             document.getElementById('authErrorMsg').style.display = 'none';
+            document.getElementById('auth_email_lbl').textContent = mode === 'register' ? 'Barua Pepe (Hiari)' : 'Namba ya Simu au Barua Pepe';
+            document.getElementById('auth_email').type = mode === 'register' ? 'email' : 'text';
         }
 
         function updateUserUI() {
+            document.body.classList.toggle('is-admin', !!(currentUser && currentUser.isAdmin));
+            if (currentUser && currentUser.isAdmin) adminInit();
             const chip = document.getElementById('walletChip');
             const authBtn = document.getElementById('authActionBtn');
             const drawerUserBox = document.getElementById('drawerUserBox');
@@ -1333,7 +1414,7 @@
                 const pMail = document.createElement('div');
                 pMail.style.fontSize = '0.76rem';
                 pMail.style.color = '#64748b';
-                pMail.textContent = currentUser.email;
+                pMail.textContent = currentUser.email || currentUser.phone;
                 const pBal = document.createElement('div');
                 pBal.className = 'mono';
                 pBal.style.fontSize = '0.78rem';
@@ -1359,11 +1440,11 @@
                 profileGuest.style.display = 'none';
                 profileAuthed.style.display = 'block';
                 document.getElementById('profName').textContent = currentUser.fullName;
-                document.getElementById('profEmail').textContent = currentUser.phone ? `${currentUser.email} · ${currentUser.phone}` : currentUser.email;
+                document.getElementById('profEmail').textContent = [currentUser.email, currentUser.phone].filter(Boolean).join(' · ');
                 document.getElementById('profBalance').textContent = balLabel;
 
-                document.getElementById('tin_gen_btn').textContent = currentUser.isUnlimited ? 'Generate TIN (Unlimited)' : 'Generate TIN (-5 Coins)';
-                document.getElementById('bl_gen_btn').textContent = currentUser.isUnlimited ? 'Generate License (Unlimited)' : 'Generate License (-5 Coins)';
+                document.getElementById('tin_gen_btn').textContent = currentUser.isUnlimited ? 'Generate TIN (Unlimited)' : 'Generate TIN (-1 Coin)';
+                document.getElementById('bl_gen_btn').textContent = currentUser.isUnlimited ? 'Generate License (Unlimited)' : 'Generate License (-1 Coin)';
             } else {
                 chip.style.display = 'none';
                 authBtn.style.display = 'inline-block';
@@ -1386,8 +1467,8 @@
 
                 profileGuest.style.display = 'block';
                 profileAuthed.style.display = 'none';
-                document.getElementById('tin_gen_btn').textContent = 'Generate TIN (-5 Coins)';
-                document.getElementById('bl_gen_btn').textContent = 'Generate License (-5 Coins)';
+                document.getElementById('tin_gen_btn').textContent = 'Generate TIN (-1 Coin)';
+                document.getElementById('bl_gen_btn').textContent = 'Generate License (-1 Coin)';
             }
         }
 
@@ -1406,6 +1487,7 @@
         async function submitAuth() {
             const errEl = document.getElementById('authErrorMsg');
             errEl.style.display = 'none';
+            if (authMode === 'register' && document.getElementById('auth_phone').value.replace(/\D/g, '').length < 9) { errEl.textContent = 'Weka namba ya simu (lazima).'; errEl.style.display = 'block'; return; }
             const devId = await getDeviceId();
             const endpoint = authMode === 'register' ? '/api/auth/register' : '/api/auth/login';
             const body = authMode === 'register'
@@ -1417,7 +1499,7 @@
                     deviceId: devId
                 }
                 : {
-                    email: document.getElementById('auth_email').value,
+                    identifier: document.getElementById('auth_email').value.trim(),
                     password: document.getElementById('auth_pass').value,
                     deviceId: devId
                 };
@@ -1449,7 +1531,7 @@
                 credentials: 'include'
             });
             if (!res.ok) {
-                if (res.status === 401) {
+                if (res.status === 401 || res.status === 403) {
                     saveSessionToken(null);
                     currentUser = null;
                     updateUserUI();
@@ -1583,7 +1665,7 @@
                 addDetail(dl, 'Namba ya muamala', refWrap);
                 addDetail(dl, 'Kifurushi', String(it.package_label || '—'));
                 const days = Number(it.unlimited_days || 0), coins = Number(it.coins_awarded || 0);
-                addDetail(dl, 'Utapata', days > 0 ? 'Unlimited · Siku ' + days : coins + ' Coins (~Hati ' + Math.floor(coins / 5) + ')');
+                addDetail(dl, 'Utapata', days > 0 ? 'Unlimited · Siku ' + days : coins + ' Coins (~Hati ' + Math.floor(coins / genCost) + ')');
                 addDetail(dl, 'Kiasi', fmtTzs(it.amount_tzs));
                 addDetail(dl, 'Namba ya simu', localPhone(it.phone_number));
                 addDetail(dl, 'Hali', badge(st.cls, st.label));
@@ -1715,6 +1797,15 @@
         }
 
         function _fillContactInto(wrap, contact, fullWidth) {
+            _fillContactBase(wrap, contact, fullWidth);
+            const g = document.createElement('a');
+            g.className = 'contact-btn wa grp';
+            if (fullWidth) g.style.justifyContent = 'center';
+            g.href = WA_GROUP; g.target = '_blank'; g.rel = 'noopener noreferrer';
+            g.innerHTML = WA_ICON + '<span>Jiunge na Group la WhatsApp</span>';
+            wrap.appendChild(g);
+        }
+        function _fillContactBase(wrap, contact, fullWidth) {
             if (!wrap) return;
             wrap.textContent = '';
             if (contact && contact.whatsappDigits) {
@@ -1724,7 +1815,7 @@
                 wa.href = `https://wa.me/${contact.whatsappDigits}`;
                 wa.target = '_blank';
                 wa.rel = 'noopener noreferrer';
-                wa.textContent = `WhatsApp · ${contact.whatsapp}`;
+                wa.innerHTML = WA_ICON; wa.append(document.createTextNode(`WhatsApp · ${contact.whatsapp}`));
                 wrap.appendChild(wa);
             } else {
                 const span = document.createElement('span');
@@ -1759,8 +1850,10 @@
         async function loadPackages() {
             const res = await fetch('/api/packages');
             const data = await res.json();
+            genCost = Number(data.generationCost) || 1;
             packagesList = data.packages || [];
             renderContactActions(data.contact || {});
+            setupOffer(data.offer, data.serverNow);
             updateSelectedPackageUI();
         }
 
@@ -1771,10 +1864,10 @@
                     detail: p.unlimitedDays === 30 ? 'Mwezi 1 · Hati bila kikomo' : `Siku ${p.unlimitedDays} · Hati bila kikomo`
                 };
             }
-            const docs = Math.floor(p.coins / 5);
+            const docs = Math.floor(p.coins / genCost);
             return {
                 title: String(p.label || ''),
-                detail: `~Hati ${docs} · Coin 5/hati`
+                detail: `~Hati ${docs} · Coin ${genCost}/hati`
             };
         }
 
@@ -1795,7 +1888,7 @@
 
             packagesList.filter(p => p.category !== 'unlimited').forEach(p => {
                 const sel = selectedPkgId === p.id;
-                const docs = Math.floor(p.coins / 5);
+                const docs = Math.floor(p.coins / genCost);
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'coin-card' + (sel ? ' active' : '');
@@ -1823,10 +1916,11 @@
                 foot.className = 'coin-card-foot';
                 const dEl = document.createElement('div');
                 dEl.className = 'coin-card-docs mono';
-                dEl.textContent = `~Hati ${docs}`;
+                dEl.textContent = `~Hati ${docs}` + (p.bonusCoins ? ` · +${p.bonusCoins} bonus` : '');
                 const pEl = document.createElement('div');
                 pEl.className = 'coin-card-price mono';
                 pEl.textContent = `TZS ${Number(p.amountTzs || 0).toLocaleString()}`;
+                if (p.originalAmountTzs > p.amountTzs) { const o = document.createElement('s'); o.style.cssText = 'color:#94a3b8;font-weight:500;font-size:.68rem;margin-right:5px'; o.textContent = Number(p.originalAmountTzs).toLocaleString(); pEl.prepend(o); }
                 foot.append(dEl, pEl);
 
                 btn.append(top, foot);
@@ -1873,6 +1967,7 @@
         }
 
         function updateSelectedPackageUI() {
+            if (packagesList.length && !packagesList.some(x => x.id === selectedPkgId)) selectedPkgId = (packagesList.find(x => x.category !== 'unlimited') || packagesList[0]).id;
             renderPackagesTable();
             let title = 'Chagua Kifurushi';
             let detail = '-';
@@ -2225,6 +2320,176 @@
                 pdf.addImage(blCanvas.toDataURL('image/png'), 'PNG', 0, 0, 210, 297);
                 pdf.save(`Business_License_${name}.pdf`);
             }
+        }
+
+        
+        // ========== OFFER (user side) ==========
+        let offerData = null, offerSkew = 0, offerTimer = null;
+        function fmtCountdown(ms) {
+            const s = Math.max(0, Math.floor(ms / 1000)), d = Math.floor(s / 86400), p = n => String(n).padStart(2, '0');
+            return (d ? d + 'd ' : '') + p(Math.floor(s % 86400 / 3600)) + ':' + p(Math.floor(s % 3600 / 60)) + ':' + p(s % 60);
+        }
+        function setupOffer(o, serverNow) {
+            if (offerTimer) { clearInterval(offerTimer); offerTimer = null; }
+            offerData = o && o.endsAt ? o : null;
+            offerSkew = (serverNow || Date.now()) - Date.now();
+            const fab = document.getElementById('offerFab');
+            if (!offerData) { fab.style.display = 'none'; closeOfferModal(); return; }
+            fab.style.display = 'flex'; tickOffer(); offerTimer = setInterval(tickOffer, 1000);
+        }
+        function tickOffer() {
+            if (!offerData) return;
+            const left = offerData.endsAt - (Date.now() + offerSkew);
+            if (left <= 0) { setupOffer(null); loadPackages(); return; }
+            const t = fmtCountdown(left);
+            document.getElementById('offerFabTime').textContent = t;
+            document.getElementById('offerModalTime').textContent = t;
+        }
+        function openOfferModal() {
+            if (!offerData) return;
+            document.getElementById('offerTitle').textContent = offerData.title || 'Offer';
+            document.getElementById('offerDesc').textContent = offerData.description || '';
+            const tg = document.getElementById('offerTags'); tg.textContent = '';
+            if (offerData.bonusPercent) tg.appendChild(badge('coins', '+' + offerData.bonusPercent + '% Coins za ziada'));
+            if (offerData.discountPercent) tg.appendChild(badge('ok', '-' + offerData.discountPercent + '% Punguzo la bei'));
+            document.getElementById('offerModal').classList.add('open');
+        }
+        function closeOfferModal() { document.getElementById('offerModal').classList.remove('open'); }
+        setInterval(() => { if (!document.hidden) loadPackages(); }, 60000);
+
+        // ========== ADMIN DASHBOARD ==========
+        let adminReady = false, aPk = [];
+        const $a = id => document.getElementById(id);
+        const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        async function adminApi(path, method, body) {
+            const r = await fetch('/api/admin' + path, { method: method || 'GET', headers: authHeaders(body ? { 'Content-Type': 'application/json' } : {}), credentials: 'include', body: body ? JSON.stringify(body) : undefined });
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(d.error || 'Imeshindwa.');
+            return d;
+        }
+        function aToast(m, bad) { const t = $a('aToast'); t.textContent = m; t.className = bad ? 'bad' : 'ok'; t.style.display = 'block'; clearTimeout(aToast.t); aToast.t = setTimeout(() => { t.style.display = 'none'; }, 2500); }
+        async function aRun(fn) { try { await fn(); } catch (e) { aToast(e.message, 1); } }
+        function adminInit() { if (adminReady) return; adminReady = true; adminShow('stats'); }
+        function adminShow(tab) {
+            document.querySelectorAll('[data-atab]').forEach(b => b.classList.toggle('active', b.dataset.atab === tab));
+            ({ stats: aStats, pay: aPay, users: aUsers, prices: aPrices, offer: aOffer })[tab]();
+        }
+        async function aStats() {
+            $a('adminBody').innerHTML = '<p class="a-mute">Inapakia...</p>';
+            await aRun(async () => {
+                const d = await adminApi('/stats');
+                const c = (l, v) => '<div class="a-stat"><span>' + l + '</span><b class="mono">' + v + '</b></div>';
+                $a('adminBody').innerHTML = '<div class="a-grid">' + c('Watumiaji', d.users) + c('Waliozuiwa', d.blocked) + c('Mapato (TZS)', Number(d.revenue).toLocaleString()) + c('Malipo yamekamilika', d.completed) + c('Yanasubiri', d.pending) + c('Yameshindwa', d.failed) + c('Hati zilizotengenezwa', d.documents) + '</div>';
+            });
+        }
+        function aPay() {
+            $a('adminBody').innerHTML = '<div class="a-bar"><input id="aq" placeholder="Tafuta reference, namba ya simu..." onkeydown="if(event.key===\'Enter\')aPayLoad()"><select id="ast" onchange="aPayLoad()"><option value="">Zote</option><option value="pending">Zinasubiri</option><option value="completed">Zimekamilika</option><option value="failed">Zimeshindwa</option></select><button class="btn-sm teal" onclick="aPayLoad()">Tafuta</button></div><div id="aList" class="table-card"><div class="table-wrap"></div></div>';
+            aPayLoad();
+        }
+        async function aPayLoad() {
+            await aRun(async () => {
+                const d = await adminApi('/payments?q=' + encodeURIComponent($a('aq').value) + '&status=' + $a('ast').value);
+                const rows = d.payments.map(p => {
+                    const st = PAY_STATUS[p.status] || { label: p.status, cls: 'neutral' };
+                    const u = p.user || {};
+                    return '<tr><td><div class="mono a-ref">' + esc(p.reference) + '</div><div class="a-mute">' + esc(fmtDate(p.created_at, true)) + '</div></td><td>' + esc(u.name) + '<div class="a-mute">' + esc(localPhone(p.phone_number)) + '</div></td><td>' + esc(p.package_label) + '<div class="mono">' + Number(p.amount_tzs).toLocaleString() + '</div></td><td><span class="badge ' + st.cls + '">' + st.label + '</span></td><td>' + (p.status !== 'completed' ? '<div class="a-act"><button class="grn" onclick="aSettle(\'' + esc(p.reference) + '\')">Thibitisha</button></div>' : '') + '</td></tr>';
+                }).join('');
+                $a('aList').innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr><th>Reference</th><th>Mteja</th><th>Kifurushi / TZS</th><th>Hali</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="5" class="tx-empty">Hakuna miamala.</td></tr>') + '</tbody></table></div>';
+            });
+        }
+        async function aSettle(ref) {
+            if (!confirm('Thibitisha malipo haya na umwongezee mteja coin/Unlimited?\n' + ref)) return;
+            await aRun(async () => { await adminApi('/payments/' + encodeURIComponent(ref) + '/settle', 'POST'); aToast('Malipo yamethibitishwa.'); aPayLoad(); });
+        }
+        function aUsers() {
+            $a('adminBody').innerHTML = '<div class="a-bar"><input id="auq" placeholder="Tafuta jina, simu au barua pepe..." onkeydown="if(event.key===\'Enter\')aUsersLoad()"><button class="btn-sm teal" onclick="aUsersLoad()">Tafuta</button></div><div id="aList" class="table-card"></div>';
+            aUsersLoad();
+        }
+        async function aUsersLoad() {
+            await aRun(async () => {
+                const d = await adminApi('/users?q=' + encodeURIComponent($a('auq').value));
+                const rows = d.users.map(u => '<tr><td>' + esc(u.full_name) + (u.isAdmin ? ' <span class="badge unl">Admin</span>' : '') + '<div class="a-mute">' + esc(localPhone(u.phone)) + (u.email ? ' · ' + esc(u.email) : '') + '</div></td><td class="mono">' + (u.isUnlimited ? 'Unlimited' : u.coins) + '</td><td>' + (u.is_blocked ? '<span class="badge fail">Amezuiwa</span>' : '<span class="badge ok">Hai</span>') + '</td><td>' + (u.isAdmin ? '' : '<div class="a-act"><button onclick="aCoins(' + Number(u.id) + ')">± Coin</button><button class="' + (u.is_blocked ? 'grn' : 'red') + '" onclick="aBlock(' + Number(u.id) + ',' + (!u.is_blocked) + ')">' + (u.is_blocked ? 'Fungua' : 'Zuia') + '</button><button class="red" onclick="aDel(' + Number(u.id) + ')">Futa</button></div>') + '</td></tr>').join('');
+                $a('aList').innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr><th>Mtumiaji</th><th>Salio</th><th>Hali</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="4" class="tx-empty">Hakuna watumiaji.</td></tr>') + '</tbody></table></div>';
+            });
+        }
+        async function aBlock(id, b) { if (!confirm(b ? 'Mzuie mtumiaji huyu?' : 'Mfungulie mtumiaji huyu?')) return; await aRun(async () => { await adminApi('/users/' + id + '/block', 'POST', { blocked: b }); aToast('Imefanyika.'); aUsersLoad(); }); }
+        async function aDel(id) { if (!confirm('Futa akaunti hii kabisa pamoja na historia yake ya malipo na hati? Haiwezi kurudishwa.')) return; await aRun(async () => { await adminApi('/users/' + id, 'DELETE'); aToast('Amefutwa.'); aUsersLoad(); }); }
+        async function aCoins(id) { const v = prompt('Ongeza au punguza coin (mfano 10 au -5):'); if (v === null || v.trim() === '') return; await aRun(async () => { const d = await adminApi('/users/' + id + '/coins', 'POST', { delta: parseInt(v, 10) }); aToast('Salio jipya: ' + d.coins); aUsersLoad(); }); }
+        async function aPrices() { await aRun(async () => { aPk = (await adminApi('/packages')).packages; aPricesDraw(); }); }
+        function aPricesDraw() {
+            const rows = aPk.map((p, i) => '<tr><td><select onchange="aPk[' + i + '].category=this.value;aPricesDraw()"><option value="coins"' + (p.category !== 'unlimited' ? ' selected' : '') + '>Coins</option><option value="unlimited"' + (p.category === 'unlimited' ? ' selected' : '') + '>Unlimited</option></select></td><td><input type="number" min="1" value="' + (p.category === 'unlimited' ? '' : p.coins) + '" ' + (p.category === 'unlimited' ? 'disabled' : '') + ' onchange="aPk[' + i + '].coins=+this.value"></td><td><input type="number" min="1" value="' + (p.category === 'unlimited' ? p.unlimitedDays : '') + '" ' + (p.category !== 'unlimited' ? 'disabled' : '') + ' onchange="aPk[' + i + '].unlimitedDays=+this.value"></td><td><input type="number" min="100" value="' + p.amountTzs + '" onchange="aPk[' + i + '].amountTzs=+this.value"></td><td><input type="checkbox" style="width:auto" ' + (p.active !== false ? 'checked' : '') + ' onchange="aPk[' + i + '].active=this.checked"></td><td><div class="a-act"><button class="red" onclick="aPk.splice(' + i + ',1);aPricesDraw()">Ondoa</button></div></td></tr>').join('');
+            $a('adminBody').innerHTML = '<div class="table-card a-ed"><div class="table-wrap"><table class="data-table"><thead><tr><th>Aina</th><th>Coins</th><th>Siku</th><th>Bei (TZS)</th><th>Hai</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div></div><div class="a-bar" style="margin-top:12px"><button class="btn-sm slate" onclick="aPk.push({category:\'coins\',coins:10,unlimitedDays:0,amountTzs:1000,active:true});aPricesDraw()">+ Kifurushi</button><button class="btn-sm teal" onclick="aSavePrices()">Hifadhi Bei</button><button class="btn-sm slate" onclick="aResetPrices()">Rudisha za awali</button></div>';
+        }
+        async function aSavePrices() { await aRun(async () => { const d = await adminApi('/packages', 'PUT', { packages: aPk }); aPk = d.packages; aPricesDraw(); aToast('Bei zimehifadhiwa.'); loadPackages(); }); }
+        async function aResetPrices() { if (!confirm('Rudisha bei za awali?')) return; await aRun(async () => { await adminApi('/packages', 'DELETE'); aToast('Zimerudishwa.'); aPrices(); loadPackages(); }); }
+        async function aOffer() {
+            await aRun(async () => {
+                const o = (await adminApi('/offer')).offer;
+                const cur = o ? '<div class="a-stat" style="margin-bottom:12px;max-width:520px"><span>Offer inayoendelea</span><b>' + esc(o.title) + '</b><span>Bonasi ' + (o.bonusPercent || 0) + '% · Punguzo ' + (o.discountPercent || 0) + '% · Inaisha: ' + esc(fmtDate(o.endsAt, true)) + '</span><div class="a-act"><button class="red" onclick="aOfferStop()">Zima sasa</button></div></div>' : '<p class="a-mute" style="margin-bottom:12px">Hakuna offer inayoendelea.</p>';
+                $a('adminBody').innerHTML = cur + '<div class="a-form"><label>Kichwa cha offer<input id="of_t" maxlength="60" placeholder="Mfano: Sikukuu Offer"></label><label>Maelezo (watumiaji wataona)<textarea id="of_d" rows="4" maxlength="800" placeholder="Eleza offer..."></textarea></label><label>Muda<span style="display:flex;gap:6px"><input id="of_m" type="number" min="1" value="24" style="flex:1"><select id="of_u"><option value="1">Dakika</option><option value="60" selected>Masaa</option><option value="1440">Siku</option></select></span></label><label>Coins za ziada (%)<input id="of_b" type="number" min="0" max="500" value="0"></label><label>Punguzo la bei (%)<input id="of_x" type="number" min="0" max="90" value="0"></label><button class="btn btn-gen" onclick="aOfferSave()">Weka Offer</button></div>';
+            });
+        }
+        async function aOfferSave() { await aRun(async () => { await adminApi('/offer', 'POST', { title: $a('of_t').value, description: $a('of_d').value, durationMinutes: Math.round(+$a('of_m').value * +$a('of_u').value), bonusPercent: +$a('of_b').value, discountPercent: +$a('of_x').value }); aToast('Offer imewekwa.'); aOffer(); loadPackages(); }); }
+        async function aOfferStop() { if (!confirm('Zima offer sasa?')) return; await aRun(async () => { await adminApi('/offer', 'DELETE'); aToast('Offer imezimwa.'); aOffer(); loadPackages(); }); }
+
+
+        const WA_GROUP = 'https://chat.whatsapp.com/BSWYugdXA9e0mPcwyRPeNQ';
+        const WA_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.21 3.07.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35M12.05 21.8h0a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.89-9.88 2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.89 9.88M20.46 3.49A11.8 11.8 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.68 1.45c6.56 0 11.9-5.34 11.9-11.89 0-3.18-1.24-6.17-3.48-8.42"/></svg>';
+
+        // Kiteuzi cha kawaida (si cha browser): kina search + radio
+        function openPicker(title, options, current, onPick) {
+            let ov = document.getElementById('pkOverlay');
+            if (!ov) {
+                ov = document.createElement('div'); ov.id = 'pkOverlay'; ov.className = 'pk-ov';
+                ov.innerHTML = '<div class="pk-card" role="dialog" aria-modal="true"><div class="pk-head"><input class="pk-search" type="search" autocomplete="off"><button type="button" class="pk-x" aria-label="Funga">&times;</button></div><ul class="pk-list" role="listbox"></ul></div>';
+                document.body.appendChild(ov);
+                ov.addEventListener('click', e => { if (e.target === ov) closePicker(); });
+                ov.querySelector('.pk-x').onclick = closePicker;
+                document.addEventListener('keydown', e => { if (e.key === 'Escape') closePicker(); });
+            }
+            const inp = ov.querySelector('.pk-search'), list = ov.querySelector('.pk-list');
+            inp.placeholder = title; inp.value = '';
+            const cur = String(current || '').toLowerCase();
+            const row = (label, val, sel) => {
+                const li = document.createElement('li'); li.className = 'pk-opt'; li.setAttribute('role', 'option'); li.setAttribute('aria-selected', String(sel));
+                const t = document.createElement('span'); t.textContent = label;
+                const rd = document.createElement('span'); rd.className = 'pk-radio';
+                li.append(t, rd); li.onclick = () => { onPick(val); closePicker(); };
+                list.appendChild(li);
+            };
+            const draw = () => {
+                const raw = inp.value.trim(), q = raw.toLowerCase();
+                list.textContent = '';
+                const items = options.filter(o => o.toLowerCase().includes(q));
+                items.forEach(o => row(o, o, o.toLowerCase() === cur));
+                if (raw && !options.some(o => o.toLowerCase() === q)) row('Tumia: ' + raw.toUpperCase(), raw.toUpperCase(), false);
+                if (!items.length && !raw) { const e = document.createElement('li'); e.className = 'pk-empty'; e.textContent = 'Hakuna chaguo.'; list.appendChild(e); }
+            };
+            inp.oninput = draw; draw();
+            ov.classList.add('open'); document.body.style.overflow = 'hidden';
+        }
+        function closePicker() {
+            const ov = document.getElementById('pkOverlay');
+            if (ov && ov.classList.contains('open')) { ov.classList.remove('open'); document.body.style.overflow = ''; }
+        }
+        const BIZ_OPTIONS = [
+            'BOOKSTORE AND STATIONERY - DISTRICT', 'Electonic money transfer(UWAKALA)', 'Retail trade in general merchandise',
+            'Wholesale and retail trade', 'Pharmacy and medical supplies', 'Restaurant and cafe operations',
+            'Hardware and building materials', 'Salon and beauty services', 'Agrovet and agricultural inputs',
+            'Transport and logistics services'
+        ];
+        function openBizPicker() {
+            const el = document.getElementById('bl_business');
+            openPicker('Tafuta biashara...', BIZ_OPTIONS, el.value, v => { el.value = v.toUpperCase(); });
+        }
+        // Expiring Date = Date of Issue + mwaka 1
+        function setBlExpiry() {
+            const out = document.getElementById('bl_expire'), v = document.getElementById('bl_issue').value;
+            if (!v) { out.value = ''; return; }
+            const [y, m, d] = v.split('-').map(Number);
+            let dt = new Date(Date.UTC(y + 1, m - 1, d));
+            if (dt.getUTCDate() !== d) dt = new Date(Date.UTC(y + 1, m - 1, 28));
+            out.value = dt.toISOString().slice(0, 10);
         }
 
         loadPackages();
