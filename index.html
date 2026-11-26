@@ -3493,13 +3493,14 @@ Minimum version required to store current data is: `+i+`.
             const el = document.getElementById('bl_business');
             openPicker('Tafuta biashara...', BIZ_OPTIONS, el.value, v => { el.value = v.toUpperCase(); });
         }
-        // Expiring Date = Date of Issue + mwaka 1
+        // Expiring Date = Date of Issue + mwaka 1, ikapungua siku 1
         function setBlExpiry() {
             const out = document.getElementById('bl_expire'), v = document.getElementById('bl_issue').value;
             if (!v) { out.value = ''; return; }
             const [y, m, d] = v.split('-').map(Number);
             let dt = new Date(Date.UTC(y + 1, m - 1, d));
             if (dt.getUTCDate() !== d) dt = new Date(Date.UTC(y + 1, m - 1, 28));
+            dt = new Date(dt.getTime() - 86400000);
             out.value = dt.toISOString().slice(0, 10);
         }
 
