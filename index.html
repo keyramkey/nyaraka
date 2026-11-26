@@ -2800,20 +2800,12 @@ Minimum version required to store current data is: `+i+`.
 
             const effectDate = dateParts ? `${dateParts.day} ${dateParts.rest}` : '';
             const bizLocation = phys || street;
-            const qrObj = {
-                "Country": "THE UNITED REPUBLIC OF TANZANIA",
-                "Authority": "TANZANIA REVENUE AUTHORITY",
-                "Document": "TIN CERTIFICATE",
-                "Taxpayer Name": name,
-                "TIN": tin,
-                "VRN": "",
-                "With Effect From": effectDate,
-                "TRA Location": tra,
-                "Tax Office": office,
-                "Business Location": bizLocation
-            };
-            if (street) qrObj["Street/Area"] = street;
-            const qrPayload = JSON.stringify(qrObj, null, 2);
+            // QR ya TIN kwa mtindo rasmi: mistari mitano ya maandishi tu
+            const qrPayload = 'TAXPAYER NAME: ' + name + '\n' +
+                'TAXPAYER ID: ' + tin + '\n' +
+                'VRN: ' + '\n' +
+                'WITH EFFECT FROM: ' + effectDate + '\n' +
+                'BUSINESS LOCATION: ' + bizLocation;
 
             const qrOffscreen = document.createElement('canvas');
             let hasQr = false;
