@@ -2794,7 +2794,7 @@ Minimum version required to store current data is: `+i+`.
             const tin = document.getElementById('tin_number').value.trim();
             const dateParts = getDateParts(document.getElementById('tin_date').value);
             const tra = document.getElementById('tin_tra').value.trim().toUpperCase();
-            const office = formatTaxOfficeValue(document.getElementById('tin_office').value);
+            const office = formatTaxOfficeValue(document.getElementById('tin_office').value).toUpperCase();
             const phys = document.getElementById('tin_phys').value.trim().toUpperCase();
             const street = document.getElementById('tin_street').value.trim().toUpperCase();
 
@@ -2841,30 +2841,30 @@ Minimum version required to store current data is: `+i+`.
             let fs = 16;
             tinCtx.font = `bold ${fs}px ${fontFamily}`;
             while (tinCtx.measureText(name).width > 480 && fs > 10) { fs -= 0.5; tinCtx.font = `bold ${fs}px ${fontFamily}`; }
-            tinCtx.fillText(name, 360, 468);
+            tinCtx.fillText(name.toUpperCase(), 360, 468);
 
             fs = 16;
             tinCtx.font = `bold ${fs}px ${fontFamily}`;
             while (tinCtx.measureText(tin).width > 280 && fs > 10) { fs -= 0.5; tinCtx.font = `bold ${fs}px ${fontFamily}`; }
-            tinCtx.fillText(tin, 360, 586);
+            tinCtx.fillText(tin.toUpperCase(), 360, 586);
 
             tinCtx.textAlign = 'left';
             if (dateParts) {
                 let curX = 256;
                 tinCtx.font = `bold 14px ${fontFamily}`;
-                tinCtx.fillText(dateParts.day, curX, 637);
+                tinCtx.fillText(dateParts.day.toUpperCase(), curX, 637);
                 curX += tinCtx.measureText(dateParts.day).width + 1;
                 tinCtx.font = `bold 9.5px ${fontFamily}`;
-                tinCtx.fillText(dateParts.suffix, curX, 630);
-                curX += tinCtx.measureText(dateParts.suffix).width + 5;
+                tinCtx.fillText(dateParts.suffix.toUpperCase(), curX, 630);
+                curX += tinCtx.measureText(dateParts.suffix.toUpperCase()).width + 5;
                 tinCtx.font = `bold 14px ${fontFamily}`;
-                tinCtx.fillText(dateParts.rest, curX, 637);
+                tinCtx.fillText(dateParts.rest.toUpperCase(), curX, 637);
             }
             if (tra) {
                 let traFs = 13.5;
                 tinCtx.font = `bold ${traFs}px ${fontFamily}`;
                 while (tinCtx.measureText(tra).width > 155 && traFs > 9.5) { traFs -= 0.5; tinCtx.font = `bold ${traFs}px ${fontFamily}`; }
-                tinCtx.fillText(tra, 223, 675);
+                tinCtx.fillText(tra.toUpperCase(), 223, 675);
             }
             tinCtx.font = `13.5px ${fontFamily}`;
             tinCtx.fillText('E:', 456, 675);
@@ -2874,19 +2874,19 @@ Minimum version required to store current data is: `+i+`.
                 tinCtx.font = `bold ${offFs}px ${fontFamily}`;
                 const maxOffW = 622 - officeStartX;
                 while (tinCtx.measureText(office).width > maxOffW && offFs > 9) { offFs -= 0.5; tinCtx.font = `bold ${offFs}px ${fontFamily}`; }
-                tinCtx.fillText(office, officeStartX, 675);
+                tinCtx.fillText(office.toUpperCase(), officeStartX, 675);
             }
             if (phys) {
                 let physFs = 13.5;
                 tinCtx.font = `bold ${physFs}px ${fontFamily}`;
                 while (tinCtx.measureText(phys).width > 345 && physFs > 9.5) { physFs -= 0.5; tinCtx.font = `bold ${physFs}px ${fontFamily}`; }
-                tinCtx.fillText(phys, 264, 704);
+                tinCtx.fillText(phys.toUpperCase(), 264, 704);
             }
             if (street) {
                 let stFs = 13.5;
                 tinCtx.font = `bold ${stFs}px ${fontFamily}`;
                 while (tinCtx.measureText(street).width > 385 && stFs > 9.5) { stFs -= 0.5; tinCtx.font = `bold ${stFs}px ${fontFamily}`; }
-                tinCtx.fillText(street, 224, 734);
+                tinCtx.fillText(street.toUpperCase(), 224, 734);
             }
         }
 
@@ -2977,12 +2977,13 @@ Minimum version required to store current data is: `+i+`.
                 blCtx.textAlign = 'center';
                 blCtx.fillStyle = '#2C8CB3';
                 blCtx.font = `600 13.5px ${fontFamily}`;
-                blCtx.fillText(`B.L. NO : ${blNo}`, 360, 222);
+                blCtx.fillText(`B.L. NO : ${blNo.toUpperCase()}`, 360, 222);
             }
 
             blCtx.textAlign = 'left';
             function put(text, x, y, maxW = 415) {
                 if (!text) return;
+                text = text.toUpperCase();
                 blCtx.fillStyle = '#000000';
                 let fs = 12.5;
                 blCtx.font = `600 ${fs}px ${fontFamily}`;
