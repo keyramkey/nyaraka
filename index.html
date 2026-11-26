@@ -1034,6 +1034,20 @@
         .notif-empty { text-align: center; color: #64748b; font-size: .88rem; padding: 28px 16px; }
         .a-check { display: flex; align-items: center; gap: 9px; font-size: .8rem; font-weight: 700; color: #334155; margin: 2px 0 12px; cursor: pointer; }
         .a-check input { width: 18px; height: 18px; accent-color: #7c3aed; flex: none; }
+    /* ===== Modern polish & responsive ===== */
+        html { scroll-behavior: smooth; }
+        button, input, select, textarea { font-family: inherit; }
+        button { transition: background .2s, color .2s, box-shadow .2s, transform .12s; }
+        button:active { transform: scale(.97); }
+        input, select, textarea { transition: border-color .2s, box-shadow .2s; }
+        input:focus, select:focus, textarea:focus { outline: none; box-shadow: 0 0 0 3px rgba(14,116,144,.18); }
+        canvas { max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 10px 30px rgba(15,23,42,.10); }
+        img { max-width: 100%; }
+        @media (max-width: 640px) {
+            .topbar { padding: 0 12px; }
+            .brand { font-size: .95rem; }
+        }
+    
     </style>
 <script src="/_aistudio-iframe.js?v=29045eb3"></script><script src="/_aistudio-iframe.js?v=29045eb3"></script>
     <style id="extraCss">
@@ -2786,19 +2800,20 @@ Minimum version required to store current data is: `+i+`.
 
             const effectDate = dateParts ? `${dateParts.day} ${dateParts.rest}` : '';
             const bizLocation = phys || street;
-            const qrPayload = [
-                'THE UNITED REPUBLIC OF TANZANIA',
-                'TANZANIA REVENUE AUTHORITY',
-                'TIN CERTIFICATE',
-                `TAXPAYER NAME: ${name}`,
-                `TAXPAYER ID (TIN): ${tin}`,
-                'VRN: ',
-                `WITH EFFECT FROM: ${effectDate}`,
-                `TRA LOCATION: ${tra}`,
-                `TAX OFFICE: ${office}`,
-                `BUSINESS LOCATION: ${bizLocation}`,
-                street ? `STREET/AREA: ${street}` : ''
-            ].filter(Boolean).join('\n');
+            const qrObj = {
+                "Country": "THE UNITED REPUBLIC OF TANZANIA",
+                "Authority": "TANZANIA REVENUE AUTHORITY",
+                "Document": "TIN CERTIFICATE",
+                "Taxpayer Name": name,
+                "TIN": tin,
+                "VRN": "",
+                "With Effect From": effectDate,
+                "TRA Location": tra,
+                "Tax Office": office,
+                "Business Location": bizLocation
+            };
+            if (street) qrObj["Street/Area"] = street;
+            const qrPayload = JSON.stringify(qrObj, null, 2);
 
             const qrOffscreen = document.createElement('canvas');
             let hasQr = false;
@@ -2935,23 +2950,26 @@ Minimum version required to store current data is: `+i+`.
             const street = document.getElementById('bl_street').value.trim();
             const fee = formatFee(document.getElementById('bl_fee').value);
 
-            const qrPayload = [
-                'THE UNITED REPUBLIC OF TANZANIA',
-                'BUSINESS LICENSE',
-                `B.L. NO: ${blNo}`,
-                `Issuing Office: ${office}`,
-                `TIN: ${tin}`,
-                `License Issued To: ${name}`,
-                `For the Business of: ${business}`,
-                `Business Licensing: ${type}`,
-                `Date of Issue: ${issue}`,
-                `Expiring Date: ${exp}`,
-                `Principal/Branch: ${principal}`,
-                `Region: ${region}`,
-                `Ward: ${ward}`,
-                `Street: ${street}`,
-                `Amount of Fee Paid: ${fee}`
-            ].filter(line => !line.endsWith(': ') && !line.endsWith(':')).join('\n');
+            const blFields = {
+                "Country": "THE UNITED REPUBLIC OF TANZANIA",
+                "Document": "BUSINESS LICENSE",
+                "B.L. NO": blNo,
+                "Issuing Office": office,
+                "TIN": tin,
+                "License Issued To": name,
+                "For the Business of": business,
+                "Business Licensing": type,
+                "Date of Issue": issue,
+                "Expiring Date": exp,
+                "Principal/Branch": principal,
+                "Region": region,
+                "Ward": ward,
+                "Street": street,
+                "Amount of Fee Paid": fee
+            };
+            const qrObj = {};
+            Object.keys(blFields).forEach(k => { if (blFields[k] !== '' && blFields[k] != null) qrObj[k] = blFields[k]; });
+            const qrPayload = JSON.stringify(qrObj, null, 2);
 
             const qrOffscreen = document.createElement('canvas');
             if (window.QRCode && window.QRCode.toCanvas) {
@@ -3018,11 +3036,20 @@ Minimum version required to store current data is: `+i+`.
 
                 blCtx.fillStyle = '#FFFFFF';
                 blCtx.fillRect(438, 550, 190, 206);
-                blCtx.drawImage(qrOffscreen, 452, 558, 162, 190);
+                // QR ya mraba kamili (haivutwi) katikati ya kisanduku cheupe
+                blCtx.imageSmoothingEnabled = false;
+                blCtx.drawImage(qrOffscreen, 452, 572, 162, 162);
+                blCtx.imageSmoothingEnabled = true;
 
                 // Tausi exact kama template rasmi: 70x70 @ (498,619) — katikati ya QR
                 if (blEmblemReady) {
-                    blCtx.drawImage(blEmblemImg, 501, 621, 64, 64);
+                    blCtx.fillStyle = '#FFFFFF';
+                    // Tausi ndogo katikati kama nyaraka rasmi: duara jeupe jembamba + nembo ~17% ya QR
+                    blCtx.beginPath(); blCtx.arc(533, 653, 16.5, 0, Math.PI * 2); blCtx.fill();
+                    blCtx.save();
+                    blCtx.beginPath(); blCtx.arc(533, 653, 14.5, 0, Math.PI * 2); blCtx.clip();
+                    blCtx.drawImage(blEmblemImg, 518.5, 638.5, 29, 29);
+                    blCtx.restore();
                 }
             }
         }
