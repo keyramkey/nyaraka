@@ -2950,33 +2950,25 @@ Minimum version required to store current data is: `+i+`.
             const street = document.getElementById('bl_street').value.trim();
             const fee = formatFee(document.getElementById('bl_fee').value);
 
-            const blFields = {
-                "Country": "THE UNITED REPUBLIC OF TANZANIA",
-                "Document": "BUSINESS LICENSE",
-                "B.L. NO": blNo,
-                "Issuing Office": office,
-                "TIN": tin,
-                "License Issued To": name,
-                "For the Business of": business,
-                "Business Licensing": type,
-                "Date of Issue": issue,
-                "Expiring Date": exp,
-                "Principal/Branch": principal,
-                "Region": region,
-                "Ward": ward,
-                "Street": street,
-                "Amount of Fee Paid": fee
-            };
-            const qrObj = {};
-            Object.keys(blFields).forEach(k => { if (blFields[k] !== '' && blFields[k] != null) qrObj[k] = blFields[k]; });
-            const qrPayload = JSON.stringify(qrObj, null, 2);
+            // QR kwa mtindo rasmi: licenceNumber, tin, expireDate, hc (SHA-256 hex herufi kubwa)
+            let hc = '';
+            try {
+                const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(blNo + '|' + tin + '|' + exp + '|' + name));
+                hc = Array.from(new Uint8Array(buf)).map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+            } catch (e) {
+                let h = 0x811c9dc5, out = '';
+                const src = blNo + tin + exp + name;
+                for (let r = 0; r < 8; r++) { for (let i = 0; i < src.length; i++) { h ^= src.charCodeAt(i) + r; h = Math.imul(h, 16777619) >>> 0; } out += h.toString(16).padStart(8, '0'); }
+                hc = out.toUpperCase();
+            }
+            const qrPayload = JSON.stringify({ licenceNumber: blNo, tin: tin, expireDate: exp, hc: hc });
 
             const qrOffscreen = document.createElement('canvas');
             if (window.QRCode && window.QRCode.toCanvas) {
                 await window.QRCode.toCanvas(qrOffscreen, qrPayload, {
-                    width: 162 * RENDER_SCALE,
+                    scale: 12,
                     margin: 0,
-                    errorCorrectionLevel: 'H',
+                    errorCorrectionLevel: 'M',
                     color: { dark: '#000000', light: '#FFFFFF' }
                 });
             }
